@@ -4,9 +4,13 @@ dns.setDefaultResultOrder('ipv4first')
 import dotenv from 'dotenv'
 dotenv.config()
 
+if (!process.env.JWT_SECRET) {
+    console.error("FATAL ERROR: JWT_SECRET environment variable is missing!");
+    process.exit(1);
+}
+
 import express from 'express'
 import cors from 'cors'
-import { startRecurrenceScheduler } from './services/recurrenceScheduler.js'
 import { serve } from 'inngest/express'
 import { inngest, functions } from './inngest/index.js'
 import authRouter from './routes/authRoutes.js'
@@ -64,5 +68,4 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log(`server is running on http://localhost:${PORT}`);
-    startRecurrenceScheduler();
 });

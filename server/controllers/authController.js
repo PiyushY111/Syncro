@@ -53,8 +53,7 @@ export const register = async (req, res) => {
             },
         });
 
-        // Print to console logs for visibility on Render logs
-        console.log(`[2FA SECURITY CODE - SIGNUP] User: ${user.email} | Code: ${verificationCode}`);
+        console.log(`[2FA Security Code Sent] User: ${user.email}`);
 
         // Send Email asynchronously (non-blocking)
         const subject = "Syncro Sign Up Verification Code";
@@ -80,7 +79,7 @@ export const register = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -117,8 +116,7 @@ export const login = async (req, res) => {
             }
         });
 
-        // Print to console logs for visibility on Render logs
-        console.log(`[2FA SECURITY CODE] User: ${user.email} | Code: ${verificationCode}`);
+        console.log(`[2FA Security Code Sent] User: ${user.email}`);
 
         const subject = "Syncro Login Verification Code";
         const text = `Your login verification code is: ${verificationCode}. It expires in 5 minutes.`;
@@ -145,7 +143,7 @@ export const login = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -192,7 +190,7 @@ export const verifyLogin = async (req, res) => {
         });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -221,8 +219,7 @@ export const resendCode = async (req, res) => {
             }
         });
 
-        // Print to console logs for visibility on Render logs
-        console.log(`[2FA SECURITY CODE - RESEND] User: ${user.email} | Code: ${verificationCode}`);
+        console.log(`[2FA Security Code Sent] User: ${user.email}`);
 
         const subject = "Syncro Login Verification Code";
         const text = `Your login verification code is: ${verificationCode}. It expires in 5 minutes.`;
@@ -245,7 +242,7 @@ export const resendCode = async (req, res) => {
         return res.json({ message: 'Verification code resent successfully' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -269,7 +266,7 @@ export const me = async (req, res) => {
         return res.json({ user });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -300,7 +297,7 @@ export const updateProfile = async (req, res) => {
         return res.json({ user, message: 'Profile updated successfully' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };
 
@@ -339,6 +336,6 @@ export const updatePassword = async (req, res) => {
         return res.json({ message: 'Password updated successfully' });
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: error.message });
+        return res.status(500).json({ message: 'Internal server error' });
     }
 };

@@ -9,7 +9,10 @@ export const protect = async (req, res, next) => {
       return res.status(401).json({ message: 'Unauthorized' });
     }
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET || 'development-secret');
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is not configured');
+    }
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
     req.user = {
       id: payload.userId,
       email: payload.email,

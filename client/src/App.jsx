@@ -1,17 +1,17 @@
-import { Routes, Route } from "react-router-dom";
-import Layout from "./pages/Layout";
-import { Toaster } from "react-hot-toast";
-import Dashboard from "./pages/Dashboard";
-import Projects from "./pages/Projects";
-import Team from "./pages/Team";
-import Chat from "./pages/Chat";
-import ProjectDetails from "./pages/ProjectDetails";
-import TaskDetails from "./pages/TaskDetails";
-import AcceptWorkspaceInvite from "./pages/AcceptWorkspaceInvite";
-import AuthPage from "./pages/Auth";
-import RequireAuth from "./components/RequireAuth";
-import SettingsPage from "./pages/Settings";
-import { Analytics } from "@vercel/analytics/react"
+import { Routes, Route } from 'react-router-dom';
+import Layout from '@/pages/layout/Layout';
+import { Toaster } from 'react-hot-toast';
+import Dashboard from '@/pages/dashboard/Dashboard';
+import Projects from '@/pages/project/Projects';
+import Team from '@/pages/workspace/Team';
+import Chat from '@/pages/chat/Chat';
+import ProjectDetails from '@/pages/project/ProjectDetails';
+import TaskDetails from '@/pages/task/TaskDetails';
+import AcceptWorkspaceInvite from '@/pages/workspace/AcceptWorkspaceInvite';
+import AuthPage from '@/pages/auth/Auth';
+import RequireAuth from '@/components/auth/RequireAuth';
+import SettingsPage from '@/pages/settings/Settings';
+import { Analytics } from '@vercel/analytics/react'
 
 const App = () => {
     return (
@@ -23,7 +23,7 @@ const App = () => {
                 <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
                     <Route index element={<Dashboard />} />
                     <Route path="team" element={<Team />} />
-                    <Route path="chat" element={<Chat />} />
+                    {/* <Route path="chat" element={<Chat />} /> */}
                     <Route path="projects" element={<Projects />} />
                     <Route path="projectsDetail" element={<ProjectDetails />} />
                     <Route path="taskDetails" element={<TaskDetails />} />

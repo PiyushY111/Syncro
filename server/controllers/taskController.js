@@ -232,27 +232,29 @@ export const deleteTask = async (req, res) => {
     try {
         const userId = req.user.id;
         const { tasksIds } = req.body;
+        
+        if (!Array.isArray(tasksIds) || tasksIds.length === 0) {
+            return res.status(400).json({ message: "tasksIds must be a non-empty array" });
+        }
+
         const tasks = await prisma.task.findMany({
             where: { id: { in: tasksIds } },
+            include: { project: true }
         });
+
         if (tasks.length === 0) {
             return res.status(404).json({ message: "Tasks not found" });
         }
 
-        const project = await prisma.project.findUnique({
-            where: { id: tasks[0].projectId },
-            include: { members: { include: { user: true } } }
-        })
-        if (!project) {
-            return res.status(404).json({ message: "Project not found" });
+        const unauthorizedTask = tasks.find(task => task.project.team_lead !== userId);
+        if (unauthorizedTask) {
+            return res.status(403).json({ message: "You do not have permission to delete one or more of these tasks" });
         }
-        else if (project.team_lead !== userId) {
-            return res.status(403).json({ message: "You do not have permission to delete this task" });
-        }
+
         const deletedTasks = await prisma.task.deleteMany({
             where: { id: { in: tasksIds } },
+        });
 
-        })
         res.status(201).json({ message: "Task deleted successfully", task: deletedTasks });
     }
     catch (err) {
@@ -315,6 +317,6 @@ export const triggerRecurTask = async (req, res) => {
         });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: err.code || err.message });
+        return res.status(500).json({ message: "Internal server error" });
     }
 };

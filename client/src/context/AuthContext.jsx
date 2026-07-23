@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import api from '../configs/api';
+import api from '@/configs/api';
 
 const AUTH_TOKEN_KEY = 'pm-auth-token';
 const AUTH_USER_KEY = 'pm-auth-user';

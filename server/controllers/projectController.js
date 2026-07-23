@@ -87,8 +87,8 @@ export const createProject = async (req, res) => {
         res.status(201).json({ message: "Project created successfully", project: projectWithMembers });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.code || error.message });
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -118,7 +118,7 @@ export const updateProject = async (req, res) => {
         })
 
         if (!workspace) {
-            return res.status(404).json({ message: "WorkSpace not founf" });
+            return res.status(404).json({ message: "Workspace not found" });
         }
         const userMember = workspace.members.find(m => m.userId === userId);
         const userRole = userMember?.role || (workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
@@ -134,7 +134,23 @@ export const updateProject = async (req, res) => {
                 return res.status(403).json({ message: "You do not have permission to update this project" });
             }
         }
-        const project = await prisma.project.update({
+
+        let resolvedTeamLeadId;
+        if (team_lead.includes('@')) {
+            const user = await prisma.user.findUnique({ where: { email: team_lead.toLowerCase().trim() } });
+            if (!user) {
+                return res.status(404).json({ message: "Team lead not found" });
+            }
+            resolvedTeamLeadId = user.id;
+        } else {
+            const user = await prisma.user.findUnique({ where: { id: team_lead } });
+            if (!user) {
+                return res.status(404).json({ message: "Team lead not found" });
+            }
+            resolvedTeamLeadId = user.id;
+        }
+
+        await prisma.project.update({
             where: { id },
             data: {
                 workspaceId,
@@ -143,17 +159,49 @@ export const updateProject = async (req, res) => {
                 status,
                 start_date: start_date ? new Date(start_date) : null,
                 end_date: end_date ? new Date(end_date) : null,
-                team_members,
-                team_lead,
+                team_lead: resolvedTeamLeadId,
                 progress,
                 priority
             }
         });
-        res.status(200).json({ project, message: "Project updated successfully" });
+
+        if (Array.isArray(team_members)) {
+            // Delete current project members
+            await prisma.projectMember.deleteMany({
+                where: { projectId: id }
+            });
+            
+            // Re-add members
+            const membersToAdd = [];
+            workspace.members.forEach((member) => {
+                if (team_members.includes(member.user.email)) {
+                    membersToAdd.push(member.user.id);
+                }
+            });
+            if (membersToAdd.length > 0) {
+                await prisma.projectMember.createMany({
+                    data: membersToAdd.map(memberId => ({
+                        projectId: id,
+                        userId: memberId
+                    })),
+                });
+            }
+        }
+
+        const projectWithMembers = await prisma.project.findUnique({
+            where: { id },
+            include: {
+                owner: true,
+                members: { include: { user: true } },
+                tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } }
+            }
+        });
+
+        res.status(200).json({ project: projectWithMembers, message: "Project updated successfully" });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.code || error.message });
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -207,8 +255,8 @@ export const addMember = async (req, res) => {
         res.status(201).json({ member, message: "Member added successfully" });
 
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: error.code || error.message });
+        console.error(error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
@@ -270,6 +318,6 @@ export const updateProjectStages = async (req, res) => {
         return res.json({ project: updatedProject, message: "Project stages updated successfully" });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ message: err.code || err.message });
+        return res.status(500).json({ message: "Internal server error" });
     }
 };

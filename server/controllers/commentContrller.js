@@ -16,8 +16,9 @@ export const addComment = async (req, res) => {
             include: { members: { include: { user: true } } }
         });
 
-        const member = project.members.find((member) => member.userId === userId);
-        if (!member) {
+        const isMember = project.members.some((member) => member.userId === userId);
+        const isProjectLead = project.team_lead === userId;
+        if (!isMember && !isProjectLead) {
             return res.status(403).json({ message: "You do not have permission to comment on this task" });
         }
         const comment = await prisma.comment.create({
@@ -31,7 +32,7 @@ export const addComment = async (req, res) => {
     }
     catch (err) {
         console.error(err);
-        res.status(500).json({ message: err.code || err.message });
+        res.status(500).json({ message: "Internal server error" });
     }
 }
 
@@ -48,8 +49,9 @@ export const getComments = async (req, res) => {
             where: { id: task.projectId },
             include: { members: { include: { user: true } } }
         });
-        const member = project.members.find((member) => member.userId === userId);
-        if (!member) {
+        const isMember = project.members.some((member) => member.userId === userId);
+        const isProjectLead = project.team_lead === userId;
+        if (!isMember && !isProjectLead) {
             return res.status(403).json({ message: "You do not have permission to view comments for this task" });
         }
         const comments = await prisma.comment.findMany({
@@ -59,6 +61,6 @@ export const getComments = async (req, res) => {
         res.status(200).json({ comments });
     } catch (err) {
         console.error(err);
-        res.status(500).json({ message: err.code || err.message });
+        res.status(500).json({ message: "Internal server error" });
     }
 };

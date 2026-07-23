@@ -4,7 +4,7 @@ import App from './App.jsx'
 import { BrowserRouter } from 'react-router-dom'
 import { store } from './app/store.js'
 import { Provider } from 'react-redux'
-import { AuthProvider } from './context/AuthContext.jsx'
+import { AuthProvider } from '@/context/AuthContext'
 
 
 createRoot(document.getElementById('root')).render(
