@@ -96,7 +96,7 @@ export default function Chat() {
                 editChannelName={chat.editChannelName}
                 setEditChannelName={chat.setEditChannelName}
                 editChannelDesc={chat.editChannelDesc}
-                setEditChannelDesc={setEditChannelDesc}
+                setEditChannelDesc={chat.setEditChannelDesc}
                 handleEditChannel={chat.handleEditChannel}
                 isInviteTeammateOpen={chat.isInviteTeammateOpen}
                 setIsInviteTeammateOpen={chat.setIsInviteTeammateOpen}

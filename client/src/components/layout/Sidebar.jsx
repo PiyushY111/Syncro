@@ -11,7 +11,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
         { name: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
         { name: 'Projects', href: '/projects', icon: FolderOpenIcon },
         { name: 'Team', href: '/team', icon: UsersIcon },
-        // { name: 'Chat', href: '/chat', icon: MessageSquare },
+        { name: 'Chat', href: '/chat', icon: MessageSquare },
         { name: 'Settings', href: '/settings', icon: SettingsIcon },
     ]
 

@@ -1,0 +1,76 @@
+import { prisma } from '../../config/prisma.js';
+import { createWorkspaceSlug } from './workspaceHelpers.js';
+
+export const createWorkspace = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { name, description = '', image_url = '' } = req.body;
+
+        if (!name?.trim()) {
+            return res.status(400).json({ message: 'Workspace name is required' });
+        }
+
+        const workspace = await prisma.workspace.create({
+            data: {
+                name: name.trim(),
+                slug: createWorkspaceSlug(name),
+                description: description.trim() || null,
+                ownerId: userId,
+                image_url: image_url.trim(),
+                members: {
+                    create: {
+                        userId,
+                        role: 'OWNER',
+                    },
+                },
+            },
+            include: {
+                owner: true,
+                members: { include: { user: true } },
+                projects: {
+                    include: {
+                        tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
+                        members: { include: { user: true } },
+                    },
+                },
+            },
+        });
+
+        return res.status(201).json({ workspace, message: 'Workspace created successfully' });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: err.code || err.message });
+    }
+};
+
+export const getUserWorkspaces = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const workspaceMemberships = await prisma.workspaceMember.findMany({
+            where: {
+                userId: userId,
+            },
+            include: {
+                workspace: {
+                    include: {
+                        members: { include: { user: true } },
+                        projects: {
+                            include: {
+                                tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
+                                members: { include: { user: true } }
+                            }
+                        },
+                        owner: true,
+                    }
+                }
+            }
+        });
+
+        const workspaces = workspaceMemberships.map((membership) => membership.workspace);
+        return res.json({ workspaces });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: err.code || err.message });
+    }
+};

@@ -9,7 +9,7 @@ import {
     deleteWorkspace,
     updateMemberRole,
     removeMember
-} from '../controllers/workspaceControllers.js';
+} from '../controllers/workspaceController.js';
 
 const workspaceRouter = express.Router();
 

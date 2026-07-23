@@ -59,8 +59,7 @@ const sendTaskAssignmentEmail = inngest.createFunction(
 
 // Distributed Cron Job Scheduler running every minute to process recurring tasks safely in clustered environments
 const recurrenceJob = inngest.createFunction(
-    { id: 'recurrence-scheduler-cron' },
-    { cron: '* * * * *' },
+    { id: 'recurrence-scheduler-cron', cron: '* * * * *' },
     async ({ step }) => {
         const now = new Date();
         const recurringTasks = await step.run('fetch-recurring-tasks', async () => {
