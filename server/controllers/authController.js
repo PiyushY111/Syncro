@@ -90,7 +90,9 @@ export const login = async (req, res) => {
             }
         });
 
-        // Send Email
+        // Print to console logs for visibility on Render logs
+        console.log(`[2FA SECURITY CODE] User: ${user.email} | Code: ${verificationCode}`);
+
         const subject = "Syncro Login Verification Code";
         const text = `Your login verification code is: ${verificationCode}. It expires in 5 minutes.`;
         const html = `
@@ -103,7 +105,11 @@ export const login = async (req, res) => {
                 <p style="font-size: 12px; color: #71717a;">If you did not attempt to sign in to your Syncro account, please ignore this email or change your password.</p>
             </div>
         `;
-        await sendEmail({ to: user.email, subject, text, html });
+
+        // Send Email asynchronously (non-blocking)
+        sendEmail({ to: user.email, subject, text, html }).catch(err => {
+            console.error(`[SMTP ERROR] Failed to send email to ${user.email}:`, err.message);
+        });
 
         return res.json({
             requiresVerification: true,
@@ -188,6 +194,9 @@ export const resendCode = async (req, res) => {
             }
         });
 
+        // Print to console logs for visibility on Render logs
+        console.log(`[2FA SECURITY CODE - RESEND] User: ${user.email} | Code: ${verificationCode}`);
+
         const subject = "Syncro Login Verification Code";
         const text = `Your login verification code is: ${verificationCode}. It expires in 5 minutes.`;
         const html = `
@@ -200,7 +209,11 @@ export const resendCode = async (req, res) => {
                 <p style="font-size: 12px; color: #71717a;">If you did not attempt to sign in to your Syncro account, please ignore this email or change your password.</p>
             </div>
         `;
-        await sendEmail({ to: user.email, subject, text, html });
+
+        // Send Email asynchronously (non-blocking)
+        sendEmail({ to: user.email, subject, text, html }).catch(err => {
+            console.error(`[SMTP ERROR] Failed to resend email to ${user.email}:`, err.message);
+        });
 
         return res.json({ message: 'Verification code resent successfully' });
     } catch (error) {
