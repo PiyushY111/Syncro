@@ -16,7 +16,7 @@ import chatRouter from './routes/chatRoutes.js'
 const app = express()
 
 const allowedOrigins = [
-  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(url => url.trim()) : []),
+  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(url => url.trim().replace(/\/$/, '')) : []),
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
@@ -25,7 +25,10 @@ const allowedOrigins = [
 
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    const normalizedOrigin = origin ? origin.replace(/\/$/, '') : '';
+    console.log(`[CORS Check] Incoming origin: "${origin}" (normalized: "${normalizedOrigin}"). Allowed origins:`, allowedOrigins);
+    
+    if (!origin || allowedOrigins.includes(normalizedOrigin)) {
       callback(null, true)
       return
     }
