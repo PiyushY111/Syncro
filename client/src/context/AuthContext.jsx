@@ -66,6 +66,15 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (credentials) => {
         const { data } = await api.post('/api/auth/login', credentials);
+        if (data.requiresVerification) {
+            return data;
+        }
+        syncSession(data.token, data.user);
+        return data;
+    };
+
+    const verifyLoginCode = async (email, code) => {
+        const { data } = await api.post('/api/auth/verify-login', { email, code });
         syncSession(data.token, data.user);
         return data.user;
     };
@@ -95,6 +104,7 @@ export const AuthProvider = ({ children }) => {
                 loading,
                 isAuthenticated: Boolean(user),
                 login,
+                verifyLoginCode,
                 register,
                 logout,
                 updateUser,

@@ -225,7 +225,8 @@ export const sendWorkspaceInvitationEmail = async (req, res) => {
         }
 
         const inviter = inviterUser?.name || inviterUser?.email || "A workspace admin";
-        const workspaceUrl = process.env.CLIENT_URL || req.get('origin') || 'https://projectworkspacemanagement.vercel.app' || 'http://localhost:5173';
+        const rawClientUrl = process.env.CLIENT_URL || req.get('origin') || 'http://localhost:5173';
+        const workspaceUrl = rawClientUrl.split(',')[0].trim();
         const token = createInvitationToken({
             email: email.toLowerCase(),
             workspaceId,

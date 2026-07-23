@@ -44,6 +44,8 @@ model User {
     email        String   @unique
     image        String   @default("")
     passwordHash String?
+    twoFactorCode    String?
+    twoFactorExpires DateTime?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 

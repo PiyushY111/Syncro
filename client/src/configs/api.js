@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_BASE_URL || (import.meta.env.DEV ? 'http://localhost:5000' : 'https://projectmanagementserver.vercel.app'),
+    baseURL: import.meta.env.VITE_BASE_URL || 'http://localhost:5001',
 })
 
 api.interceptors.request.use((config) => {
