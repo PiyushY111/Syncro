@@ -81,8 +81,11 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (payload) => {
         const { data } = await api.post('/api/auth/register', payload);
+        if (data.requiresVerification) {
+            return data;
+        }
         syncSession(data.token, data.user);
-        return data.user;
+        return data;
     };
 
     const logout = () => {

@@ -46,9 +46,15 @@ const AuthPage = () => {
                     navigate(nextPath, { replace: true });
                 }
             } else {
-                await register({ name: formData.name, email: formData.email, password: formData.password });
-                toast.success('Account created');
-                navigate(nextPath, { replace: true });
+                const response = await register({ name: formData.name, email: formData.email, password: formData.password });
+                if (response.requiresVerification) {
+                    setVerificationEmail(formData.email);
+                    setVerificationCode('');
+                    toast.success('Verification code sent to your email!');
+                } else {
+                    toast.success('Account created');
+                    navigate(nextPath, { replace: true });
+                }
             }
         } catch (error) {
             toast.error(error.response?.data?.message || error.message);
