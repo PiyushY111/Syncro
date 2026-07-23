@@ -1,176 +1,125 @@
-# 🚀 Project Workspace Management
+# 🚀 Syncro: Project & Team Collaboration Workspace
 
-A modern **full-stack Project Management Platform** that helps teams organize projects, manage tasks, collaborate efficiently, and track progress in real time.
-
-Built with **React, Express.js, PostgreSQL, Prisma, Clerk Authentication, and Inngest**, this application delivers a production-ready workspace experience with secure authentication, role-based access, analytics, and background email notifications.
+Syncro is a premium, modern, full-stack team collaboration and project management platform. It brings together robust project task tracking, detailed team analytics, and a fully featured Slack-like chat ecosystem (with public/private channels, direct messaging, threaded replies, search, and member indexes) protected by custom email-based two-factor authentication (2FA).
 
 ---
 
-## 🌐 Live Demo
+## ✨ Primary Features
 
-### 🔗 Frontend
+### 💬 Slack-like Messaging Ecosystem
+* **Group Channels**: Create public channels (accessible to all members, requiring joining to view message histories) or private channels (only visible to workspace owners, creators, and explicitly invited teammates).
+* **Direct Messages (DMs)**: Engage in peer-to-peer conversations with clear list indexes.
+* **Threaded Discussions**: Click on any message to open nested thread replies in a sliding side-panel.
+* **Public Channel Search**: Click the magnifying glass in the sidebar to search all public channels in the workspace and join them via a confirmation popup.
+* **Channel Members Index**: Click the member count in the header to view a searchable list of all users joined to the active channel, highlighted with workspace creator and owner badges.
+* **System Logs**: View hand-waving welcome notifications when new users join.
+* **Invite Links**: Copy shareable invite links (`/chat?invite=id`) that automatically add members when visited.
 
-https://projectmanage.dhushyandh.me
+### 🏢 Onboarding & Workspace Control
+* **Dual Onboarding Flows**: Start instantly with a solo **Personal Space** card or build custom **Team Workspaces**.
+* **Isolated Data Boundaries**: Keep your team workspaces separate, with individual member management, project pipelines, and task backlogs.
 
-### 🔗 Backend API
+### 🔑 Secure 6-Digit Email 2FA Logins
+* **Zero External Dependencies**: Authentication is powered by custom Node.js, bcrypt password hashes, and JSON Web Tokens (JWT).
+* **Two-Factor Login Protection**: Entering credentials dispatches a 6-digit security code to the user's email address via a beautiful Nodemailer email template.
+* **Secure UI Entry**: Enter codes through a premium, input-filtered verification layout that supports code resending and returning to sign-in.
 
-https://projectmanagementserver.vercel.app
-
----
-
-# ✨ Features
-
-## 🏢 Workspace Management
-
-* Create and manage multiple workspaces
-* Isolated workspace data
-* Invite team members
-* Workspace-based collaboration
-
-## 📁 Project Management
-
-* Create, edit, and delete projects
-* Project status tracking
-* Progress visualization
-* Deadline management
-
-## ✅ Task Management
-
-* Create and assign tasks
-* Priority levels
-* Due dates
-* Task status updates
-* Task ownership
-
-## 👥 Team Collaboration
-
-* Member invitations
-* Role-based permissions
-* Team activity tracking
-* Collaborative workflow
-
-## 💬 Comments & Activity
-
-* Task discussions
-* Activity timeline
-* Project updates
-* User interactions
-
-## 📊 Analytics Dashboard
-
-* Project statistics
-* Task completion rate
-* Team productivity
-* Progress charts
-* Visual reports
-
-## 📅 Calendar View
-
-* Deadline overview
-* Upcoming tasks
-* Milestone tracking
-
-## 🔐 Secure Authentication
-
-* Clerk Authentication
-* Protected routes
-* Role-based authorization
-* Secure session management
-
-## 📧 Email Notifications
-
-* Automated emails
-* Background processing using Inngest
-* Project and task notifications
-
-## 🌙 Modern UI
-
-* Dark / Light theme
-* Responsive design
-* Mobile-friendly layout
-* Clean and intuitive interface
+### 📁 Project & Task Tracking
+* **Detailed Task Board**: Assign priorities, due dates, statuses, and manage task owners.
+* **Comments & Activities**: Team discussion threads on individual tasks.
+* **Analytics Board**: Track completion rates, task statistics, and overall workspace progress.
 
 ---
 
-# 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
-## Frontend
+### Frontend
+* **React 19** & **Vite**
+* **Tailwind CSS 4**
+* **Redux Toolkit** (State management)
+* **React Router v7**
+* **Axios** (API requests)
+* **Lucide React** (Modern iconography)
+* **React Hot Toast** (Push notifications)
 
-* React 19
-* Vite
-* Tailwind CSS 4
-* Redux Toolkit
-* React Router v7
-* Axios
-* Clerk
-* Lucide React
-* React Hot Toast
-
----
-
-## Backend
-
-* Express.js
-* Prisma ORM
-* PostgreSQL
-* Neon Database
-* Clerk Express
-* Inngest
-* Nodemailer
-* CORS
-* dotenv
+### Backend
+* **Express.js** (REST API)
+* **Prisma ORM**
+* **PostgreSQL** (Neon Database serverless pooler)
+* **Inngest** (Background jobs queuing)
+* **Nodemailer** (SMTP transactional emails)
+* **Bcrypt.js** (Password hashing)
+* **Jsonwebtoken** (Session state validation)
 
 ---
 
+## ⚙️ Environment Configuration
 
+Set up `.env` files in both the client and server root directories.
 
-# 🤝 Contributing
+### 💻 Client (`client/.env`)
+```bash
+# Backend endpoint URL
+VITE_BASE_URL=http://localhost:5001
+```
 
-Contributions, feature requests, and improvements are always welcome.
+### 🎛️ Server (`server/.env`)
+```bash
+# Server port
+PORT=5001
 
+# Neon PostgreSQL connection strings
+DATABASE_URL=postgresql://neondb_owner:...@ep-fancy-union-awmvsy6x-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require
+DIRECT_URL=postgresql://neondb_owner:...@ep-fancy-union-awmvsy6x-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require
+
+# JWT Cryptographic secret
+JWT_SECRET=your_jwt_signing_secret_here
+
+# Flexible CORS Client domains (comma-separated list)
+CLIENT_URL=https://syncro-amber.vercel.app,http://localhost:5173
+
+# Nodemailer SMTP Configuration
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USERNAME=your_gmail_address@gmail.com
+SMTP_PASSWORD=your_app_password
+SMTP_FROM=Syncro <syncro@yourdomain.com>
+
+# Token Expirations
+INVITE_TTL_MS=604800000
+```
+
+---
+
+## 🚀 Running Locally
+
+### 1. Database Setup
+Push the prisma schema and generate the client bindings:
+```bash
+cd server
+npm install
+npx prisma db push
+```
+
+### 2. Start the Backend Server
+```bash
+npm run dev
+# or: node server.js
+```
+
+### 3. Start the Frontend Client
+```bash
+cd ../client
+npm install
+npm run dev
+```
+Open `http://localhost:5173` in your browser.
+
+---
+
+## 🤝 Contributing
 1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push the branch
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
-
----
-
-## 🔧 Environment Setup
-
-Create a `.env` file in each app by copying the matching `.env.example` file.
-
-### Client
-
-- `VITE_CLERK_PUBLISHABLE_KEY`
-- `VITE_BASE_URL`
-
-### Server
-
-- `PORT`
-- `DATABASE_URL`
-- `DIRECT_URL`
-- `CLERK_SECRET_KEY`
-- `CLERK_WEBHOOK_SECRET`
-- `CLIENT_URL`
-- `SMTP_HOST`
-- `SMTP_PORT`
-- `SMTP_USER`
-- `SMTP_PASS`
-- `SENDER_EMAIL`
-- `INVITE_TTL_MS`
-- `INNGEST_SECRET_KEY`
-
----
-
-# 📄 License
-
-This project is licensed under the ISC License.
-
----
-
-# 👨‍💻 Author
-
-**Dhushyandh N**
-
-If you found this project useful, consider giving it a ⭐ on GitHub!
