@@ -12,7 +12,8 @@ import AuthPage from '@/pages/auth/Auth';
 import RequireAuth from '@/components/auth/RequireAuth';
 import SettingsPage from '@/pages/settings/Settings';
 import SmartCalendar from '@/pages/calendar/SmartCalendar';
-import Landing from '@/pages/landing/Landing';
+import PrivacyPolicy from '@/pages/legal/PrivacyPolicy';
+import TermsOfService from '@/pages/legal/TermsOfService';
 import { Analytics } from '@vercel/analytics/react'
 
 const App = () => {
@@ -22,6 +23,8 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/privacy" element={<PrivacyPolicy />} />
+                <Route path="/terms" element={<TermsOfService />} />
                 <Route path="accept-invite" element={<RequireAuth><AcceptWorkspaceInvite /></RequireAuth>} />
                 
                 {/* Protected Application Routes */}
