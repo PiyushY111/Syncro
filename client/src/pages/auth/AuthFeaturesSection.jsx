@@ -1,4 +1,5 @@
 import { Sparkles, ShieldCheck, Users, ArrowRight } from 'lucide-react';
+import SyncroLogo from '@/components/common/SyncroLogo';
 
 const features = [
     'Protected workspaces with invite-based collaboration',
@@ -10,6 +11,9 @@ export default function AuthFeaturesSection() {
     return (
         <section className="flex flex-col justify-center px-6 py-14 sm:px-10 lg:px-16 xl:px-24">
             <div className="max-w-xl text-left">
+                <div className="mb-8">
+                    <SyncroLogo size="xl" showTagline={true} />
+                </div>
                 <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-blue-100 backdrop-blur">
                     <Sparkles className="size-4 text-cyan-300" />
                     Project workspace management
