@@ -62,10 +62,14 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
                     <MyTasksSidebar />
                     <ProjectSidebar />
                 </div>
-
-
             </div>
 
+            {/* Legal Footer Links */}
+            <div className="p-3 border-t border-gray-100 dark:border-zinc-800 text-[10px] text-gray-400 dark:text-zinc-500 flex items-center justify-around shrink-0">
+                <NavLink to="/privacy" className="hover:text-blue-500 transition">Privacy Policy</NavLink>
+                <span>•</span>
+                <NavLink to="/terms" className="hover:text-blue-500 transition">Terms of Service</NavLink>
+            </div>
         </div>
     )
 }

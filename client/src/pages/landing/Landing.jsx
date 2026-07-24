@@ -41,7 +41,7 @@ export default function Landing() {
         <main className="min-h-screen overflow-hidden bg-[#f8f8f5] text-[#17171a] selection:bg-[#d6ff63]">
             <div className="pointer-events-none absolute left-1/2 top-[-330px] h-[720px] w-[900px] -translate-x-1/2 rounded-full bg-[#e6ff9c]/50 blur-[100px]" />
             <header className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
-                <Link to="/" className="flex items-center"><img src="/Logos/Syncro(Dark).png" alt="Syncro" className="h-8 w-auto" /></Link>
+                <Link to="/" className="flex items-center"><img src="/Logos/Syncro(Light).png" alt="Syncro" className="h-8 w-auto" /></Link>
                 <nav className="hidden items-center gap-7 text-sm font-medium text-zinc-600 md:flex">
                     <a href="#product" className="transition hover:text-zinc-950">Platform</a>
                     <a href="#how-it-works" className="transition hover:text-zinc-950">Features</a>
@@ -90,7 +90,16 @@ export default function Landing() {
             <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:px-10 lg:py-32"><div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]"><div><p className="text-sm font-semibold text-lime-700">WORK, WITHOUT THE SILOS.</p><h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-.045em] sm:text-5xl">Plan it. Discuss it.<br />Finish it together.</h2></div><div className="grid gap-4 sm:grid-cols-3">{featureCards.map((feature, i) => { const FeatureIcon = feature.icon; return <article key={feature.title} className={`rounded-3xl p-6 ${i === 1 ? 'bg-[#d6ff63]' : 'bg-white border border-zinc-200'}`}><FeatureIcon className="size-6" /><h3 className="mt-10 text-lg font-semibold">{feature.title}</h3><p className="mt-3 text-sm leading-6 text-zinc-600">{feature.copy}</p></article>; })}</div></div></section>
 
             <section id="security" className="bg-[#222225] px-5 py-20 text-white sm:px-8 lg:px-10"><div className="mx-auto flex max-w-5xl flex-col items-center text-center"><span className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-[#d6ff63]"><LockKeyhole className="size-3.5" /> Secure email-based access</span><h2 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight tracking-[-.045em] sm:text-6xl">A workspace your<br />whole team can trust.</h2><p className="mt-5 max-w-xl text-zinc-400">Use a personal space from day one or build a team workspace with isolated data, member management, project pipelines, and task backlogs.</p><Link to={authLink} className="mt-8 flex items-center gap-2 rounded-full bg-[#d6ff63] px-6 py-3.5 text-sm font-bold text-zinc-950 transition hover:-translate-y-0.5">Start with Syncro <ArrowRight className="size-4" /></Link></div></section>
-            <footer className="flex flex-col items-center justify-between gap-4 px-5 py-7 text-xs text-zinc-500 sm:flex-row sm:px-10"><img src="/Logos/Syncro(Dark).png" alt="Syncro" className="h-6 w-auto" /><p>© 2026 Syncro. Project & team collaboration workspace.</p><div className="flex gap-4"><a href="#product">Platform</a><Link to={authLink}>Sign in</Link></div></footer>
+            <footer className="flex flex-col items-center justify-between gap-4 px-5 py-7 text-xs text-zinc-500 sm:flex-row sm:px-10">
+                <img src="/Logos/Syncro(Light).png" alt="Syncro" className="h-6 w-auto" />
+                <p>© 2026 Syncro. Project & team collaboration workspace.</p>
+                <div className="flex items-center gap-4">
+                    <a href="#product">Platform</a>
+                    <Link to="/privacy" className="hover:text-zinc-950 transition">Privacy Policy</Link>
+                    <Link to="/terms" className="hover:text-zinc-950 transition">Terms of Service</Link>
+                    <Link to={authLink} className="font-semibold text-zinc-900">Sign in</Link>
+                </div>
+            </footer>
         </main>
     );
 }
