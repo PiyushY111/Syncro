@@ -66,8 +66,9 @@ export default function Landing() {
 
             {/* Header Navigation */}
             <header className="relative z-30 mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-                <Link to="/" className="flex items-center gap-2">
-                    <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-9 w-auto object-contain" />
+                <Link to="/" className="flex items-center gap-3">
+                    <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-8 w-auto object-contain" />
+                    <span className="text-2xl font-bold text-white tracking-tight">Syncro</span>
                 </Link>
 
                 <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
