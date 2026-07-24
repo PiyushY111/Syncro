@@ -69,6 +69,7 @@ model User {
     portfolios       Portfolio[] @relation("PortfolioOwner")
     notifications    Notification[]
     auditLogs        AuditLog[]
+    subTeamMemberships SubTeamMember[]
 }
 
 model Workspace {
@@ -89,6 +90,7 @@ model Workspace {
     owner      User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
     channels   Channel[]
     meetings   Meeting[]
+    subTeams   SubTeam[]
 }
 
 model WorkspaceMember {
@@ -126,6 +128,7 @@ model Project {
     workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
     tasks     Task[]
     meetings  Meeting[]
+    subTeams  SubTeam[]
 }
 
 model ProjectMember {
@@ -136,6 +139,34 @@ model ProjectMember {
     project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
     @@unique([userId, projectId]) // prevent duplicate membership
+}
+
+model SubTeam {
+    id          String          @id @default(uuid())
+    name        String
+    description String?
+    workspaceId String
+    workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    
+    projectId   String?
+    project     Project?        @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+    members     SubTeamMember[]
+
+    createdAt   DateTime        @default(now())
+    updatedAt   DateTime        @updatedAt
+}
+
+model SubTeamMember {
+    id        String   @id @default(uuid())
+    subTeamId String
+    userId    String
+    subTeam   SubTeam  @relation(fields: [subTeamId], references: [id], onDelete: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    createdAt DateTime @default(now())
+
+    @@unique([subTeamId, userId])
 }
 
 model Task {

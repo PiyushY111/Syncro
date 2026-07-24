@@ -22,6 +22,7 @@ import projectRouter from './routes/projectRoutes.js'
 import { taskRouter } from './routes/taskRoutes.js'
 import commentRouter from './routes/commentRoutes.js'
 import chatRouter from './routes/chatRoutes.js'
+import subTeamRouter from './routes/subTeamRoutes.js'
 import meetingRouter from './routes/meetingRoutes.js'
 import googleCalendarRouter from './routes/googleCalendarRoutes.js'
 import milestoneRouter from './routes/milestoneRoutes.js'
@@ -75,6 +76,7 @@ app.use('/api/projects', protect, projectRouter);
 app.use('/api/tasks', protect, taskRouter);
 app.use('/api/comments', protect, commentRouter);
 app.use('/api/chat', protect, chatRouter);
+app.use('/api/subteams', protect, subTeamRouter);
 app.use('/api/meetings', protect, meetingRouter);
 app.use('/api/google-calendar', googleCalendarRouter);
 app.use('/api/milestones', protect, milestoneRouter);

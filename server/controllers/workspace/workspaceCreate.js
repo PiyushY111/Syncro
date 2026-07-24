@@ -66,7 +66,31 @@ export const getUserWorkspaces = async (req, res) => {
             }
         });
 
-        const workspaces = workspaceMemberships.map((membership) => membership.workspace);
+        const workspaces = [];
+        for (const membership of workspaceMemberships) {
+            const workspace = membership.workspace;
+            const userRole = membership.role;
+            const isManagerOrOwner = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || workspace.ownerId === userId;
+
+            if (!isManagerOrOwner) {
+                const userSubTeams = await prisma.subTeam.findMany({
+                    where: {
+                        workspaceId: workspace.id,
+                        members: { some: { userId } }
+                    },
+                    select: { projectId: true }
+                });
+                const allowedProjectIds = userSubTeams.map(s => s.projectId).filter(Boolean);
+
+                workspace.projects = workspace.projects.filter(project => {
+                    const isLead = project.team_lead === userId;
+                    const isDirectMember = project.members.some(m => m.userId === userId);
+                    const isSubTeamMember = allowedProjectIds.includes(project.id);
+                    return isLead || isDirectMember || isSubTeamMember;
+                });
+            }
+            workspaces.push(workspace);
+        }
         return res.json({ workspaces });
     }
     catch (err) {

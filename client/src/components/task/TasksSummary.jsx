@@ -4,7 +4,7 @@ import { ArrowRight, Clock, AlertTriangle, User } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useAuth } from '@/context/AuthContext';
 
-export default function TasksSummary() {
+export default function TasksSummary({ searchTerm }) {
     const navigate = useNavigate();
     const { currentWorkspace } = useSelector((state) => state.workspace);
     const { user } = useAuth();
@@ -17,12 +17,18 @@ export default function TasksSummary() {
         }
     }, [currentWorkspace]);
 
-    const myTasks = tasks.filter((task) => {
+    const filteredTasks = tasks.filter(task => {
+        if (!searchTerm?.trim()) return true;
+        const term = searchTerm.toLowerCase().trim();
+        return task.title?.toLowerCase().includes(term) || (task.description && task.description.toLowerCase().includes(term));
+    });
+
+    const myTasks = filteredTasks.filter((task) => {
         const assigneeId = task?.assigneeId || task?.assignee?.id;
         return assigneeId && user?.id && assigneeId === user.id;
     });
-    const overdueTasks = tasks.filter((task) => task.due_date && new Date(task.due_date) < new Date() && task.status !== 'DONE');
-    const inProgressIssues = tasks.filter((task) => task.status === 'IN_PROGRESS');
+    const overdueTasks = filteredTasks.filter((task) => task.due_date && new Date(task.due_date) < new Date() && task.status !== 'DONE');
+    const inProgressIssues = filteredTasks.filter((task) => task.status === 'IN_PROGRESS');
 
     const summaryCards = [
         {

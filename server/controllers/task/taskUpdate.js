@@ -18,7 +18,8 @@ export const updateTask = async (req, res) => {
             where: { id: task.projectId },
             include: { 
                 members: { include: { user: true } },
-                workspace: { include: { members: true } }
+                workspace: { include: { members: true } },
+                subTeams: { include: { members: true } }
             }
         });
         if (!project) {
@@ -32,7 +33,8 @@ export const updateTask = async (req, res) => {
         const isLead = project.team_lead === userId;
         const isAssignee = task.assigneeId === userId;
         const isMember = project.members.some(m => m.userId === userId);
-        const canUpdate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isLead || isAssignee || isMember;
+        const isSubTeamMember = project.subTeams.some(subTeam => subTeam.members.some(m => m.userId === userId));
+        const canUpdate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isLead || isAssignee || isMember || isSubTeamMember;
 
         if (!canUpdate) {
             return res.status(403).json({ message: "You do not have permission to update this task" });

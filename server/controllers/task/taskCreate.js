@@ -13,7 +13,8 @@ export const createTask = async (req, res) => {
             where: { id: projectId },
             include: { 
                 members: { include: { user: true } },
-                workspace: { include: { members: true } }
+                workspace: { include: { members: true } },
+                subTeams: { include: { members: true } }
             }
         });
         if (!project) {
@@ -23,14 +24,20 @@ export const createTask = async (req, res) => {
         const workspaceMembers = project.workspace.members;
         const userMember = workspaceMembers.find(m => m.userId === userId);
         const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const isProjectMember = project.team_lead === userId || project.members.some(m => m.userId === userId);
+        const isSubTeamMember = project.subTeams.some(subTeam => subTeam.members.some(m => m.userId === userId));
+        const isProjectMember = project.team_lead === userId || project.members.some(m => m.userId === userId) || isSubTeamMember;
         const canCreate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isProjectMember;
 
         if (!canCreate) {
             return res.status(403).json({ message: "You do not have permission to create task for this project" });
         }
 
-        if (assigneeId && !project.members.find((member) => member.userId == assigneeId) && project.team_lead !== assigneeId) {
+        const assigneeHasAccess = 
+            project.team_lead === assigneeId || 
+            project.members.some(m => m.userId === assigneeId) || 
+            project.subTeams.some(subTeam => subTeam.members.some(m => m.userId === assigneeId));
+
+        if (assigneeId && !assigneeHasAccess) {
             return res.status(403).json({ message: "Assignee is not a member of this project" });
         }
         const task = await prisma.task.create({

@@ -8,6 +8,7 @@ import api from '@/configs/api';
 import toast from 'react-hot-toast';
 import TeamStats from '@/components/workspace/TeamStats';
 import TeamMemberList from '@/components/workspace/TeamMemberList';
+import SubTeamsTab from '@/components/workspace/SubTeamsTab';
 import { getUserWorkspaceRole, canInviteMembers } from '@/utils/permissions';
 
 export default function Team() {
@@ -17,6 +18,7 @@ export default function Team() {
     const [tasks, setTasks] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [isDialogOpen, setIsDialogOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState("members");
     const [users, setUsers] = useState([]);
     
     const currentWorkspace = useSelector((state) => state?.workspace?.currentWorkspace || null);
@@ -100,21 +102,54 @@ export default function Team() {
 
             <TeamStats membersCount={users.length} projects={projects} tasksCount={tasks.length} />
 
-            <div className="relative max-w-md text-left">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-zinc-400 size-3.5" />
-                <input placeholder="Search team members..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 w-full text-sm rounded-md border border-gray-300 dark:border-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-400 py-2 focus:outline-none focus:border-blue-500 bg-white dark:bg-zinc-950" />
+            {/* Tabs Selector */}
+            <div className="flex border-b border-gray-200 dark:border-zinc-800 text-left">
+                <button
+                    onClick={() => setActiveTab("members")}
+                    className={`pb-2.5 px-4 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+                        activeTab === "members"
+                            ? "border-blue-600 text-blue-600 dark:text-blue-400"
+                            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+                    }`}
+                >
+                    Workspace Members
+                </button>
+                <button
+                    onClick={() => setActiveTab("subteams")}
+                    className={`pb-2.5 px-4 text-sm font-semibold border-b-2 transition-all cursor-pointer ${
+                        activeTab === "subteams"
+                            ? "border-blue-600 text-blue-600 dark:text-blue-400"
+                            : "border-transparent text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-300"
+                    }`}
+                >
+                    Sub-Teams (Project Teams)
+                </button>
             </div>
 
-            <TeamMemberList
-                filteredUsers={filteredUsers}
-                users={users}
-                canEditMember={canEditMember}
-                handleRoleChange={handleRoleChange}
-                handleRemoveMember={handleRemoveMember}
-                currentUser={currentUser}
-                currentWorkspace={currentWorkspace}
-                currentUserRole={currentUserRole}
-            />
+            {activeTab === "members" ? (
+                <>
+                    <div className="relative max-w-md text-left">
+                        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-zinc-400 size-3.5" />
+                        <input placeholder="Search team members..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 w-full text-sm rounded-md border border-gray-300 dark:border-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-400 py-2 focus:outline-none focus:border-blue-500 bg-white dark:bg-zinc-950" />
+                    </div>
+
+                    <TeamMemberList
+                        filteredUsers={filteredUsers}
+                        users={users}
+                        canEditMember={canEditMember}
+                        handleRoleChange={handleRoleChange}
+                        handleRemoveMember={handleRemoveMember}
+                        currentUser={currentUser}
+                        currentWorkspace={currentWorkspace}
+                        currentUserRole={currentUserRole}
+                    />
+                </>
+            ) : (
+                <SubTeamsTab
+                    currentWorkspace={currentWorkspace}
+                    currentUserRole={currentUserRole}
+                />
+            )}
         </div>
     );
 }
