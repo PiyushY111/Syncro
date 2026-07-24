@@ -14,6 +14,7 @@ import SettingsPage from '@/pages/settings/Settings';
 import SmartCalendar from '@/pages/calendar/SmartCalendar';
 import PrivacyPolicy from '@/pages/legal/PrivacyPolicy';
 import TermsOfService from '@/pages/legal/TermsOfService';
+import Landing from '@/pages/landing/Landing';
 import { Analytics } from '@vercel/analytics/react'
 
 const App = () => {
