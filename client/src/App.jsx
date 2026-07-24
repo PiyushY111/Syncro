@@ -23,15 +23,17 @@ const App = () => {
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="accept-invite" element={<RequireAuth><AcceptWorkspaceInvite /></RequireAuth>} />
-                <Route path="/dashboard" element={<RequireAuth><Layout /></RequireAuth>}>
-                    <Route index element={<Dashboard />} />
-                    <Route path="team" element={<Team />} />
-                    <Route path="chat" element={<Chat />} />
-                    <Route path="projects" element={<Projects />} />
-                    <Route path="projectsDetail" element={<ProjectDetails />} />
-                    <Route path="taskDetails" element={<TaskDetails />} />
-                    <Route path="settings" element={<SettingsPage />} />
-                    <Route path="calendar" element={<SmartCalendar />} />
+                
+                {/* Protected Application Routes */}
+                <Route element={<RequireAuth><Layout /></RequireAuth>}>
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/projects" element={<Projects />} />
+                    <Route path="/projectsDetail" element={<ProjectDetails />} />
+                    <Route path="/taskDetails" element={<TaskDetails />} />
+                    <Route path="/calendar" element={<SmartCalendar />} />
+                    <Route path="/team" element={<Team />} />
+                    <Route path="/chat" element={<Chat />} />
+                    <Route path="/settings" element={<SettingsPage />} />
                 </Route>
             </Routes>
             <Analytics />
