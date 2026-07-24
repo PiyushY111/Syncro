@@ -62,14 +62,28 @@ export default function Landing() {
             </header>
 
             <section className="relative mx-auto max-w-7xl px-5 pb-16 pt-16 text-center sm:px-8 sm:pt-24 lg:px-10 lg:pb-24">
-                <div className="inline-flex items-center gap-2 rounded-full border border-[#d4eaa2] bg-[#f6ffd9] px-3.5 py-2 text-xs font-semibold text-zinc-700"><Sparkles className="size-3.5 text-lime-700" /> Project management meets team collaboration</div>
-                <h1 className="mx-auto mt-7 max-w-5xl text-5xl font-semibold leading-[.96] tracking-[-0.065em] sm:text-7xl lg:text-[92px]">Everything your team needs to<br /><span className="relative inline-block"><span className="relative z-10">move work forward.</span><span className="absolute inset-x-0 bottom-1 h-3 -rotate-1 bg-[#d6ff63] sm:bottom-2 sm:h-5" /></span></h1>
-                <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg">Syncro unites project tracking, team analytics, and a full Slack-like messaging experience in one secure workspace.</p>
+                <div className="inline-flex items-center gap-2 rounded-full border border-[#d4eaa2] bg-[#f6ffd9] px-3.5 py-2 text-xs font-semibold text-zinc-700"><Sparkles className="size-3.5 text-lime-700" /> A project & team collaboration workspace</div>
+                <h1 className="mx-auto mt-7 max-w-5xl text-5xl font-semibold leading-[.96] tracking-[-0.065em] sm:text-7xl lg:text-[92px]">Plan projects. Talk as a team.<br /><span className="relative inline-block"><span className="relative z-10">Get work done together.</span><span className="absolute inset-x-0 bottom-1 h-3 -rotate-1 bg-[#d6ff63] sm:bottom-2 sm:h-5" /></span></h1>
+                <p className="mx-auto mt-7 max-w-2xl text-base leading-7 text-zinc-600 sm:text-lg">Syncro gives teams one place to create projects, assign and track tasks, discuss work in channels or direct messages, and see progress with workspace analytics.</p>
                 <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
                     <Link to={authLink} className="group flex items-center gap-2 rounded-full bg-[#17171a] px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-zinc-900/10 transition hover:-translate-y-0.5">Create your workspace <ArrowRight className="size-4 transition group-hover:translate-x-1" /></Link>
                     <a href="#product" className="flex items-center gap-2 rounded-full border border-zinc-300 bg-white px-6 py-3.5 text-sm font-semibold transition hover:border-zinc-500"><Play className="size-3.5 fill-current" /> Explore Syncro</a>
                 </div>
                 <p className="mt-4 text-xs text-zinc-500">Start with a personal space or invite your entire team</p>
+            </section>
+
+            <section className="relative mx-auto max-w-6xl px-5 pb-20 sm:px-8 lg:px-10">
+                <div className="grid overflow-hidden rounded-[2rem] border border-zinc-200 bg-white md:grid-cols-[1.05fr_.95fr]">
+                    <div className="p-7 sm:p-10">
+                        <p className="text-sm font-semibold text-lime-700">WHAT IS SYNCRO?</p>
+                        <h2 className="mt-4 text-3xl font-semibold leading-tight tracking-[-.04em] sm:text-4xl">The shared home for work that needs a team.</h2>
+                        <p className="mt-5 max-w-lg text-sm leading-7 text-zinc-600 sm:text-base">Instead of scattering project plans, task updates, and conversations across separate tools, Syncro keeps the work and the discussion around it in the same workspace.</p>
+                    </div>
+                    <div className="grid gap-px bg-zinc-200 sm:grid-cols-2 md:grid-cols-1">
+                        <div className="bg-[#f6ffd9] p-6 sm:p-8"><FolderKanban className="size-6" /><h3 className="mt-6 font-semibold">Manage the work</h3><p className="mt-2 text-sm leading-6 text-zinc-600">Build project pipelines, create tasks, assign owners, set priorities, and follow deadlines.</p></div>
+                        <div className="bg-[#f4efff] p-6 sm:p-8"><MessageCircle className="size-6" /><h3 className="mt-6 font-semibold">Keep people aligned</h3><p className="mt-2 text-sm leading-6 text-zinc-600">Use channels, direct messages, and threaded replies to make decisions in context.</p></div>
+                    </div>
+                </div>
             </section>
 
             <section id="product" className="relative mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
@@ -89,7 +103,7 @@ export default function Landing() {
 
             <section id="how-it-works" className="mx-auto max-w-7xl px-5 py-24 sm:px-8 lg:px-10 lg:py-32"><div className="grid gap-10 lg:grid-cols-[.8fr_1.2fr]"><div><p className="text-sm font-semibold text-lime-700">WORK, WITHOUT THE SILOS.</p><h2 className="mt-4 text-4xl font-semibold leading-tight tracking-[-.045em] sm:text-5xl">Plan it. Discuss it.<br />Finish it together.</h2></div><div className="grid gap-4 sm:grid-cols-3">{featureCards.map((feature, i) => { const FeatureIcon = feature.icon; return <article key={feature.title} className={`rounded-3xl p-6 ${i === 1 ? 'bg-[#d6ff63]' : 'bg-white border border-zinc-200'}`}><FeatureIcon className="size-6" /><h3 className="mt-10 text-lg font-semibold">{feature.title}</h3><p className="mt-3 text-sm leading-6 text-zinc-600">{feature.copy}</p></article>; })}</div></div></section>
 
-            <section id="security" className="bg-[#222225] px-5 py-20 text-white sm:px-8 lg:px-10"><div className="mx-auto flex max-w-5xl flex-col items-center text-center"><span className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-[#d6ff63]"><LockKeyhole className="size-3.5" /> Secure email-based access</span><h2 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight tracking-[-.045em] sm:text-6xl">A workspace your<br />whole team can trust.</h2><p className="mt-5 max-w-xl text-zinc-400">Use a personal space from day one or build a team workspace with isolated data, member management, project pipelines, and task backlogs.</p><Link to={authLink} className="mt-8 flex items-center gap-2 rounded-full bg-[#d6ff63] px-6 py-3.5 text-sm font-bold text-zinc-950 transition hover:-translate-y-0.5">Start with Syncro <ArrowRight className="size-4" /></Link></div></section>
+            <section id="security" className="bg-[#222225] px-5 py-20 text-white sm:px-8 lg:px-10"><div className="mx-auto flex max-w-5xl flex-col items-center text-center"><span className="flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-[#d6ff63]"><LockKeyhole className="size-3.5" /> Secure email-code verification</span><h2 className="mt-6 max-w-3xl text-4xl font-semibold leading-tight tracking-[-.045em] sm:text-6xl">A workspace your<br />whole team can trust.</h2><p className="mt-5 max-w-xl text-zinc-400">Syncro uses its own email-code verification—not Google sign-in—to protect access. Start with a personal space or build a team workspace with isolated projects, members, and task backlogs.</p><Link to={authLink} className="mt-8 flex items-center gap-2 rounded-full bg-[#d6ff63] px-6 py-3.5 text-sm font-bold text-zinc-950 transition hover:-translate-y-0.5">Start with Syncro <ArrowRight className="size-4" /></Link></div></section>
             <footer className="flex flex-col items-center justify-between gap-4 px-5 py-7 text-xs text-zinc-500 sm:flex-row sm:px-10">
                 <img src="/Logos/Syncro(Light).png" alt="Syncro" className="h-6 w-auto" />
                 <p>© 2026 Syncro. Project & team collaboration workspace.</p>
