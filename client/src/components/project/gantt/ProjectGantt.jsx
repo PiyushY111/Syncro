@@ -12,9 +12,14 @@ import GanttTimelineCanvas from './GanttTimelineCanvas';
 import GanttEditModal from './GanttEditModal';
 import { useGanttData } from './utils/useGanttData';
 
+import { getUserWorkspaceRole, canEditTask } from '@/utils/permissions';
+import { useSelector } from 'react-redux';
+
 export default function ProjectGantt({ tasks = [] }) {
-    const { token } = useAuth();
+    const { token, user } = useAuth();
     const dispatch = useDispatch();
+    const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
+    const currentUserRole = getUserWorkspaceRole(currentWorkspace, user?.id);
 
     const [zoom, setZoom] = useState('day');
     const [searchQuery, setSearchQuery] = useState('');
@@ -42,6 +47,11 @@ export default function ProjectGantt({ tasks = [] }) {
     };
 
     const handleOpenEdit = (task) => {
+        const project = currentWorkspace?.projects?.find(p => p.id === task.projectId);
+        if (!canEditTask(currentUserRole, project, task, user?.id)) {
+            toast.error("You do not have permission to edit task schedule");
+            return;
+        }
         setSelectedTask(task);
         const s = task.start_date ? new Date(task.start_date) : new Date(task.createdAt);
         setEditingDates({ start_date: format(s, 'yyyy-MM-dd'), due_date: format(new Date(task.due_date), 'yyyy-MM-dd') });

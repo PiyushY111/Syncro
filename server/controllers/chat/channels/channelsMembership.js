@@ -1,4 +1,4 @@
-import { prisma } from '../../config/prisma.js';
+import { prisma } from '../../../config/prisma.js';
 
 // 1. Join public (or private) channel
 export const joinChannel = async (req, res) => {

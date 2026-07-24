@@ -6,16 +6,21 @@ import api from '@/configs/api';
 import { fetchWorkspaces } from '@/features/workspaceSlice';
 import { useAuth } from '@/context/AuthContext';
 
+import { getUserWorkspaceRole, ROLE_HIERARCHY } from '@/utils/permissions';
+
 const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
 
     const dispatch = useDispatch()
-    const { token } = useAuth()
+    const { token, user: currentUser } = useAuth()
 
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
+    const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
+    const currentUserLevel = ROLE_HIERARCHY[currentUserRole] || 1;
+
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         email: "",
-        role: "org:member",
+        role: "MEMBER",
     });
 
     const handleSubmit = async (e) => {
@@ -52,7 +57,7 @@ const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
 
     return (
         <div className="fixed inset-0 bg-black/20 dark:bg-black/50 backdrop-blur flex items-center justify-center z-50">
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl p-6 w-full max-w-md text-zinc-900 dark:text-zinc-200">
+            <div className="bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 rounded-xl p-6 w-full max-w-md text-zinc-900 dark:text-zinc-200 text-left">
                 {/* Header */}
                 <div className="mb-4">
                     <h2 className="text-xl font-bold flex items-center gap-2">
@@ -82,10 +87,10 @@ const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                     <div className="space-y-2">
                         <label className="text-sm font-medium text-zinc-900 dark:text-zinc-200">Role</label>
                         <select value={formData.role} onChange={(e) => setFormData({ ...formData, role: e.target.value })} className="w-full rounded border border-zinc-300 dark:border-zinc-700 dark:bg-zinc-900 text-zinc-900 dark:text-zinc-200 py-2 px-3 mt-1 focus:outline-none focus:border-blue-500 text-sm" >
-                            <option value="org:member">Member</option>
-                            <option value="org:manager">Manager</option>
-                            <option value="org:admin">Admin</option>
-                            <option value="org:owner">Owner</option>
+                            <option value="MEMBER">Member</option>
+                            {currentUserLevel >= 2 && <option value="MANAGER">Manager</option>}
+                            {currentUserLevel >= 3 && <option value="ADMIN">Admin</option>}
+                            {currentUserLevel >= 4 && <option value="OWNER">Owner</option>}
                         </select>
                     </div>
 

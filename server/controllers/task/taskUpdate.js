@@ -16,12 +16,25 @@ export const updateTask = async (req, res) => {
 
         const project = await prisma.project.findUnique({
             where: { id: task.projectId },
-            include: { members: { include: { user: true } } }
+            include: { 
+                members: { include: { user: true } },
+                workspace: { include: { members: true } }
+            }
         });
         if (!project) {
             return res.status(404).json({ message: "Project not found" });
         }
-        else if (project.team_lead !== userId) {
+
+        const workspaceMembers = project.workspace.members;
+        const userMember = workspaceMembers.find(m => m.userId === userId);
+        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
+        
+        const isLead = project.team_lead === userId;
+        const isAssignee = task.assigneeId === userId;
+        const isMember = project.members.some(m => m.userId === userId);
+        const canUpdate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isLead || isAssignee || isMember;
+
+        if (!canUpdate) {
             return res.status(403).json({ message: "You do not have permission to update this task" });
         }
 

@@ -22,7 +22,7 @@ export const addMember = async (req, res) => {
         const workspaceMembers = project.workspace.members;
         const userMember = workspaceMembers.find(m => m.userId === userId);
         const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const hasWorkspacePermission = ['OWNER', 'ADMIN'].includes(userRole);
+        const hasWorkspacePermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
 
         if (project.team_lead !== userId && !hasWorkspacePermission) {
             return res.status(403).json({ message: "You do not have permission to add members to this project" });

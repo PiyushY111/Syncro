@@ -1,4 +1,7 @@
 import { ArrowLeftIcon, PlusIcon } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import { useAuth } from '@/context/AuthContext';
+import { getUserWorkspaceRole, canCreateTask } from '@/utils/permissions';
 
 const statusColors = {
     PLANNING: "bg-zinc-200 text-zinc-900 dark:bg-zinc-600 dark:text-zinc-200",
@@ -9,6 +12,11 @@ const statusColors = {
 };
 
 export default function ProjectHeader({ project, navigate, setShowCreateTask }) {
+    const { user } = useAuth();
+    const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
+    const currentUserRole = getUserWorkspaceRole(currentWorkspace, user?.id);
+    const canCreate = canCreateTask(currentUserRole, project, user?.id);
+
     return (
         <div className="flex max-md:flex-col gap-4 flex-wrap items-start justify-between max-w-6xl text-left">
             <div className="flex items-center gap-4">
@@ -22,10 +30,12 @@ export default function ProjectHeader({ project, navigate, setShowCreateTask }) 
                     </span>
                 </div>
             </div>
-            <button onClick={() => setShowCreateTask(true)} className="flex items-center gap-2 px-5 py-2 text-sm rounded bg-gradient-to-br from-blue-500 to-blue-600 text-white cursor-pointer font-medium">
-                <PlusIcon className="size-4" />
-                New Task
-            </button>
+            {canCreate && (
+                <button onClick={() => setShowCreateTask(true)} className="flex items-center gap-2 px-5 py-2 text-sm rounded bg-gradient-to-br from-blue-500 to-blue-600 text-white cursor-pointer font-medium">
+                    <PlusIcon className="size-4" />
+                    New Task
+                </button>
+            )}
         </div>
     );
 }

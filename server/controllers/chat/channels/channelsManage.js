@@ -1,4 +1,4 @@
-import { prisma } from '../../config/prisma.js';
+import { prisma } from '../../../config/prisma.js';
 
 export const updateChannel = async (req, res) => {
     try {
@@ -8,18 +8,22 @@ export const updateChannel = async (req, res) => {
 
         const channel = await prisma.channel.findUnique({
             where: { id: channelId },
-            include: { workspace: true }
+            include: { workspace: { include: { members: true } } }
         });
 
         if (!channel) {
             return res.status(404).json({ message: "Channel not found" });
         }
 
-        const isCreator = channel.creatorId === userId;
-        const isWorkspaceOwner = channel.workspace.ownerId === userId;
+        const workspaceMembers = channel.workspace.members;
+        const userMember = workspaceMembers.find(m => m.userId === userId);
+        const userRole = userMember?.role || (channel.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
 
-        if (!isCreator && !isWorkspaceOwner) {
-            return res.status(403).json({ message: "Only the channel creator or workspace owner can edit details" });
+        const isCreator = channel.creatorId === userId;
+        const canManage = ['OWNER', 'ADMIN'].includes(userRole) || isCreator;
+
+        if (!canManage) {
+            return res.status(403).json({ message: "You do not have permission to edit channel details" });
         }
 
         const updated = await prisma.channel.update({
@@ -39,13 +43,26 @@ export const updateChannel = async (req, res) => {
 
 export const deleteChannel = async (req, res) => {
     try {
+        const userId = req.user.id;
         const { channelId } = req.params;
         const channel = await prisma.channel.findUnique({
-            where: { id: channelId }
+            where: { id: channelId },
+            include: { workspace: { include: { members: true } } }
         });
 
         if (!channel) {
             return res.status(404).json({ message: "Channel not found" });
+        }
+
+        const workspaceMembers = channel.workspace.members;
+        const userMember = workspaceMembers.find(m => m.userId === userId);
+        const userRole = userMember?.role || (channel.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
+
+        const isCreator = channel.creatorId === userId;
+        const canDelete = ['OWNER', 'ADMIN'].includes(userRole) || isCreator;
+
+        if (!canDelete) {
+            return res.status(403).json({ message: "You do not have permission to delete this channel" });
         }
 
         await prisma.channel.delete({

@@ -11,15 +11,26 @@ export const createTask = async (req, res) => {
 
         const project = await prisma.project.findUnique({
             where: { id: projectId },
-            include: { members: { include: { user: true } } }
+            include: { 
+                members: { include: { user: true } },
+                workspace: { include: { members: true } }
+            }
         });
         if (!project) {
             return res.status(404).json({ message: "Project not found" });
         }
-        else if (project.team_lead !== userId) {
+
+        const workspaceMembers = project.workspace.members;
+        const userMember = workspaceMembers.find(m => m.userId === userId);
+        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
+        const isProjectMember = project.team_lead === userId || project.members.some(m => m.userId === userId);
+        const canCreate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isProjectMember;
+
+        if (!canCreate) {
             return res.status(403).json({ message: "You do not have permission to create task for this project" });
         }
-        else if (assigneeId && !project.members.find((member) => member.userId == assigneeId)) {
+
+        if (assigneeId && !project.members.find((member) => member.userId == assigneeId) && project.team_lead !== assigneeId) {
             return res.status(403).json({ message: "Assignee is not a member of this project" });
         }
         const task = await prisma.task.create({
@@ -88,16 +99,29 @@ export const deleteTask = async (req, res) => {
 
         const tasks = await prisma.task.findMany({
             where: { id: { in: tasksIds } },
-            include: { project: true }
+            include: { 
+                project: {
+                    include: { workspace: { include: { members: true } } }
+                } 
+            }
         });
 
         if (tasks.length === 0) {
             return res.status(404).json({ message: "Tasks not found" });
         }
 
-        const unauthorizedTask = tasks.find(task => task.project.team_lead !== userId);
-        if (unauthorizedTask) {
-            return res.status(403).json({ message: "You do not have permission to delete one or more of these tasks" });
+        for (const task of tasks) {
+            const workspaceMembers = task.project.workspace.members;
+            const userMember = workspaceMembers.find(m => m.userId === userId);
+            const userRole = userMember?.role || (task.project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
+            
+            const isLead = task.project.team_lead === userId;
+            const isAssignee = task.assigneeId === userId;
+            const hasRolePerm = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+
+            if (!hasRolePerm && !isLead && !isAssignee) {
+                return res.status(403).json({ message: "You do not have permission to delete one or more of these tasks" });
+            }
         }
 
         const deletedTasks = await prisma.task.deleteMany({

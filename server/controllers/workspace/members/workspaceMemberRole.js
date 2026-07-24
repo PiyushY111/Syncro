@@ -29,7 +29,7 @@ export const updateMemberRole = async (req, res) => {
 
         const roleHierarchy = { 'OWNER': 4, 'ADMIN': 3, 'MANAGER': 2, 'MEMBER': 1 };
         
-        const canUpdate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        const canUpdate = ['OWNER', 'ADMIN'].includes(userRole);
         if (!canUpdate) {
             return res.status(403).json({ message: "You do not have permission to manage member roles" });
         }

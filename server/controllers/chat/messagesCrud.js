@@ -15,15 +15,17 @@ export const sendMessage = async (req, res) => {
                 where: { id: channelId },
                 include: {
                     members: { select: { id: true } },
-                    workspace: { select: { ownerId: true } }
+                    workspace: { include: { members: true } }
                 }
             });
             if (channel?.isArchived) {
                 return res.status(400).json({ message: "Cannot send messages to an archived channel" });
             }
             const isMember = channel?.members.some(m => m.id === userId) || channel?.creatorId === userId;
-            const isWorkspaceOwner = channel?.workspace?.ownerId === userId;
-            if (!isMember && !isWorkspaceOwner) {
+            const isWorkspaceMember = channel?.workspace?.members.some(m => m.userId === userId) || channel?.workspace?.ownerId === userId;
+            const isPublicChannel = channel && !channel.isPrivate && isWorkspaceMember;
+
+            if (!isMember && !isPublicChannel) {
                 return res.status(403).json({ message: "You must join this channel to send messages" });
             }
         }
@@ -59,7 +61,7 @@ export const getChannelMessages = async (req, res) => {
             where: { id: channelId },
             include: {
                 members: { select: { id: true } },
-                workspace: { select: { ownerId: true } }
+                workspace: { include: { members: true } }
             }
         });
 
@@ -68,9 +70,10 @@ export const getChannelMessages = async (req, res) => {
         }
 
         const isMember = channel.members.some(m => m.id === userId) || channel.creatorId === userId;
-        const isWorkspaceOwner = channel.workspace?.ownerId === userId;
+        const isWorkspaceMember = channel.workspace?.members.some(m => m.userId === userId) || channel.workspace?.ownerId === userId;
+        const isPublicChannel = !channel.isPrivate && isWorkspaceMember;
 
-        if (!isMember && !isWorkspaceOwner) {
+        if (!isMember && !isPublicChannel) {
             return res.status(403).json({ message: "You must join this channel to view its message history", isNotMember: true });
         }
 

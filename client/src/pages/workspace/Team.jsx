@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 import TeamStats from '@/components/workspace/TeamStats';
 import TeamMemberList from '@/components/workspace/TeamMemberList';
 
+import { getUserWorkspaceRole, canManageMemberRoles, canInviteMembers } from '@/utils/permissions';
+
 export default function Team() {
     const dispatch = useDispatch();
     const { user: currentUser } = useAuth();
@@ -21,14 +23,15 @@ export default function Team() {
     const currentWorkspace = useSelector((state) => state?.workspace?.currentWorkspace || null);
     const projects = currentWorkspace?.projects || [];
 
-    const currentUserMember = currentWorkspace?.members?.find(m => m.userId === currentUser?.id);
-    const currentUserRole = currentUserMember?.role || (currentWorkspace?.ownerId === currentUser?.id ? 'OWNER' : 'MEMBER');
+    const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
+    const canInvite = canInviteMembers(currentUserRole);
 
     const roleHierarchy = { OWNER: 4, ADMIN: 3, MANAGER: 2, MEMBER: 1 };
 
     const canEditMember = (targetMember) => {
         if (currentWorkspace?.ownerId === targetMember.userId) return false;
         if (targetMember.userId === currentUser?.id) return false;
+        if (!canManageMemberRoles(currentUserRole)) return false;
         
         const targetRoleLevel = roleHierarchy[targetMember.role] || 1;
         const currentUserRoleLevel = roleHierarchy[currentUserRole] || 1;
@@ -85,9 +88,11 @@ export default function Team() {
                         Manage team members and their contributions
                     </p>
                 </div>
-                <button onClick={() => setIsDialogOpen(true)} className="flex items-center px-5 py-2 rounded text-sm bg-gradient-to-br from-blue-500 to-blue-600 hover:opacity-90 text-white transition cursor-pointer font-medium" >
-                    <UserPlus className="w-4 h-4 mr-2" /> Invite Member
-                </button>
+                {canInvite && (
+                    <button onClick={() => setIsDialogOpen(true)} className="flex items-center px-5 py-2 rounded text-sm bg-gradient-to-br from-blue-500 to-blue-600 hover:opacity-90 text-white transition cursor-pointer font-medium" >
+                        <UserPlus className="w-4 h-4 mr-2" /> Invite Member
+                    </button>
+                )}
                 <InviteMemberDialog isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
             </div>
 

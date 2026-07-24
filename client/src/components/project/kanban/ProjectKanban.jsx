@@ -8,15 +8,16 @@ import { useAuth } from '@/context/AuthContext';
 import KanbanColumn from '@/components/project/kanban/KanbanColumn';
 import AddKanbanColumn from '@/components/project/kanban/AddKanbanColumn';
 
+import { getUserWorkspaceRole, canManageProjectStages } from '@/utils/permissions';
+
 export default function ProjectKanban({ tasks, project }) {
     const { token, user: currentUser } = useAuth();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
 
-    const currentUserMember = currentWorkspace?.members?.find(m => m.userId === currentUser?.id);
-    const currentUserRole = currentUserMember?.role || (currentWorkspace?.ownerId === currentUser?.id ? 'OWNER' : 'MEMBER');
-    const canManageStages = ['OWNER', 'ADMIN', 'MANAGER'].includes(currentUserRole) || project?.team_lead === currentUser?.id;
+    const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
+    const canManageStages = canManageProjectStages(currentUserRole, project, currentUser?.id);
     const stages = project?.stages ? project.stages.split(",") : ["TODO", "IN_PROGRESS", "DONE"];
 
     const columns = stages.map(stageId => ({

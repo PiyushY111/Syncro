@@ -10,3 +10,7 @@ export {
     addMember,
     updateProjectStages
 } from './project/projectMembers.js';
+
+export {
+    deleteProject
+} from './project/projectDelete.js';
