@@ -157,6 +157,43 @@ export default function Landing() {
                 </div>
             </section>
 
+            {/* Dedicated Application Purpose Section (Google Verification Requirement) */}
+            <section id="purpose" className="relative z-20 mx-auto max-w-6xl px-6 py-16 border-t border-white/10">
+                <div className="p-8 sm:p-12 rounded-3xl border border-blue-500/40 bg-gradient-to-br from-slate-900/90 via-slate-900/60 to-blue-950/30 backdrop-blur-xl shadow-2xl">
+                    <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-widest mb-3">
+                        <ShieldCheck className="size-5 text-blue-400" />
+                        Application Purpose & Overview
+                    </div>
+                    <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight mb-4">
+                        What is the Purpose of Syncro?
+                    </h2>
+                    <p className="text-slate-300 text-base sm:text-lg leading-relaxed max-w-4xl mb-6">
+                        <strong>Syncro</strong> is engineered to simplify team operations by unifying project tracking, task management, team chat, and meeting scheduling into one central workspace. It eliminates fragmented communication tools so teams can collaborate effortlessly.
+                    </p>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                            <h3 className="text-base font-bold text-white mb-2">Centralized Workspace</h3>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                                Organize projects with Kanban boards, assign tasks with due dates, and hold real-time team discussions without context switching.
+                            </p>
+                        </div>
+                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                            <h3 className="text-base font-bold text-white mb-2">Seamless Meeting Scheduling</h3>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                                Schedule team meetings, track RSVPs, and automatically generate Google Meet video links directly within your workspace calendar.
+                            </p>
+                        </div>
+                        <div className="p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+                            <h3 className="text-base font-bold text-white mb-2">Two-Way Google Calendar Sync</h3>
+                            <p className="text-xs text-slate-300 leading-relaxed">
+                                Sync scheduled events directly to your primary Google Calendar so all team members receive automatic updates and event reminders.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Features Section */}
             <section id="features" className="relative z-20 mx-auto max-w-6xl px-6 py-20 border-t border-white/10">
                 <div className="text-center mb-16">
