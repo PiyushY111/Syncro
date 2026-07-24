@@ -332,8 +332,8 @@ export function DayView({
     const dayEvents = getEventsForDate(events, selectedDate);
     const dateStr = safeFormat(selectedDate, "yyyy-MM-dd");
 
-    // Hours list (8:00 AM to 8:00 PM)
-    const hours = Array.from({ length: 13 }, (_, i) => i + 8);
+    // Full 24-Hours list (0:00 / 12:00 AM to 23:00 / 11:00 PM)
+    const hours = Array.from({ length: 24 }, (_, i) => i);
 
     const formatHour = (h) => {
         const ampm = h >= 12 ? 'PM' : 'AM';
@@ -348,7 +348,7 @@ export function DayView({
             const d = new Date(timeVal);
             if (isNaN(d.getTime())) return hr === 9;
             const eventHour = d.getHours();
-            return eventHour === hr || (hr === 9 && eventHour === 0);
+            return eventHour === hr;
         });
     };
 
