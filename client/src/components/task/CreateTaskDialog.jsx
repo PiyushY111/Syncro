@@ -37,6 +37,7 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
         setIsSubmitting(true);
         try {
             const { data } = await api.post('/api/tasks', { ...formData, workspaceId: currentWorkspace.id, projectId },
@@ -85,7 +86,7 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
                     <TaskRecurrenceSelector isRecurring={formData.isRecurring} recurrence={formData.recurrence} onChangeRecurring={(r) => setFormData({ ...formData, isRecurring: r })} onChangeRecurrence={(rec) => setFormData({ ...formData, recurrence: rec })} />
                     <div className="flex justify-end gap-2 pt-2">
                         <button type="button" onClick={() => setShowCreateTask(false)} className="rounded border border-zinc-300 dark:border-zinc-700 px-5 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">Cancel</button>
-                        <button type="submit" disabled={isSubmitting} className="rounded px-5 py-2 text-sm bg-gradient-to-br from-blue-500 to-blue-600 text-white transition cursor-pointer">{isSubmitting ? "Creating..." : "Create Task"}</button>
+                        <button type="submit" disabled={isSubmitting} className="rounded px-5 py-2 text-sm bg-gradient-to-br from-blue-500 to-blue-600 text-white transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed">{isSubmitting ? "Creating..." : "Create Task"}</button>
                     </div>
                 </form>
             </div>

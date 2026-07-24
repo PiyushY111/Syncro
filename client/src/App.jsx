@@ -14,6 +14,12 @@ import SettingsPage from '@/pages/settings/Settings';
 import SmartCalendar from '@/pages/calendar/SmartCalendar';
 import PrivacyPolicy from '@/pages/legal/PrivacyPolicy';
 import TermsOfService from '@/pages/legal/TermsOfService';
+import Portfolios from '@/pages/portfolio/Portfolios';
+import PortfolioDetails from '@/pages/portfolio/PortfolioDetails';
+import Inbox from '@/pages/inbox/Inbox';
+import RolePortal from '@/pages/roles/RolePortal';
+import AuditLogs from '@/pages/audit/AuditLogs';
+import OwnerAuditControl from '@/pages/ownerAudit/OwnerAuditControl';
 import Landing from '@/pages/landing/Landing';
 import { Analytics } from '@vercel/analytics/react'
 
@@ -31,8 +37,14 @@ const App = () => {
                 {/* Protected Application Routes */}
                 <Route element={<RequireAuth><Layout /></RequireAuth>}>
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/inbox" element={<Inbox />} />
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/projectsDetail" element={<ProjectDetails />} />
+                    <Route path="/portfolios" element={<Portfolios />} />
+                    <Route path="/portfoliosDetail" element={<PortfolioDetails />} />
+                    <Route path="/roles" element={<RolePortal />} />
+                    <Route path="/audit-logs" element={<AuditLogs />} />
+                    <Route path="/owner-audit" element={<OwnerAuditControl />} />
                     <Route path="/taskDetails" element={<TaskDetails />} />
                     <Route path="/calendar" element={<SmartCalendar />} />
                     <Route path="/team" element={<Team />} />

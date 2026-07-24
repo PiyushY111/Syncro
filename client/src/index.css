@@ -291,3 +291,134 @@
     .syncro-landing > section:first-of-type > .grid > div { border-right: 0; border-bottom: 1px solid #e8eaf0; }
     .syncro-landing > section:first-of-type > .grid > div:last-child { border-bottom: 0; }
 }
+
+/* Authentication shares the landing page's soft editorial visual language. */
+.syncro-auth {
+    position: relative;
+    background:
+        radial-gradient(circle at 9% 12%, rgba(217, 252, 113, .82), transparent 22%),
+        radial-gradient(circle at 88% 6%, rgba(186, 173, 255, .74), transparent 26%),
+        #fcfcfe;
+    color: #172033;
+}
+
+.syncro-auth > .absolute {
+    background: linear-gradient(130deg, rgba(245, 243, 255, .48), rgba(255, 255, 255, 0)) !important;
+}
+
+.syncro-auth > .relative {
+    max-width: 76rem;
+    min-height: 100vh;
+}
+
+.syncro-auth h1,
+.syncro-auth h2 { color: #172033; }
+
+.syncro-auth .text-white { color: #172033; }
+.syncro-auth .text-slate-300 { color: #65708a; }
+
+.syncro-auth .border-white\/10 {
+    border-color: #e3e6ed;
+    background-color: rgba(255, 255, 255, .72);
+}
+
+.syncro-auth .bg-white\/5 {
+    background-color: rgba(255, 255, 255, .68);
+    box-shadow: 0 12px 28px rgba(58, 53, 97, .06);
+}
+
+.syncro-auth .text-blue-100,
+.syncro-auth .text-cyan-300 { color: #6756c2; }
+
+.syncro-auth .bg-white\/95 {
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, .98);
+    border-radius: 2rem;
+    background: rgba(255, 255, 255, .82);
+    box-shadow: 0 28px 70px rgba(49, 42, 91, .16);
+}
+
+.syncro-auth .bg-white\/95::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #d9fc71, #8d79ed 52%, #a7dcff);
+}
+
+.syncro-auth .bg-slate-100 { background-color: #f1f0f8; }
+.syncro-auth .text-blue-600 { color: #6246ea; }
+.syncro-auth .bg-gradient-to-r { background: #172033; }
+.syncro-auth .bg-gradient-to-r:hover { background: #6246ea; }
+
+.syncro-auth input {
+    border-color: #e1e4eb;
+    background-color: #fafaff;
+    box-shadow: inset 0 1px 2px rgba(23, 32, 51, .02);
+}
+
+.syncro-auth input:focus {
+    border-color: #8d79ed;
+    box-shadow: 0 0 0 4px rgba(98, 70, 234, .1);
+}
+
+.syncro-auth button[class*='bg-white'] { transition: all .2s ease; }
+.syncro-auth button[class*='bg-white']:hover { color: #6246ea; }
+
+.syncro-auth .fixed.bg-slate-950\/45 { background: rgba(23, 32, 51, .28); }
+.syncro-auth .fixed .bg-white {
+    border-color: rgba(255, 255, 255, .95);
+    box-shadow: 0 28px 80px rgba(49, 42, 91, .22);
+}
+.syncro-auth .fixed .bg-emerald-50 { background: #effbd0; color: #4f7b12; }
+
+/* Project Gantt color system and resizing affordance. */
+.gantt-reference {
+    background: linear-gradient(140deg, #ffffff 0%, #fcfbff 52%, #f3f8ff 100%);
+}
+
+.gantt-reference > div:first-child > div:first-child {
+    background: linear-gradient(90deg, #f8f5ff, #ffffff 48%, #f1f7ff);
+}
+
+.gantt-reference aside > div:first-child {
+    background: linear-gradient(90deg, #f7f5ff, #f7fbff);
+}
+
+.gantt-reference aside > div:first-child span:first-child { color: #5b48bd; }
+
+.gantt-reference aside button:hover { background-color: #f6f3ff; }
+
+.gantt-reference .cursor-col-resize::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 2px;
+    transform: translateX(-50%);
+    background: transparent;
+    transition: background .15s ease;
+}
+
+.gantt-reference .cursor-col-resize:hover::after { background: #8b70f5; }
+
+.gantt-reference .cursor-col-resize:active::after { background: #5b48bd; }
+
+@media (min-width: 1024px) {
+    .syncro-auth > .relative::before {
+        content: '';
+        position: absolute;
+        top: 10%;
+        bottom: 10%;
+        left: 57.5%;
+        width: 1px;
+        background: linear-gradient(transparent, #e1e4eb 12%, #e1e4eb 88%, transparent);
+    }
+
+    .syncro-auth .lg\:grid-cols-\[1\.15fr_0\.85fr\] > section:first-child { padding-right: 5rem; }
+    .syncro-auth .lg\:grid-cols-\[1\.15fr_0\.85fr\] > section:last-child { padding-left: 5rem; }
+}

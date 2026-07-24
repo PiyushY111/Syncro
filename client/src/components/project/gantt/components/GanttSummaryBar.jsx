@@ -16,17 +16,17 @@ export default function GanttSummaryBar({ tasks, criticalPathCount, hasConflicts
     }, [tasks]);
 
     return (
-        <div className="bg-zinc-50 dark:bg-zinc-950/70 border-b border-zinc-200 dark:border-zinc-800 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-2.5 text-xs">
             <div className="flex items-center gap-4 flex-wrap">
-                <div className="flex items-center gap-1.5 font-medium text-zinc-700 dark:text-zinc-300">
-                    <Clock className="size-3.5 text-blue-500" />
+                <div className="flex items-center gap-1.5 font-medium text-slate-600">
+                    <Clock className="size-3.5 text-violet-500" />
                     <span>Timeline: <strong>{format(stats.start, 'MMM d')} – {format(stats.end, 'MMM d, yyyy')}</strong> ({stats.days} days)</span>
                 </div>
                 <div className="flex items-center gap-2">
                     <BarChart2 className="size-3.5 text-emerald-500" />
-                    <span className="text-zinc-600 dark:text-zinc-400 font-medium">Progress: {stats.done}/{stats.total} ({stats.percent}%)</span>
-                    <div className="w-24 h-2 rounded-full bg-zinc-200 dark:bg-zinc-800 overflow-hidden">
-                        <div style={{ width: `${stats.percent}%` }} className="h-full bg-emerald-500 rounded-full transition-all duration-500" />
+                    <span className="font-medium text-slate-500">Progress: {stats.done}/{stats.total} ({stats.percent}%)</span>
+                    <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
+                        <div style={{ width: `${stats.percent}%` }} className="h-full rounded-full bg-violet-500 transition-all duration-500" />
                     </div>
                 </div>
             </div>

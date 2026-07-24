@@ -8,8 +8,7 @@ import api from '@/configs/api';
 import toast from 'react-hot-toast';
 import TeamStats from '@/components/workspace/TeamStats';
 import TeamMemberList from '@/components/workspace/TeamMemberList';
-
-import { getUserWorkspaceRole, canManageMemberRoles, canInviteMembers } from '@/utils/permissions';
+import { getUserWorkspaceRole, canInviteMembers } from '@/utils/permissions';
 
 export default function Team() {
     const dispatch = useDispatch();
@@ -26,16 +25,20 @@ export default function Team() {
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
     const canInvite = canInviteMembers(currentUserRole);
 
-    const roleHierarchy = { OWNER: 4, ADMIN: 3, MANAGER: 2, MEMBER: 1 };
-
     const canEditMember = (targetMember) => {
-        if (currentWorkspace?.ownerId === targetMember.userId) return false;
-        if (targetMember.userId === currentUser?.id) return false;
-        if (!canManageMemberRoles(currentUserRole)) return false;
-        
-        const targetRoleLevel = roleHierarchy[targetMember.role] || 1;
-        const currentUserRoleLevel = roleHierarchy[currentUserRole] || 1;
-        return currentUserRoleLevel > targetRoleLevel;
+        const isCallerOwner = currentWorkspace?.ownerId === currentUser?.id || currentUserRole === 'OWNER';
+        const isTargetOwner = currentWorkspace?.ownerId === targetMember.userId || targetMember.role === 'OWNER';
+
+        if (isCallerOwner) return true;
+        if (isTargetOwner) return false;
+
+        if (currentUserRole === 'ADMIN') {
+            return targetMember.role !== 'ADMIN' && targetMember.role !== 'OWNER';
+        }
+        if (currentUserRole === 'MANAGER') {
+            return targetMember.role !== 'ADMIN' && targetMember.role !== 'OWNER' && targetMember.role !== 'MANAGER';
+        }
+        return false;
     };
 
     const handleRoleChange = async (memberId, newRole) => {
@@ -80,7 +83,6 @@ export default function Team() {
 
     return (
         <div className="space-y-6 max-w-6xl mx-auto">
-            {/* Header */}
             <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 text-left">
                 <div>
                     <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-1">Team</h1>
@@ -96,20 +98,13 @@ export default function Team() {
                 <InviteMemberDialog isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
             </div>
 
-            {/* Stats Cards */}
-            <TeamStats
-                membersCount={users.length}
-                projects={projects}
-                tasksCount={tasks.length}
-            />
+            <TeamStats membersCount={users.length} projects={projects} tasksCount={tasks.length} />
 
-            {/* Search */}
             <div className="relative max-w-md text-left">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-zinc-400 size-3.5" />
                 <input placeholder="Search team members..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="pl-9 w-full text-sm rounded-md border border-gray-300 dark:border-zinc-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-zinc-400 py-2 focus:outline-none focus:border-blue-500 bg-white dark:bg-zinc-950" />
             </div>
 
-            {/* Team Members List */}
             <TeamMemberList
                 filteredUsers={filteredUsers}
                 users={users}
@@ -118,6 +113,7 @@ export default function Team() {
                 handleRemoveMember={handleRemoveMember}
                 currentUser={currentUser}
                 currentWorkspace={currentWorkspace}
+                currentUserRole={currentUserRole}
             />
         </div>
     );

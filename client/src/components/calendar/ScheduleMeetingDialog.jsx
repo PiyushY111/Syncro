@@ -56,6 +56,7 @@ export default function ScheduleMeetingDialog({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
 
         if (!title.trim()) {
             toast.error('Meeting title is required');

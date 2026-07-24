@@ -1,0 +1,40 @@
+import { prisma } from "../../config/prisma.js";
+
+export const updateMilestone = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { title, description, dueDate, startDate, status, color } = req.body;
+
+        const milestoneExists = await prisma.milestone.findUnique({
+            where: { id }
+        });
+
+        if (!milestoneExists) {
+            return res.status(404).json({ message: "Milestone not found" });
+        }
+
+        const dataToUpdate = {};
+        if (title !== undefined) dataToUpdate.title = title;
+        if (description !== undefined) dataToUpdate.description = description;
+        if (dueDate !== undefined) dataToUpdate.dueDate = new Date(dueDate);
+        if (startDate !== undefined) dataToUpdate.startDate = startDate ? new Date(startDate) : null;
+        if (status !== undefined) dataToUpdate.status = status;
+        if (color !== undefined) dataToUpdate.color = color;
+
+        const updatedMilestone = await prisma.milestone.update({
+            where: { id },
+            data: dataToUpdate,
+            include: {
+                tasks: { select: { id: true, title: true, status: true } }
+            }
+        });
+
+        return res.status(200).json({
+            message: "Milestone updated successfully",
+            milestone: updatedMilestone
+        });
+    } catch (error) {
+        console.error("Error updating milestone:", error);
+        return res.status(500).json({ message: "Internal server error" });
+    }
+};

@@ -12,6 +12,7 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
 
     const handleSubmit = async (event) => {
         event.preventDefault();
+        if (isSubmitting) return;
         setIsSubmitting(true);
 
         try {

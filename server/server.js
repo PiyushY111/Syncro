@@ -22,6 +22,11 @@ import commentRouter from './routes/commentRoutes.js'
 import chatRouter from './routes/chatRoutes.js'
 import meetingRouter from './routes/meetingRoutes.js'
 import googleCalendarRouter from './routes/googleCalendarRoutes.js'
+import milestoneRouter from './routes/milestoneRoutes.js'
+import portfolioRouter from './routes/portfolioRoutes.js'
+import inboxRouter from './routes/inboxRoutes.js'
+import roleRouter from './routes/roleRoutes.js'
+import auditRouter from './routes/auditRoutes.js'
 const app = express()
 
 const allowedOrigins = [
@@ -70,6 +75,11 @@ app.use('/api/comments', protect, commentRouter);
 app.use('/api/chat', protect, chatRouter);
 app.use('/api/meetings', protect, meetingRouter);
 app.use('/api/google-calendar', googleCalendarRouter);
+app.use('/api/milestones', protect, milestoneRouter);
+app.use('/api/portfolios', protect, portfolioRouter);
+app.use('/api/inbox', protect, inboxRouter);
+app.use('/api/roles', protect, roleRouter);
+app.use('/api/audit', protect, auditRouter);
 
 app.get('/', (req, res) => res.json({ message: "Server is live", status: "OK" }));
 

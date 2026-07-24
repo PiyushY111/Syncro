@@ -26,6 +26,7 @@ const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isAdding) return;
         setIsAdding(true)
         try {
             await api.post(`/api/projects/${project.id}/addMember`, { email }, { headers: { Authorization: `Bearer ${token}` } })

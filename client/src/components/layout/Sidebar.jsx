@@ -1,20 +1,39 @@
 import { useEffect, useRef } from 'react'
 import { NavLink } from 'react-router-dom'
+import { useSelector } from 'react-redux'
+import { useAuth } from '@/context/AuthContext'
 import MyTasksSidebar from '@/components/task/MyTasksSidebar'
 import ProjectSidebar from '@/components/project/overview/ProjectsSidebar'
 import WorkspaceDropdown from '@/components/workspace/WorkspaceDropdown'
-import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, MessageSquare, Calendar } from 'lucide-react'
+import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, MessageSquare, Calendar, FolderKanban, Inbox as InboxIcon, ShieldCheck, History, Crown } from 'lucide-react'
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
+    const { user } = useAuth();
+    const currentWorkspace = useSelector((state) => state?.workspace?.currentWorkspace);
+
+    const isOwner = currentWorkspace?.ownerId === user?.id;
+    const settings = typeof currentWorkspace?.settings === 'object' && currentWorkspace?.settings ? currentWorkspace.settings : {};
+    const allowManagerPortalAccess = settings.allowManagerPortalAccess ?? false;
+
+    const userMember = currentWorkspace?.members?.find((m) => m.userId === user?.id);
+    const userRole = userMember?.customRole || userMember?.role || (isOwner ? 'OWNER' : 'MEMBER');
+
+    const canAccessRolePortal = isOwner || (userRole === 'MANAGER' && allowManagerPortalAccess) || (userRole === 'ADMIN');
+    const canAccessAuditLogs = isOwner || userRole === 'ADMIN' || userRole === 'MANAGER';
 
     const menuItems = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
+        { name: 'Inbox', href: '/inbox', icon: InboxIcon },
         { name: 'Projects', href: '/projects', icon: FolderOpenIcon },
+        { name: 'Portfolios', href: '/portfolios', icon: FolderKanban },
+        ...(canAccessRolePortal ? [{ name: 'Role Portal', href: '/roles', icon: ShieldCheck }] : []),
+        ...(canAccessAuditLogs ? [{ name: 'Audit Logs', href: '/audit-logs', icon: History }] : []),
+        ...(isOwner ? [{ name: 'Owner Command', href: '/owner-audit', icon: Crown }] : []),
         { name: 'Calendar', href: '/calendar', icon: Calendar },
         { name: 'Team', href: '/team', icon: UsersIcon },
         { name: 'Chat', href: '/chat', icon: MessageSquare },
         { name: 'Settings', href: '/settings', icon: SettingsIcon },
-    ]
+    ];
 
     const sidebarRef = useRef(null);
 
@@ -30,19 +49,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
 
     return (
         <div ref={sidebarRef} className={`z-10 bg-white dark:bg-zinc-900 min-w-68 flex flex-col h-screen border-r border-gray-200 dark:border-zinc-800 max-sm:absolute transition-all ${isSidebarOpen ? 'left-0' : '-left-full'} `} >
-            {/* Brand Logo Header */}
             <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-3">
                 <NavLink to="/dashboard" className="flex items-center gap-2">
-                    <img
-                        src="/Logos/Syncro(Dark).png"
-                        alt="Syncro Logo"
-                        className="h-7 w-auto hidden dark:block object-contain"
-                    />
-                    <img
-                        src="/Logos/Syncro(Light).png"
-                        alt="Syncro Logo"
-                        className="h-7 w-auto block dark:hidden object-contain"
-                    />
+                    <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-7 w-auto hidden dark:block object-contain" />
+                    <img src="/Logos/Syncro(Light).png" alt="Syncro Logo" className="h-7 w-auto block dark:hidden object-contain" />
                 </NavLink>
             </div>
 
@@ -64,7 +74,6 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
                 </div>
             </div>
 
-            {/* Legal Footer Links */}
             <div className="p-3 border-t border-gray-100 dark:border-zinc-800 text-[10px] text-gray-400 dark:text-zinc-500 flex items-center justify-around shrink-0">
                 <NavLink to="/privacy" className="hover:text-blue-500 transition">Privacy Policy</NavLink>
                 <span>•</span>

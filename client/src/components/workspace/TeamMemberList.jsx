@@ -2,8 +2,20 @@ import { UsersIcon, Trash2, LogOut } from 'lucide-react';
 import TeamMemberMobileCards from './TeamMemberMobileCards';
 
 export default function TeamMemberList({
-    filteredUsers, users, canEditMember, handleRoleChange, handleRemoveMember, currentUser, currentWorkspace
+    filteredUsers, users, canEditMember, handleRoleChange, handleRemoveMember, currentUser, currentWorkspace, currentUserRole
 }) {
+    const isCallerOwner = currentWorkspace?.ownerId === currentUser?.id || currentUserRole === 'OWNER';
+
+    const getSelectableRoles = () => {
+        if (isCallerOwner) return ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER', 'VIEWER'];
+        if (currentUserRole === 'ADMIN') return ['ADMIN', 'MANAGER', 'MEMBER', 'VIEWER'];
+        if (currentUserRole === 'MANAGER') return ['MANAGER', 'MEMBER', 'VIEWER'];
+        return ['MEMBER', 'VIEWER'];
+    };
+
+    const settings = typeof currentWorkspace?.settings === 'object' && currentWorkspace?.settings ? currentWorkspace.settings : {};
+    const customRoles = settings.customRoles || [];
+
     if (filteredUsers.length === 0) {
         return (
             <div className="col-span-full text-center py-16">
@@ -33,34 +45,42 @@ export default function TeamMemberList({
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200 dark:divide-zinc-800">
-                        {filteredUsers.map((user) => (
-                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
-                                <td className="px-6 py-2.5 whitespace-nowrap flex items-center gap-3">
-                                    {user.user.image ? <img src={user.user.image} alt={user.user.name} className="size-7 rounded-full bg-gray-200 dark:bg-zinc-800 object-cover" /> : <div className="size-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs">{user.user?.name?.charAt(0).toUpperCase() || "?"}</div>}
-                                    <span className="text-sm text-zinc-800 dark:text-white truncate font-medium">{user.user?.name || "Unknown User"}</span>
-                                </td>
-                                <td className="px-6 py-2.5 whitespace-nowrap text-sm text-gray-500 dark:text-zinc-400">{user.user.email}</td>
-                                <td className="px-6 py-2.5 whitespace-nowrap">
-                                    {canEditMember(user) ? (
-                                        <select value={user.role} onChange={(e) => handleRoleChange(user.id, e.target.value)} className="text-xs bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-white rounded-md border border-gray-300 dark:border-zinc-800 p-1 outline-none">
-                                            <option value="OWNER">Owner</option>
-                                            <option value="ADMIN">Admin</option>
-                                            <option value="MANAGER">Manager</option>
-                                            <option value="MEMBER">Member</option>
-                                        </select>
-                                    ) : (
-                                        <span className={`px-2 py-1 text-xs rounded-md font-semibold ${user.role === "OWNER" ? "bg-red-100 text-red-600" : user.role === "ADMIN" ? "bg-purple-100 text-purple-500" : user.role === "MANAGER" ? "bg-blue-100 text-blue-500" : "bg-gray-200 text-gray-700"}`}>{user.role || "User"}</span>
-                                    )}
-                                </td>
-                                <td className="px-6 py-2.5 whitespace-nowrap text-right text-sm">
-                                    {user.user.id === currentUser?.id ? (
-                                        currentWorkspace?.ownerId !== currentUser?.id && <button onClick={() => handleRemoveMember(user.id, user.user?.name, true)} className="text-gray-400 hover:text-red-500 p-1 cursor-pointer"><LogOut size={16} /></button>
-                                    ) : (
-                                        canEditMember(user) && <button onClick={() => handleRemoveMember(user.id, user.user?.name, false)} className="text-gray-400 hover:text-red-500 p-1 cursor-pointer"><Trash2 size={16} /></button>
-                                    )}
-                                </td>
-                            </tr>
-                        ))}
+                        {filteredUsers.map((user) => {
+                            const isEditable = canEditMember(user);
+                            const activeRole = user.customRole || user.role;
+                            return (
+                                <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                    <td className="px-6 py-2.5 whitespace-nowrap flex items-center gap-3">
+                                        {user.user?.image ? <img src={user.user.image} alt={user.user.name} className="size-7 rounded-full bg-gray-200 dark:bg-zinc-800 object-cover" /> : <div className="size-7 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-xs">{user.user?.name?.charAt(0).toUpperCase() || "?"}</div>}
+                                        <span className="text-sm text-zinc-800 dark:text-white truncate font-medium">{user.user?.name || "Unknown User"}</span>
+                                    </td>
+                                    <td className="px-6 py-2.5 whitespace-nowrap text-sm text-gray-500 dark:text-zinc-400">{user.user?.email}</td>
+                                    <td className="px-6 py-2.5 whitespace-nowrap">
+                                        {isEditable ? (
+                                            <select value={activeRole} onChange={(e) => handleRoleChange(user.id, e.target.value)} className="text-xs bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-white rounded-md border border-gray-300 dark:border-zinc-800 p-1.5 outline-none font-medium cursor-pointer">
+                                                <optgroup label="Standard Roles">
+                                                    {getSelectableRoles().map((r) => (<option key={r} value={r}>{r}</option>))}
+                                                </optgroup>
+                                                {customRoles.length > 0 && (
+                                                    <optgroup label="Custom Roles">
+                                                        {customRoles.map((c) => (<option key={c.key} value={c.key}>{c.label}</option>))}
+                                                    </optgroup>
+                                                )}
+                                            </select>
+                                        ) : (
+                                            <span className={`px-2 py-1 text-xs rounded-md font-semibold ${activeRole === "OWNER" ? "bg-red-100 text-red-600 dark:bg-red-950/60 dark:text-red-400" : activeRole === "ADMIN" ? "bg-purple-100 text-purple-600 dark:bg-purple-950/60 dark:text-purple-400" : activeRole === "MANAGER" ? "bg-blue-100 text-blue-600 dark:bg-blue-950/60 dark:text-blue-400" : "bg-gray-200 text-gray-700 dark:bg-zinc-800 dark:text-zinc-300"}`}>{activeRole || "User"}</span>
+                                        )}
+                                    </td>
+                                    <td className="px-6 py-2.5 whitespace-nowrap text-right text-sm">
+                                        {user.user?.id === currentUser?.id ? (
+                                            currentWorkspace?.ownerId !== currentUser?.id && <button onClick={() => handleRemoveMember(user.id, user.user?.name, true)} className="text-gray-400 hover:text-red-500 p-1 cursor-pointer"><LogOut size={16} /></button>
+                                        ) : (
+                                            isEditable && <button onClick={() => handleRemoveMember(user.id, user.user?.name, false)} className="text-gray-400 hover:text-red-500 p-1 cursor-pointer"><Trash2 size={16} /></button>
+                                        )}
+                                    </td>
+                                </tr>
+                            );
+                        })}
                     </tbody>
                 </table>
             </div>

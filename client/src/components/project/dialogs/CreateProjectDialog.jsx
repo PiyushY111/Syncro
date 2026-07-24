@@ -21,6 +21,7 @@ export default function CreateProjectDialog({ isDialogOpen, setIsDialogOpen }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (isSubmitting) return;
         try {
             if (!formData.team_lead) return toast.error("Please select a project lead.");
             setIsSubmitting(true);

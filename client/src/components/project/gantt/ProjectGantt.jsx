@@ -38,9 +38,12 @@ export default function ProjectGantt({ tasks = [], project }) {
     const [selectedTask, setSelectedTask] = useState(null);
     const [editingDates, setEditingDates] = useState({ start_date: '', due_date: '' });
     const [isUpdating, setIsUpdating] = useState(false);
+    const [taskPanelWidth, setTaskPanelWidth] = useState(380);
+    const [isResizingTasks, setIsResizingTasks] = useState(false);
 
     const chartBodyRef = useRef(null);
     const taskListRef = useRef(null);
+    const ganttRef = useRef(null);
 
     const { startDateBound, timelineDays, columnWidth, filteredTasks, criticalPathTaskIds, calcGeometry, dependencyLines } = useGanttData(tasks, zoom, searchQuery, statusFilter, milestonesOnly, highlightCriticalPath, showDependencies, customStartDate, customEndDate, currentMonth);
 
@@ -113,13 +116,30 @@ export default function ProjectGantt({ tasks = [], project }) {
         if (selectedDate) scrollToDate(selectedDate);
     }, [startDateBound, columnWidth]);
 
+    useEffect(() => {
+        if (!isResizingTasks) return undefined;
+
+        const resizeTasks = (event) => {
+            const ganttLeft = ganttRef.current?.getBoundingClientRect().left || 0;
+            setTaskPanelWidth(Math.min(540, Math.max(250, event.clientX - ganttLeft)));
+        };
+        const stopResizing = () => setIsResizingTasks(false);
+
+        window.addEventListener('mousemove', resizeTasks);
+        window.addEventListener('mouseup', stopResizing);
+        return () => {
+            window.removeEventListener('mousemove', resizeTasks);
+            window.removeEventListener('mouseup', stopResizing);
+        };
+    }, [isResizingTasks]);
+
     return (
-        <div className="flex flex-col bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm text-zinc-900 dark:text-zinc-100 font-sans">
-            <GanttHeader zoom={zoom} setZoom={setZoom} searchQuery={searchQuery} setSearchQuery={setSearchQuery} statusFilter={statusFilter} setStatusFilter={setStatusFilter} showDependencies={showDependencies} setShowDependencies={setShowDependencies} highlightCriticalPath={highlightCriticalPath} setHighlightCriticalPath={setHighlightCriticalPath} milestonesOnly={milestonesOnly} setMilestonesOnly={setMilestonesOnly} groupByStatus={groupByStatus} setGroupByStatus={setGroupByStatus} onJumpToToday={handleJumpToToday} onSwitchToCalendar={handleSwitchToCalendar} customStartDate={customStartDate} setCustomStartDate={setCustomStartDate} customEndDate={customEndDate} setCustomEndDate={setCustomEndDate} handlePrevMonth={handlePrevMonth} handleNextMonth={handleNextMonth} />
+        <div ref={ganttRef} className={`gantt-reference flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white text-slate-800 shadow-[0_20px_55px_rgba(15,23,42,0.08)] font-sans ${isResizingTasks ? 'select-none cursor-col-resize' : ''}`}>
+            <GanttHeader project={project} currentMonth={currentMonth} zoom={zoom} setZoom={setZoom} searchQuery={searchQuery} setSearchQuery={setSearchQuery} statusFilter={statusFilter} setStatusFilter={setStatusFilter} showDependencies={showDependencies} setShowDependencies={setShowDependencies} highlightCriticalPath={highlightCriticalPath} setHighlightCriticalPath={setHighlightCriticalPath} milestonesOnly={milestonesOnly} setMilestonesOnly={setMilestonesOnly} groupByStatus={groupByStatus} setGroupByStatus={setGroupByStatus} onJumpToToday={handleJumpToToday} onSwitchToCalendar={handleSwitchToCalendar} customStartDate={customStartDate} setCustomStartDate={setCustomStartDate} customEndDate={customEndDate} setCustomEndDate={setCustomEndDate} handlePrevMonth={handlePrevMonth} handleNextMonth={handleNextMonth} />
             <GanttSummaryBar tasks={filteredTasks} criticalPathCount={criticalPathTaskIds.size} hasConflicts={dependencyLines.some(l => l.isConflict)} />
             <div className="flex flex-1 min-h-[500px] overflow-hidden relative">
-                <GanttTaskList taskListRef={taskListRef} filteredTasks={filteredTasks} criticalPathTaskIds={criticalPathTaskIds} handleOpenEdit={handleOpenEdit} onViewInCalendar={handleViewInCalendar} groupByStatus={groupByStatus} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} />
-                <GanttTimelineCanvas chartBodyRef={chartBodyRef} handleScroll={handleScroll} timelineDays={timelineDays} columnWidth={columnWidth} dependencyLines={dependencyLines} filteredTasks={filteredTasks} criticalPathTaskIds={criticalPathTaskIds} getTaskBarGeometry={calcGeometry} handleOpenEdit={handleOpenEdit} onViewInCalendar={handleViewInCalendar} selectedDate={selectedDate} onSelectDate={handleSelectDate} />
+                <GanttTaskList taskListRef={taskListRef} taskPanelWidth={taskPanelWidth} onResizeStart={() => setIsResizingTasks(true)} filteredTasks={filteredTasks} criticalPathTaskIds={criticalPathTaskIds} handleOpenEdit={handleOpenEdit} onViewInCalendar={handleViewInCalendar} groupByStatus={groupByStatus} expandedGroups={expandedGroups} setExpandedGroups={setExpandedGroups} />
+                <GanttTimelineCanvas chartBodyRef={chartBodyRef} handleScroll={handleScroll} timelineDays={timelineDays} columnWidth={columnWidth} dependencyLines={dependencyLines} filteredTasks={filteredTasks} criticalPathTaskIds={criticalPathTaskIds} getTaskBarGeometry={calcGeometry} handleOpenEdit={handleOpenEdit} onViewInCalendar={handleViewInCalendar} selectedDate={selectedDate} onSelectDate={handleSelectDate} groupByStatus={groupByStatus} expandedGroups={expandedGroups} />
             </div>
             <GanttEditModal selectedTask={selectedTask} setSelectedTask={setSelectedTask} editingDates={editingDates} setEditingDates={setEditingDates} handleSaveDates={handleSaveDates} isUpdating={isUpdating} />
         </div>

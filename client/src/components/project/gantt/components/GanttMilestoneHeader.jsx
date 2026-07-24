@@ -19,11 +19,11 @@ export default function GanttMilestoneHeader({ timelineDays, columnWidth, milest
     }, [timelineDays]);
 
     return (
-        <div className="sticky top-0 z-20 bg-white/95 dark:bg-zinc-950/90 border-b border-zinc-200 dark:border-zinc-800 select-none">
+        <div className="sticky top-0 z-30 border-b border-slate-200 bg-white select-none">
             {/* Top Tier: Month/Year */}
-            <div className="flex h-6 border-b border-zinc-200/80 dark:border-zinc-850/80 text-[10px] font-bold text-zinc-700 dark:text-zinc-300">
+            <div className="flex h-6 border-b border-slate-100 text-[10px] font-bold text-slate-600">
                 {monthGroups.map((mg) => (
-                    <div key={mg.key} style={{ width: `${mg.count * columnWidth}px` }} className="border-r border-zinc-200 dark:border-zinc-800 px-2 flex items-center justify-center truncate uppercase tracking-wider bg-zinc-100/60 dark:bg-zinc-900/60">
+                    <div key={mg.key} style={{ width: `${mg.count * columnWidth}px` }} className="flex items-center justify-center truncate border-r border-slate-100 bg-slate-50 px-2 tracking-wide">
                         {mg.key}
                     </div>
                 ))}
@@ -44,12 +44,12 @@ export default function GanttMilestoneHeader({ timelineDays, columnWidth, milest
                             style={{ width: `${columnWidth}px` }}
                             className={`flex flex-col items-center justify-center border-r text-[10px] relative cursor-pointer transition-colors ${
                                 isSelected
-                                    ? 'bg-purple-600 text-white font-black border-r-purple-700 shadow-xs'
-                                    : isToday
-                                    ? 'bg-blue-50 dark:bg-blue-600/20 text-blue-600 dark:text-blue-400 font-extrabold border-r-blue-300'
-                                    : isWeekend
-                                    ? 'bg-zinc-100/50 dark:bg-zinc-950/40 text-zinc-400 dark:text-zinc-600 border-zinc-200/70 dark:border-zinc-850/60 hover:bg-zinc-200/60'
-                                    : 'text-zinc-600 dark:text-zinc-400 border-zinc-200/70 dark:border-zinc-850/60 hover:bg-zinc-100 dark:hover:bg-zinc-850'
+                            ? 'bg-blue-600 text-white font-black border-r-blue-700 shadow-sm'
+                            : isToday
+                            ? 'bg-blue-50 text-blue-600 font-extrabold border-r-blue-200'
+                            : isWeekend
+                            ? 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-100'
+                            : 'text-slate-600 border-slate-100 hover:bg-slate-50'
                             }`}
                             title={`Click to select ${format(day, 'MMM d, yyyy')}`}
                         >
@@ -57,7 +57,7 @@ export default function GanttMilestoneHeader({ timelineDays, columnWidth, milest
                             <span className="font-semibold">{format(day, 'd')}</span>
 
                             {dayMilestone && (
-                                <div className="absolute -top-1 size-2 rounded-full bg-purple-400 ring-2 ring-white dark:ring-zinc-900" title={`Milestone: ${dayMilestone.title}`} />
+                                <div className="absolute -top-1 size-2 rounded-full bg-violet-400 ring-2 ring-white" title={`Milestone: ${dayMilestone.title}`} />
                             )}
                         </div>
                     );

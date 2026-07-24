@@ -94,7 +94,7 @@ export default function AuthPage() {
     };
 
     return (
-        <div className="min-h-screen overflow-hidden bg-[#07111f] text-white">
+        <div className="syncro-auth min-h-screen overflow-hidden bg-[#07111f] text-white">
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,_rgba(59,130,246,0.35),_transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(14,165,233,0.25),_transparent_30%)]" />
             <div className="relative mx-auto grid min-h-screen max-w-7xl lg:grid-cols-[1.15fr_0.85fr]">
                 <AuthFeaturesSection />

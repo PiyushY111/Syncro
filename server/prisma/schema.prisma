@@ -66,6 +66,9 @@ model User {
     joinedChannels   Channel[] @relation("ChannelMembers")
     createdMeetings  Meeting[] @relation("MeetingCreator")
     meetingInvites   MeetingInvite[]
+    portfolios       Portfolio[] @relation("PortfolioOwner")
+    notifications    Notification[]
+    auditLogs        AuditLog[]
 }
 
 model Workspace {
@@ -79,11 +82,13 @@ model Workspace {
     image_url   String   @default("")
     updatedAt   DateTime @updatedAt
 
-    members  WorkspaceMember[]
-    projects Project[]
-    owner    User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-    channels Channel[]
-    meetings Meeting[]
+    members    WorkspaceMember[]
+    projects   Project[]
+    portfolios Portfolio[]
+    auditLogs  AuditLog[]
+    owner      User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+    channels   Channel[]
+    meetings   Meeting[]
 }
 
 model WorkspaceMember {
@@ -91,6 +96,7 @@ model WorkspaceMember {
     userId      String
     workspaceId String
     message     String        @default("")
+    customRole  String        @default("")
     role        WorkspaceRole @default(MEMBER)
     user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
     workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -113,6 +119,8 @@ model Project {
     updatedAt   DateTime        @updatedAt
     stages      String          @default("TODO,IN_PROGRESS,DONE")
     members     ProjectMember[]
+    milestones  Milestone[]
+    portfolios  PortfolioProject[]
 
     owner     User      @relation("ProjectOwner", fields: [team_lead], references: [id], onDelete: Cascade)
     workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -154,6 +162,9 @@ model Task {
     isRecurring    Boolean   @default(false)
     recurrence     String    @default("NONE")
     lastRecurredAt DateTime?
+
+    milestoneId    String?
+    milestone      Milestone? @relation("MilestoneTasks", fields: [milestoneId], references: [id], onDelete: SetNull)
 }
 
 model Comment {
@@ -247,3 +258,128 @@ enum InviteStatus {
     DECLINED
     TENTATIVE
 }
+
+enum MilestoneStatus {
+    PLANNED
+    IN_PROGRESS
+    ACHIEVED
+    MISSED
+    CANCELLED
+}
+
+model Milestone {
+    id          String          @id @default(uuid())
+    title       String
+    description String?
+    dueDate     DateTime
+    startDate   DateTime?
+    status      MilestoneStatus @default(PLANNED)
+    color       String          @default("#3B82F6")
+    projectId   String
+    createdAt   DateTime        @default(now())
+    updatedAt   DateTime        @updatedAt
+
+    project     Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    tasks       Task[]          @relation("MilestoneTasks")
+}
+
+model Portfolio {
+    id          String             @id @default(uuid())
+    name        String
+    description String?
+    color       String             @default("#6366F1")
+    icon        String             @default("FolderKanban")
+    workspaceId String
+    ownerId     String
+    status      ProjectStatus      @default(ACTIVE)
+    createdAt   DateTime           @default(now())
+    updatedAt   DateTime           @updatedAt
+
+    workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    owner       User               @relation("PortfolioOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+    projects    PortfolioProject[]
+}
+
+model PortfolioProject {
+    id          String    @id @default(uuid())
+    portfolioId String
+    projectId   String
+    order       Int       @default(0)
+    addedAt     DateTime  @default(now())
+
+    portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+    project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+    @@unique([portfolioId, projectId])
+}
+
+enum NotificationType {
+    TASK_ASSIGNED
+    TASK_DUE
+    COMMENT_MENTION
+    CHAT_MESSAGE
+    MEETING_INVITE
+    MILESTONE_ALERT
+    SYSTEM
+}
+
+model Notification {
+    id          String           @id @default(uuid())
+    userId      String
+    workspaceId String?
+    type        NotificationType @default(SYSTEM)
+    title       String
+    content     String?
+    entityType  String?          // e.g. "TASK", "CHAT", "MEETING", "MILESTONE"
+    entityId    String?
+    isRead      Boolean          @default(false)
+    isArchived  Boolean          @default(false)
+    priority    Priority         @default(MEDIUM)
+    createdAt   DateTime         @default(now())
+    updatedAt   DateTime         @updatedAt
+
+    user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum AuditAction {
+    CREATE
+    UPDATE
+    DELETE
+    ROLLBACK
+    LOGIN
+    ROLE_CHANGE
+}
+
+enum AuditEntity {
+    PROJECT
+    TASK
+    MILESTONE
+    PORTFOLIO
+    WORKSPACE
+    USER
+    MEETING
+}
+
+enum SeverityLevel {
+    INFO
+    WARNING
+    CRITICAL
+}
+
+model AuditLog {
+    id          String        @id @default(uuid())
+    workspaceId String
+    userId      String
+    action      AuditAction   @default(UPDATE)
+    severity    SeverityLevel @default(INFO)
+    entityType  AuditEntity   @default(TASK)
+    entityId    String?
+    entityName  String?
+    details     Json          @default("{}")
+    createdAt   DateTime      @default(now())
+
+    workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+

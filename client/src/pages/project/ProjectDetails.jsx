@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { SettingsIcon, BarChart3Icon, CalendarIcon, FileStackIcon, WorkflowIcon } from 'lucide-react';
+import { SettingsIcon, BarChart3Icon, CalendarIcon, FileStackIcon, WorkflowIcon, FlagIcon, History as HistoryIcon } from 'lucide-react';
+import EntityVersionTimeline from '@/components/audit/EntityVersionTimeline';
 import ProjectAnalytics from '@/components/project/analytics/ProjectAnalytics';
 import ProjectSettings from '@/components/project/overview/ProjectSettings';
 import CreateTaskDialog from '@/components/task/CreateTaskDialog';
@@ -10,6 +11,7 @@ import ProjectTasks from '@/components/project/tasks/ProjectTasks';
 import ProjectKanban from '@/components/project/kanban/ProjectKanban';
 import ProjectStatsSummary from '@/components/project/overview/ProjectStatsSummary';
 import ProjectGantt from '@/components/project/gantt/ProjectGantt';
+import ProjectMilestones from '@/components/project/milestones/ProjectMilestones';
 import ProjectHeader from './ProjectHeader';
 
 export default function ProjectDetail() {
@@ -58,9 +60,11 @@ export default function ProjectDetail() {
                 <div className="inline-flex flex-wrap max-sm:grid grid-cols-3 gap-2 border border-zinc-200 dark:border-zinc-800 rounded overflow-hidden">
                     {[
                         { key: "tasks", label: "Tasks", icon: FileStackIcon },
+                        { key: "milestones", label: "Milestones", icon: FlagIcon },
                         { key: "gantt", label: "Gantt Chart", icon: WorkflowIcon },
                         { key: "calendar", label: "Calendar", icon: CalendarIcon },
                         { key: "analytics", label: "Analytics", icon: BarChart3Icon },
+                        { key: "history", label: "Version History", icon: HistoryIcon },
                         { key: "settings", label: "Settings", icon: SettingsIcon },
                     ].map((tabItem) => (
                         <button key={tabItem.key} onClick={() => { setActiveTab(tabItem.key); setSearchParams({ id: id, tab: tabItem.key }) }} className={`flex items-center gap-2 px-4 py-2 text-sm transition-all cursor-pointer ${activeTab === tabItem.key ? "bg-zinc-100 dark:bg-zinc-800/80" : "hover:bg-zinc-50 dark:hover:bg-zinc-700 text-zinc-500"}`}>
@@ -84,9 +88,11 @@ export default function ProjectDetail() {
                         {viewMode === "list" ? <ProjectTasks tasks={tasks} project={project} /> : <ProjectKanban tasks={tasks} project={project} />}
                     </div>
                 )}
+                {activeTab === "milestones" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectMilestones project={project} tasks={tasks} /></div>}
                 {activeTab === "gantt" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectGantt tasks={tasks} project={project} /></div>}
                 {activeTab === "analytics" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectAnalytics tasks={tasks} project={project} /></div>}
                 {activeTab === "calendar" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectCalendar tasks={tasks} projectId={id} /></div>}
+                {activeTab === "history" && <div className="bg-white dark:bg-zinc-900/40 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 max-w-6xl"><EntityVersionTimeline entityType="PROJECT" entityId={id} canRollback={true} /></div>}
                 {activeTab === "settings" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectSettings project={project} /></div>}
             </div>
 
