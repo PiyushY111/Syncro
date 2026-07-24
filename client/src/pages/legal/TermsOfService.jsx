@@ -12,8 +12,9 @@ export default function TermsOfService() {
             {/* Top Navigation */}
             <header className="relative z-10 border-b border-white/10 bg-slate-950/60 backdrop-blur-md px-6 py-4">
                 <div className="max-w-6xl mx-auto flex items-center justify-between">
-                    <NavLink to="/" className="flex items-center gap-2">
-                        <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-8 w-auto object-contain" />
+                    <NavLink to="/" className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white text-black shadow-md border border-slate-200 hover:scale-[1.02] transition">
+                        <img src="/Logos/Syncro-S(light).png" alt="Syncro Logo" className="h-6 w-auto object-contain" />
+                        <span className="text-lg font-bold text-black tracking-tight">Syncro</span>
                     </NavLink>
                     <NavLink to="/auth" className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white transition">
                         <ArrowLeft className="size-4" /> Back to App

@@ -59,16 +59,16 @@ export default function Landing() {
     const currentScreenshot = screenshots.find(s => s.key === activeTab) || screenshots[0];
 
     return (
-        <div className="min-h-screen bg-[#090d16] text-slate-100 selection:bg-blue-500 selection:text-white font-sans text-left relative overflow-x-hidden">
+        <div className="syncro-landing min-h-screen bg-[#090d16] text-slate-100 selection:bg-blue-500 selection:text-white font-sans text-left relative overflow-x-hidden">
             {/* Ambient Background Glows */}
             <div className="pointer-events-none absolute left-1/2 top-[-250px] h-[600px] w-[900px] -translate-x-1/2 rounded-full bg-blue-600/15 blur-[120px]" />
             <div className="pointer-events-none absolute right-[-100px] top-[400px] h-[500px] w-[500px] rounded-full bg-cyan-500/10 blur-[140px]" />
 
             {/* Header Navigation */}
             <header className="relative z-30 mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-                <Link to="/" className="flex items-center gap-3">
-                    <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-8 w-auto object-contain" />
-                    <span className="text-2xl font-bold text-white tracking-tight">Syncro</span>
+                <Link to="/" className="flex items-center gap-2.5 px-4 py-2 rounded-full bg-white text-black shadow-md border border-slate-200 hover:scale-[1.02] transition">
+                    <img src="/Logos/Syncro-S(light).png" alt="Syncro Logo" className="h-7 w-auto object-contain" />
+                    <span className="text-xl font-bold text-black tracking-tight">Syncro</span>
                 </Link>
 
                 <nav className="hidden items-center gap-8 text-sm font-medium text-slate-300 md:flex">
@@ -405,7 +405,10 @@ export default function Landing() {
             <footer className="relative z-20 border-t border-white/10 py-10 text-slate-400 text-xs">
                 <div className="mx-auto max-w-6xl px-6 flex flex-col md:flex-row items-center justify-between gap-6">
                     <div className="flex items-center gap-3">
-                        <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-7 w-auto object-contain" />
+                        <Link to="/" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white text-black shadow-sm border border-slate-200">
+                            <img src="/Logos/Syncro-S(light).png" alt="Syncro Logo" className="h-5 w-auto object-contain" />
+                            <span className="text-sm font-bold text-black tracking-tight">Syncro</span>
+                        </Link>
                         <span className="text-slate-600">|</span>
                         <span>© 2026 Syncro Platform. All rights reserved.</span>
                     </div>
