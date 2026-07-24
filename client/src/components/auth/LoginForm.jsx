@@ -1,5 +1,4 @@
 import { Lock, Mail, User, ArrowRight } from 'lucide-react';
-import { SyncroLogoMark } from '@/components/common/SyncroLogo';
 
 export default function LoginForm({
     mode,
@@ -11,12 +10,19 @@ export default function LoginForm({
 }) {
     return (
         <div>
+            {/* Logo Image */}
+            <div className="mb-4">
+                <img src="/Logos/Syncro(Light).png" alt="Syncro Logo" className="h-8 w-auto object-contain" />
+            </div>
+
             <div className="mb-6 flex items-center justify-between gap-3 text-left">
                 <div>
                     <p className="text-sm uppercase tracking-[0.2em] text-blue-600">{mode === 'login' ? 'Welcome back' : 'Create account'}</p>
                     <h2 className="mt-1 text-2xl font-semibold text-slate-950">{mode === 'login' ? 'Sign in to continue' : 'Start your workspace'}</h2>
                 </div>
-                <SyncroLogoMark size="md" />
+                <div className="rounded-2xl bg-slate-100 p-3 text-blue-600">
+                    <Lock className="size-5" />
+                </div>
             </div>
 
             <div className="mb-6 grid grid-cols-2 rounded-2xl bg-slate-100 p-1">

@@ -15,10 +15,14 @@ const Navbar = ({ setIsSidebarOpen }) => {
             <div className="flex items-center justify-between max-w-6xl mx-auto">
                 {/* Left section */}
                 <div className="flex items-center gap-4 min-w-0 flex-1">
-                    {/* Sidebar Trigger */}
+                    {/* Sidebar Trigger & Mobile Brand Logo */}
                     <button onClick={() => setIsSidebarOpen((prev) => !prev)} className="sm:hidden p-2 rounded-lg transition-colors text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-zinc-800" >
                         <PanelLeft size={20} />
                     </button>
+                    <div className="sm:hidden flex items-center">
+                        <img src="/Logos/Syncro-S(Dark).png" alt="Syncro Icon" className="h-6 w-auto hidden dark:block" />
+                        <img src="/Logos/Syncro-S(light).png" alt="Syncro Icon" className="h-6 w-auto block dark:hidden" />
+                    </div>
 
                     {/* Search Input */}
                     <div className="relative flex-1 max-w-sm">

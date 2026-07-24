@@ -12,6 +12,7 @@ import AuthPage from '@/pages/auth/Auth';
 import RequireAuth from '@/components/auth/RequireAuth';
 import SettingsPage from '@/pages/settings/Settings';
 import SmartCalendar from '@/pages/calendar/SmartCalendar';
+import Landing from '@/pages/landing/Landing';
 import { Analytics } from '@vercel/analytics/react'
 
 const App = () => {
@@ -19,9 +20,10 @@ const App = () => {
         <>
             <Toaster />
             <Routes>
+                <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="accept-invite" element={<RequireAuth><AcceptWorkspaceInvite /></RequireAuth>} />
-                <Route path="/" element={<RequireAuth><Layout /></RequireAuth>}>
+                <Route path="/dashboard" element={<RequireAuth><Layout /></RequireAuth>}>
                     <Route index element={<Dashboard />} />
                     <Route path="team" element={<Team />} />
                     <Route path="chat" element={<Chat />} />

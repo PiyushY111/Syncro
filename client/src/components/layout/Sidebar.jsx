@@ -5,8 +5,6 @@ import ProjectSidebar from '@/components/project/overview/ProjectsSidebar'
 import WorkspaceDropdown from '@/components/workspace/WorkspaceDropdown'
 import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, MessageSquare, Calendar } from 'lucide-react'
 
-import SyncroLogo from '@/components/common/SyncroLogo'
-
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
 
     const menuItems = [
@@ -32,9 +30,22 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
 
     return (
         <div ref={sidebarRef} className={`z-10 bg-white dark:bg-zinc-900 min-w-68 flex flex-col h-screen border-r border-gray-200 dark:border-zinc-800 max-sm:absolute transition-all ${isSidebarOpen ? 'left-0' : '-left-full'} `} >
-            <div className="p-4 border-b border-gray-100 dark:border-zinc-800/60">
-                <SyncroLogo size="md" showTagline={true} />
+            {/* Brand Logo Header */}
+            <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-3">
+                <NavLink to="/dashboard" className="flex items-center gap-2">
+                    <img
+                        src="/Logos/Syncro(Dark).png"
+                        alt="Syncro Logo"
+                        className="h-7 w-auto hidden dark:block object-contain"
+                    />
+                    <img
+                        src="/Logos/Syncro(Light).png"
+                        alt="Syncro Logo"
+                        className="h-7 w-auto block dark:hidden object-contain"
+                    />
+                </NavLink>
             </div>
+
             <WorkspaceDropdown onCreateWorkspace={onCreateWorkspace} />
             <hr className='border-gray-200 dark:border-zinc-800' />
             <div className='flex-1 overflow-y-scroll no-scrollbar flex flex-col'>

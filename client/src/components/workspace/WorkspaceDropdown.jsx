@@ -16,7 +16,7 @@ function WorkspaceDropdown({ onCreateWorkspace }) {
     const onSelectWorkspace = (workspaceId) => {
         dispatch(setCurrentWorkspace(workspaceId))
         setIsOpen(false);
-        navigate('/')
+        navigate('/dashboard')
     }
 
     // Close dropdown on outside click
