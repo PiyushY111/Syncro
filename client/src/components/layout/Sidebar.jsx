@@ -49,10 +49,10 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
 
     return (
         <div ref={sidebarRef} className={`z-10 bg-white dark:bg-zinc-900 min-w-68 flex flex-col h-screen border-r border-gray-200 dark:border-zinc-800 max-sm:absolute transition-all ${isSidebarOpen ? 'left-0' : '-left-full'} `} >
-            <div className="p-4 border-b border-gray-100 dark:border-zinc-800 flex items-center gap-3">
-                <NavLink to="/dashboard" className="flex items-center gap-2">
-                    <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-7 w-auto hidden dark:block object-contain" />
-                    <img src="/Logos/Syncro(Light).png" alt="Syncro Logo" className="h-7 w-auto block dark:hidden object-contain" />
+            <div className="py-4.5 px-4 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-center">
+                <NavLink to="/dashboard" className="flex items-center justify-center">
+                    <img src="/Logos/Syncro(Dark).png" alt="Syncro Logo" className="h-9 w-auto hidden dark:block object-contain" />
+                    <img src="/Logos/Syncro(Light).png" alt="Syncro Logo" className="h-9 w-auto block dark:hidden object-contain" />
                 </NavLink>
             </div>
 
