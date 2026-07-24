@@ -2,12 +2,6 @@
 
 This document outlines the production-grade directory structure, module layout, and strict engineering constraints established for both the client (`client/`) and server (`server/`) environments of the **Syncro** application.
 
----
-
-## 📏 Production Modularity Constraints
-
-1. **Max 130 Lines of Code (LOC) per file**: Every component, controller, service, and helper is decomposed into focused, single-responsibility files.
-2. **Max 6 Files per directory**: Every directory is strictly capped at 6 files maximum.
 
 ---
 
