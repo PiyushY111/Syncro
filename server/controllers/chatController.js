@@ -1,24 +1,39 @@
 export {
     createChannel,
     getWorkspaceChannels,
-    updateChannel,
+    browsePublicChannels,
+    joinPublicChannel
+} from './chat/channelsCrud.js';
+
+export {
+    updateChannelDetails,
+    archiveChannel,
     deleteChannel
-} from './chat/channels/channelsCrud.js';
+} from './chat/channelsManage.js';
 
 export {
-    joinChannel,
-    addMemberToChannel
-} from './chat/channels/channelsMembership.js';
+    addMemberToChannel,
+    removeMemberFromChannel
+} from './chat/channelMembers.js';
 
 export {
-    archiveChannel
-} from './chat/channels/channelsArchive.js';
+    clearChannelChat,
+    exportChannelChat,
+    toggleStarMessage,
+    getStarredMessages
+} from './chat/channelSettings.js';
 
 export {
     sendMessage,
+    pinMessage,
+    getPinnedMessages,
+    deleteMessage
+} from './chat/messagesCrud.js';
+
+export {
     getChannelMessages,
     getThreadReplies
-} from './chat/messagesCrud.js';
+} from './chat/getMessages.js';
 
 export {
     getDirectMessages,

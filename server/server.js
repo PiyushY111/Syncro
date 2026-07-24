@@ -9,8 +9,10 @@ if (!process.env.JWT_SECRET) {
     process.exit(1);
 }
 
+import http from 'http'
 import express from 'express'
 import cors from 'cors'
+import { initSocketIO } from './socket/socketInit.js'
 import { serve } from 'inngest/express'
 import { inngest, functions } from './inngest/index.js'
 import authRouter from './routes/authRoutes.js'
@@ -94,6 +96,9 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-    console.log(`server is running on http://localhost:${PORT}`);
+const httpServer = http.createServer(app);
+initSocketIO(httpServer);
+
+httpServer.listen(PORT, () => {
+    console.log(`Server and Socket.IO engine running on http://localhost:${PORT}`);
 });

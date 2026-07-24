@@ -422,3 +422,49 @@
     .syncro-auth .lg\:grid-cols-\[1\.15fr_0\.85fr\] > section:first-child { padding-right: 5rem; }
     .syncro-auth .lg\:grid-cols-\[1\.15fr_0\.85fr\] > section:last-child { padding-left: 5rem; }
 }
+
+/* Custom Spring/Stiffness Animations & Transitions for Chat */
+.transition-stiff {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.25, 1.1, 0.5, 1);
+    transition-duration: 250ms;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes stiffPop {
+    0% { opacity: 0; transform: scale(0.94) translateY(8px); }
+    70% { transform: scale(1.01) translateY(-1px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes stiffSlideInRight {
+    0% { opacity: 0; transform: translateX(100%); }
+    70% { transform: translateX(-8px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes stiffSlideInUp {
+    0% { opacity: 0; transform: translateY(12px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.2s ease-out forwards;
+}
+
+.animate-stiff-pop {
+    animation: stiffPop 0.3s cubic-bezier(0.25, 1.1, 0.5, 1) forwards;
+}
+
+.animate-stiff-slide-right {
+    animation: stiffSlideInRight 0.35s cubic-bezier(0.25, 1.1, 0.5, 1) forwards;
+}
+
+.animate-stiff-slide-up {
+    animation: stiffSlideInUp 0.25s cubic-bezier(0.25, 1.1, 0.5, 1) forwards;
+}
+

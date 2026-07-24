@@ -182,6 +182,7 @@ model Channel {
     id          String    @id @default(uuid())
     name        String
     description String?
+    iconUrl     String?
     workspaceId String
     workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
     messages    Message[]
@@ -211,6 +212,10 @@ model Message {
     replies     Message[] @relation("MessageThread")
     
     type        String    @default("TEXT") // TEXT, SYSTEM
+    contentHash String?
+    isPinned    Boolean   @default(false)
+    pinnedAt    DateTime?
+    isStarred   Boolean   @default(false)
     
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt

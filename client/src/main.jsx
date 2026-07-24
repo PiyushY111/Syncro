@@ -5,14 +5,16 @@ import { BrowserRouter } from 'react-router-dom'
 import { store } from './app/store.js'
 import { Provider } from 'react-redux'
 import { AuthProvider } from '@/context/AuthContext'
-
+import { SocketProvider } from '@/context/SocketContext'
 
 createRoot(document.getElementById('root')).render(
     <BrowserRouter>
         <AuthProvider>
-            <Provider store={store}>
-                <App />
-            </Provider>
+            <SocketProvider>
+                <Provider store={store}>
+                    <App />
+                </Provider>
+            </SocketProvider>
         </AuthProvider>
     </BrowserRouter>,
 )
