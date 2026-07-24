@@ -3,16 +3,16 @@ export {
     getWorkspaceChannels,
     updateChannel,
     deleteChannel
-} from './chat/channelsCrud.js';
+} from './chat/channels/channelsCrud.js';
 
 export {
     joinChannel,
     addMemberToChannel
-} from './chat/channelsMembership.js';
+} from './chat/channels/channelsMembership.js';
 
 export {
     archiveChannel
-} from './chat/channelsArchive.js';
+} from './chat/channels/channelsArchive.js';
 
 export {
     sendMessage,

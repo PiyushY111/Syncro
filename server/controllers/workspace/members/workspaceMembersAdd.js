@@ -1,4 +1,4 @@
-import { prisma } from '../../config/prisma.js';
+import { prisma } from '../../../config/prisma.js';
 
 // Add member to workspace explicitly
 export const addMember = async (req, res) => {

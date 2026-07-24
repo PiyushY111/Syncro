@@ -18,32 +18,18 @@ export default function Projects() {
         priority: "ALL",
     });
 
-    const filterProjects = () => {
-        let filtered = projects;
-
-        if (searchTerm) {
-            filtered = filtered.filter(
-                (project) =>
-                    project.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    project.description?.toLowerCase().includes(searchTerm.toLowerCase())
-            );
-        }
-
-        if (filters.status !== "ALL") {
-            filtered = filtered.filter((project) => project.status === filters.status);
-        }
-
-        if (filters.priority !== "ALL") {
-            filtered = filtered.filter(
-                (project) => project.priority === filters.priority
-            );
-        }
-
-        setFilteredProjects(filtered);
-    };
-
     useEffect(() => {
-        filterProjects();
+        let filtered = projects;
+        if (searchTerm) {
+            filtered = filtered.filter((p) => p.name.toLowerCase().includes(searchTerm.toLowerCase()) || p.description?.toLowerCase().includes(searchTerm.toLowerCase()));
+        }
+        if (filters.status !== "ALL") {
+            filtered = filtered.filter((p) => p.status === filters.status);
+        }
+        if (filters.priority !== "ALL") {
+            filtered = filtered.filter((p) => p.priority === filters.priority);
+        }
+        setFilteredProjects(filtered);
     }, [projects, searchTerm, filters]);
 
     return (

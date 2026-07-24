@@ -3,7 +3,6 @@ import { format } from "date-fns";
 
 export default function MessageItem({
     msg,
-    currentUser,
     colors,
     isDark,
     setThreadParent,

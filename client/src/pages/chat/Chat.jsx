@@ -1,5 +1,5 @@
 import ChatSidebar from '@/components/chat/ChatSidebar';
-import MessageStream from '@/components/chat/MessageStream';
+import MessageStream from '@/components/chat/stream/MessageStream';
 import RightPanel from '@/components/chat/RightPanel';
 import ChatDialogs from '@/components/chat/ChatDialogs';
 import useChat from '@/hooks/useChat';

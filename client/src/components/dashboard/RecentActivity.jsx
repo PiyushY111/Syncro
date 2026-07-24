@@ -21,16 +21,11 @@ const RecentActivity = () => {
     const [tasks, setTasks] = useState([]);
     const { currentWorkspace } = useSelector((state) => state.workspace);
 
-    const getTasksFromCurrentWorkspace = () => {
+    useEffect(() => {
         if (!currentWorkspace) return;
-
         const allTasks = currentWorkspace.projects.flatMap((project) => project.tasks);
         const sortedTasks = [...allTasks].sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
         setTasks(sortedTasks.slice(0, 5));
-    };
-
-    useEffect(() => {
-        getTasksFromCurrentWorkspace();
     }, [currentWorkspace]);
 
     return (

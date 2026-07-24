@@ -10,14 +10,14 @@ export {
 
 export {
     addMember
-} from './workspace/workspaceMembersAdd.js';
+} from './workspace/members/workspaceMembersAdd.js';
 
 export {
     updateMemberRole,
     removeMember
-} from './workspace/workspaceMembersManage.js';
+} from './workspace/members/workspaceMembersManage.js';
 
 export {
     sendWorkspaceInvitationEmail,
     acceptWorkspaceInvitation
-} from './workspace/workspaceInvites.js';
+} from './workspace/invites/workspaceInvites.js';

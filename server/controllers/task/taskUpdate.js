@@ -64,6 +64,8 @@ export const updateTask = async (req, res) => {
 
         const updateData = { ...req.body };
         delete updateData.dependenciesIds;
+        if (updateData.due_date) updateData.due_date = new Date(updateData.due_date);
+        if (updateData.start_date) updateData.start_date = new Date(updateData.start_date);
 
         if (dependenciesIds) {
             updateData.dependencies = {

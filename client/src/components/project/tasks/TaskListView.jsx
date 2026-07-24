@@ -1,5 +1,6 @@
 import { format } from 'date-fns';
 import { Bug, CalendarIcon, GitCommit, MessageSquare, Square, Zap, Lock } from 'lucide-react';
+import TaskMobileListView from './TaskMobileListView';
 
 const typeIcons = {
     BUG: { icon: Bug, color: "text-red-600 dark:text-red-400" },
@@ -16,28 +17,20 @@ const priorityTexts = {
 };
 
 export default function TaskListView({
-    filteredTasks,
-    selectedTasks,
-    setSelectedTasks,
-    tasks,
-    stages,
-    handleStatusChange,
-    navigate
+    filteredTasks, selectedTasks, setSelectedTasks, tasks, stages, handleStatusChange, navigate
 }) {
     return (
         <div className="overflow-auto rounded-lg lg:border border-zinc-300 dark:border-zinc-800">
             <div className="w-full">
-                {/* Desktop/Table View */}
                 <div className="hidden lg:block overflow-x-auto">
                     <table className="min-w-full text-sm text-left not-dark:bg-white text-zinc-900 dark:text-zinc-300">
-                        <thead className="text-xs uppercase dark:bg-zinc-800/70 text-zinc-500 dark:text-zinc-400 ">
+                        <thead className="text-xs uppercase dark:bg-zinc-800/70 text-zinc-500 dark:text-zinc-400">
                             <tr>
                                 <th className="pl-2 pr-1">
                                     <input 
                                         onChange={() => selectedTasks.length > 0 ? setSelectedTasks([]) : setSelectedTasks(tasks.map((t) => t.id))} 
                                         checked={selectedTasks.length === tasks.length && tasks.length > 0} 
-                                        type="checkbox" 
-                                        className="size-3 accent-zinc-600 dark:accent-zinc-500" 
+                                        type="checkbox" className="size-3 accent-zinc-600 dark:accent-zinc-500" 
                                     />
                                 </th>
                                 <th className="px-4 py-3">Title</th>
@@ -53,26 +46,14 @@ export default function TaskListView({
                                 filteredTasks.map((task) => {
                                     const { icon: Icon, color } = typeIcons[task.type] || {};
                                     const { background, prioritycolor } = priorityTexts[task.priority] || {};
-
                                     return (
-                                        <tr 
-                                            key={task.id} 
-                                            onClick={() => navigate(`/taskDetails?projectId=${task.projectId}&taskId=${task.id}`)} 
-                                            className="border-t border-zinc-300 dark:border-zinc-800 group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer"
-                                        >
+                                        <tr key={task.id} onClick={() => navigate(`/taskDetails?projectId=${task.projectId}&taskId=${task.id}`)} className="border-t border-zinc-300 dark:border-zinc-800 group hover:bg-zinc-50 dark:hover:bg-zinc-700 transition-all cursor-pointer">
                                             <td onClick={e => e.stopPropagation()} className="pl-2 pr-1">
-                                                <input 
-                                                    type="checkbox" 
-                                                    className="size-3 accent-zinc-600 dark:accent-zinc-500" 
-                                                    onChange={() => selectedTasks.includes(task.id) ? setSelectedTasks(selectedTasks.filter((i) => i !== task.id)) : setSelectedTasks((prev) => [...prev, task.id])} 
-                                                    checked={selectedTasks.includes(task.id)} 
-                                                />
+                                                <input type="checkbox" className="size-3 accent-zinc-600 dark:accent-zinc-500" onChange={() => selectedTasks.includes(task.id) ? setSelectedTasks(selectedTasks.filter((i) => i !== task.id)) : setSelectedTasks((prev) => [...prev, task.id])} checked={selectedTasks.includes(task.id)} />
                                             </td>
                                             <td className="px-4 py-2">
                                                 <div className="flex items-center gap-1.5">
-                                                    {task.dependencies?.some(d => d.status !== "DONE") && (
-                                                        <Lock className="size-3 text-amber-500" title="Blocked by prerequisites" />
-                                                    )}
+                                                    {task.dependencies?.some(d => d.status !== "DONE") && <Lock className="size-3 text-amber-500" title="Blocked" />}
                                                     <span>{task.title}</span>
                                                 </div>
                                             </td>
@@ -83,33 +64,18 @@ export default function TaskListView({
                                                 </div>
                                             </td>
                                             <td className="px-4 py-2">
-                                                <span className={`text-xs px-2 py-1 rounded ${background} ${prioritycolor}`}>
-                                                    {task.priority}
-                                                </span>
+                                                <span className={`text-xs px-2 py-1 rounded ${background} ${prioritycolor}`}>{task.priority}</span>
                                             </td>
                                             <td onClick={e => e.stopPropagation()} className="px-4 py-2">
-                                                <select 
-                                                    name="status" 
-                                                    onChange={(e) => handleStatusChange(task.id, e.target.value)} 
-                                                    value={task.status} 
-                                                    className="outline-none px-2 pr-4 py-1 rounded text-sm text-zinc-900 dark:text-zinc-200 cursor-pointer"
-                                                >
+                                                <select name="status" onChange={(e) => handleStatusChange(task.id, e.target.value)} value={task.status} className="outline-none px-2 pr-4 py-1 rounded text-sm text-zinc-900 dark:text-zinc-200 cursor-pointer">
                                                     {stages.map(stageId => (
-                                                        <option key={stageId} value={stageId}>
-                                                            {stageId.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}
-                                                        </option>
+                                                        <option key={stageId} value={stageId}>{stageId.replace(/_/g, " ").toLowerCase()}</option>
                                                     ))}
                                                 </select>
                                             </td>
                                             <td className="px-4 py-2">
                                                 <div className="flex items-center gap-2">
-                                                    {task.assignee?.image ? (
-                                                        <img src={task.assignee.image} className="size-5 rounded-full object-cover" alt="avatar" />
-                                                    ) : (
-                                                        <div className="size-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold">
-                                                            {task.assignee?.name?.charAt(0).toUpperCase() || "?"}
-                                                        </div>
-                                                    )}
+                                                    {task.assignee?.image ? <img src={task.assignee.image} className="size-5 rounded-full object-cover" alt="avatar" /> : <div className="size-5 rounded-full bg-indigo-500 text-white flex items-center justify-center text-[10px]">{task.assignee?.name?.charAt(0).toUpperCase() || "?"}</div>}
                                                     {task.assignee?.name || "-"}
                                                 </div>
                                             </td>
@@ -123,86 +89,12 @@ export default function TaskListView({
                                     );
                                 })
                             ) : (
-                                <tr>
-                                    <td colSpan="7" className="text-center text-zinc-500 dark:text-zinc-400 py-6">
-                                        No tasks found for the selected filters.
-                                    </td>
-                                </tr>
+                                <tr><td colSpan="7" className="text-center text-zinc-500 py-6">No tasks found.</td></tr>
                             )}
                         </tbody>
                     </table>
                 </div>
-
-                {/* Mobile/Card View */}
-                <div className="lg:hidden flex flex-col gap-4">
-                    {filteredTasks.length > 0 ? (
-                        filteredTasks.map((task) => {
-                            const { icon: Icon, color } = typeIcons[task.type] || {};
-                            const { background, prioritycolor } = priorityTexts[task.priority] || {};
-
-                            return (
-                                <div key={task.id} className="dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-4 flex flex-col gap-2 text-left">
-                                    <div className="flex items-center justify-between">
-                                        <h3 className="text-zinc-900 dark:text-zinc-200 text-sm font-semibold">{task.title}</h3>
-                                        <input 
-                                            type="checkbox" 
-                                            className="size-4 accent-zinc-600 dark:accent-zinc-500" 
-                                            onChange={() => selectedTasks.includes(task.id) ? setSelectedTasks(selectedTasks.filter((i) => i !== task.id)) : setSelectedTasks((prev) => [...prev, task.id])} 
-                                            checked={selectedTasks.includes(task.id)} 
-                                        />
-                                    </div>
-
-                                    <div className="text-xs text-zinc-600 dark:text-zinc-400 flex items-center gap-2">
-                                        {Icon && <Icon className={`size-4 ${color}`} />}
-                                        <span className={`${color} uppercase`}>{task.type}</span>
-                                    </div>
-
-                                    <div>
-                                        <span className={`text-xs px-2 py-1 rounded ${background} ${prioritycolor}`}>
-                                            {task.priority}
-                                        </span>
-                                    </div>
-
-                                    <div>
-                                        <label className="text-zinc-600 dark:text-zinc-400 text-xs">Status</label>
-                                        <select 
-                                            name="status" 
-                                            onChange={(e) => handleStatusChange(task.id, e.target.value)} 
-                                            value={task.status} 
-                                            className="w-full mt-1 bg-zinc-100 dark:bg-zinc-800 ring-1 ring-zinc-300 dark:ring-zinc-700 outline-none px-2 py-1 rounded text-sm text-zinc-900 dark:text-zinc-200 cursor-pointer"
-                                        >
-                                            {stages.map(stageId => (
-                                                <option key={stageId} value={stageId}>
-                                                    {stageId.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase())}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-sm text-zinc-700 dark:text-zinc-300">
-                                        {task.assignee?.image ? (
-                                            <img src={task.assignee.image} className="size-5 rounded-full object-cover" alt="avatar" />
-                                        ) : (
-                                            <div className="size-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold">
-                                                {task.assignee?.name?.charAt(0).toUpperCase() || "?"}
-                                            </div>
-                                        )}
-                                        {task.assignee?.name || "-"}
-                                    </div>
-
-                                    <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
-                                        <CalendarIcon className="size-4" />
-                                        {format(new Date(task.due_date), "dd MMMM")}
-                                    </div>
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <p className="text-center text-zinc-500 dark:text-zinc-400 py-4">
-                            No tasks found for the selected filters.
-                        </p>
-                    )}
-                </div>
+                <TaskMobileListView filteredTasks={filteredTasks} selectedTasks={selectedTasks} setSelectedTasks={setSelectedTasks} typeIcons={typeIcons} priorityTexts={priorityTexts} handleStatusChange={handleStatusChange} stages={stages} />
             </div>
         </div>
     );

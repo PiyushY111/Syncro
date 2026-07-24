@@ -6,7 +6,7 @@ import { notifyAssignee } from './taskHelpers.js';
 export const createTask = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { title, description, type, status, priority, projectId, assigneeId, due_date, dependenciesIds, isRecurring, recurrence } = req.body;
+        const { title, description, type, status, priority, projectId, assigneeId, due_date, start_date, dependenciesIds, isRecurring, recurrence } = req.body;
         const origin = req.get('origin');
 
         const project = await prisma.project.findUnique({
@@ -32,6 +32,7 @@ export const createTask = async (req, res) => {
                 project: { connect: { id: projectId } },
                 assignee: assigneeId ? { connect: { id: assigneeId } } : undefined,
                 due_date: due_date ? new Date(due_date) : null,
+                start_date: start_date ? new Date(start_date) : null,
                 dependencies: dependenciesIds && dependenciesIds.length > 0 ? {
                     connect: dependenciesIds.map(id => ({ id }))
                 } : undefined,
