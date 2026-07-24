@@ -11,6 +11,7 @@ import AcceptWorkspaceInvite from '@/pages/workspace/AcceptWorkspaceInvite';
 import AuthPage from '@/pages/auth/Auth';
 import RequireAuth from '@/components/auth/RequireAuth';
 import SettingsPage from '@/pages/settings/Settings';
+import SmartCalendar from '@/pages/calendar/SmartCalendar';
 import { Analytics } from '@vercel/analytics/react'
 
 const App = () => {
@@ -28,6 +29,7 @@ const App = () => {
                     <Route path="projectsDetail" element={<ProjectDetails />} />
                     <Route path="taskDetails" element={<TaskDetails />} />
                     <Route path="settings" element={<SettingsPage />} />
+                    <Route path="calendar" element={<SmartCalendar />} />
                 </Route>
             </Routes>
             <Analytics />

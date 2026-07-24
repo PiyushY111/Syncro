@@ -46,6 +46,10 @@ model User {
     passwordHash String?
     twoFactorCode    String?
     twoFactorExpires DateTime?
+    googleCalendarSync  Boolean @default(false)
+    googleCalendarEmail String?
+    googleAccessToken   String?
+    googleRefreshToken  String?
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
@@ -60,6 +64,8 @@ model User {
     receivedMessages Message[] @relation("ReceivedMessages")
     createdChannels  Channel[] @relation("ChannelCreator")
     joinedChannels   Channel[] @relation("ChannelMembers")
+    createdMeetings  Meeting[] @relation("MeetingCreator")
+    meetingInvites   MeetingInvite[]
 }
 
 model Workspace {
@@ -77,6 +83,7 @@ model Workspace {
     projects Project[]
     owner    User              @relation(fields: [ownerId], references: [id], onDelete: Cascade)
     channels Channel[]
+    meetings Meeting[]
 }
 
 model WorkspaceMember {
@@ -110,6 +117,7 @@ model Project {
     owner     User      @relation("ProjectOwner", fields: [team_lead], references: [id], onDelete: Cascade)
     workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
     tasks     Task[]
+    meetings  Meeting[]
 }
 
 model ProjectMember {
@@ -195,4 +203,47 @@ model Message {
     
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
+}
+
+model Meeting {
+    id          String          @id @default(uuid())
+    title       String
+    description String?
+    agenda      String?
+    start_time  DateTime
+    end_time    DateTime
+    meetingLink String?
+    location    String?
+    googleEventId String?
+    workspaceId String
+    projectId   String?
+    creatorId   String
+    createdAt   DateTime        @default(now())
+    updatedAt   DateTime        @updatedAt
+
+    workspace   Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    project     Project?        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    creator     User            @relation("MeetingCreator", fields: [creatorId], references: [id], onDelete: Cascade)
+    invites     MeetingInvite[]
+}
+
+model MeetingInvite {
+    id        String       @id @default(uuid())
+    meetingId String
+    userId    String
+    status    InviteStatus @default(PENDING)
+    createdAt DateTime     @default(now())
+    updatedAt DateTime     @updatedAt
+
+    meeting   Meeting      @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+    user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([meetingId, userId])
+}
+
+enum InviteStatus {
+    PENDING
+    ACCEPTED
+    DECLINED
+    TENTATIVE
 }

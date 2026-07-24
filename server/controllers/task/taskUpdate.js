@@ -110,7 +110,7 @@ export const updateTask = async (req, res) => {
             }
         }
 
-        return res.status(201).json({ message: "Task updated successfully", task: updatedTask });
+        return res.status(201).json({ message: "Task updated successfully", task: taskWithAssignee });
     }
     catch (err) {
         console.error(err);

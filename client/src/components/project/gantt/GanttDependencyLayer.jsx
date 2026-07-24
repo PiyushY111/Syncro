@@ -37,7 +37,7 @@ export default function GanttDependencyLayer({ dependencyLines }) {
                         strokeWidth={strokeWidth}
                         strokeDasharray={line.isConflict ? '4 3' : 'none'}
                         markerEnd={markerId}
-                        className="transition-all duration-300 opacity-80 hover:opacity-100"
+                        className="transition-all duration-300 opacity-85 hover:opacity-100"
                     />
                 );
             })}

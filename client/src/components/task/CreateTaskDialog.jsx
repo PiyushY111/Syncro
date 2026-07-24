@@ -8,7 +8,7 @@ import TaskRecurrenceSelector from './selectors/TaskRecurrenceSelector';
 import TaskTypePrioritySelector from './selectors/TaskTypePrioritySelector';
 import TaskDatesSelector from './selectors/TaskDatesSelector';
 
-export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, projectId }) {
+export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, projectId, initialDueDate = "" }) {
     const { token } = useAuth();
     const dispatch = useDispatch();
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
@@ -19,17 +19,17 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({
         title: "", description: "", type: "TASK", status: "TODO",
-        priority: "MEDIUM", assigneeId: "", start_date: "", due_date: "",
+        priority: "MEDIUM", assigneeId: "", start_date: "", due_date: initialDueDate || "",
         isRecurring: false, recurrence: "NONE"
     });
 
     const resetForm = useCallback(() => {
         setFormData({
             title: "", description: "", type: "TASK", status: stages[0] || "TODO",
-            priority: "MEDIUM", assigneeId: "", start_date: "", due_date: "",
+            priority: "MEDIUM", assigneeId: "", start_date: "", due_date: initialDueDate || "",
             isRecurring: false, recurrence: "NONE"
         });
-    }, [stages]);
+    }, [stages, initialDueDate]);
 
     useEffect(() => {
         if (showCreateTask) resetForm();

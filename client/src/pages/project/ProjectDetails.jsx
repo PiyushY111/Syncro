@@ -86,7 +86,7 @@ export default function ProjectDetail() {
                 )}
                 {activeTab === "gantt" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectGantt tasks={tasks} project={project} /></div>}
                 {activeTab === "analytics" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectAnalytics tasks={tasks} project={project} /></div>}
-                {activeTab === "calendar" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectCalendar tasks={tasks} /></div>}
+                {activeTab === "calendar" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectCalendar tasks={tasks} projectId={id} /></div>}
                 {activeTab === "settings" && <div className="dark:bg-zinc-900/40 rounded max-w-6xl"><ProjectSettings project={project} /></div>}
             </div>
 

@@ -10,6 +10,8 @@ export const me = async (req, res) => {
                 email: true,
                 name: true,
                 image: true,
+                googleCalendarSync: true,
+                googleCalendarEmail: true,
                 createdAt: true,
             },
         });
@@ -45,6 +47,8 @@ export const updateProfile = async (req, res) => {
                 email: true,
                 name: true,
                 image: true,
+                googleCalendarSync: true,
+                googleCalendarEmail: true,
                 createdAt: true,
             },
         });
@@ -91,6 +95,39 @@ export const updatePassword = async (req, res) => {
         return res.json({ message: 'Password updated successfully' });
     } catch (error) {
         console.error(error);
+        return res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+export const updateGoogleSync = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { googleCalendarSync, googleCalendarEmail, googleAccessToken, googleRefreshToken } = req.body;
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: {
+                googleCalendarSync: !!googleCalendarSync,
+                googleCalendarEmail: googleCalendarEmail !== undefined ? (googleCalendarEmail?.trim() || null) : undefined,
+                googleAccessToken: googleAccessToken !== undefined ? (googleAccessToken || null) : undefined,
+                googleRefreshToken: googleRefreshToken !== undefined ? (googleRefreshToken || null) : undefined,
+            },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                image: true,
+                googleCalendarSync: true,
+                googleCalendarEmail: true,
+                googleAccessToken: true,
+                googleRefreshToken: true,
+                createdAt: true,
+            },
+        });
+
+        return res.json({ user, message: 'Google Calendar sync updated successfully' });
+    } catch (error) {
+        console.error('Error in updateGoogleSync:', error);
         return res.status(500).json({ message: 'Internal server error' });
     }
 };

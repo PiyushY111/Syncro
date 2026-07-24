@@ -74,11 +74,9 @@ export const deleteTaskHelper = (state, action) => {
     }
     state.workspaces = state.workspaces.map((w) =>
         w.id === state.currentWorkspace?.id ? {
-            ...w, projects: (w.projects || []).map((p) =>
-                p.id === action.payload.projectId ? {
-                    ...p, tasks: (p.tasks || []).filter((t) => !action.payload.includes(t.id))
-                } : p
-            )
+            ...w, projects: (w.projects || []).map((p) => ({
+                ...p, tasks: (p.tasks || []).filter((t) => !action.payload.includes(t.id))
+            }))
         } : w
     );
 };

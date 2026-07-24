@@ -1,22 +1,17 @@
 import { useMemo, useCallback } from 'react';
-import { addDays, startOfDay, endOfDay, eachDayOfInterval } from 'date-fns';
+import { addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval } from 'date-fns';
 import { getTaskBarGeometry, calculateCriticalPath } from './ganttUtils';
 
-export function useGanttData(tasks, zoom, searchQuery, statusFilter, milestonesOnly, highlightCriticalPath, showDependencies) {
+export function useGanttData(tasks, zoom, searchQuery, statusFilter, milestonesOnly, highlightCriticalPath, showDependencies, customStartDate, customEndDate, currentMonth) {
     const { startDateBound, timelineDays, columnWidth } = useMemo(() => {
         let colW = zoom === 'week' ? 32 : zoom === 'month' ? 20 : 48;
-        let start = new Date();
-        let end = addDays(new Date(), 30);
+        const baseMonth = currentMonth || new Date();
 
-        if (tasks.length > 0) {
-            const taskStartDates = tasks.map(t => t.start_date ? new Date(t.start_date) : new Date(t.createdAt));
-            const taskDueDates = tasks.map(t => new Date(t.due_date));
-            start = startOfDay(addDays(new Date(Math.min(...taskStartDates)), -5));
-            end = endOfDay(addDays(new Date(Math.max(...taskDueDates)), 10));
-        }
+        let start = customStartDate ? startOfMonth(new Date(customStartDate)) : startOfMonth(subMonths(baseMonth, 2));
+        let end = customEndDate ? endOfMonth(new Date(customEndDate)) : endOfMonth(addMonths(baseMonth, 6));
 
         return { startDateBound: start, timelineDays: eachDayOfInterval({ start, end }), columnWidth: colW };
-    }, [tasks, zoom]);
+    }, [tasks, zoom, customStartDate, customEndDate, currentMonth]);
 
     const filteredTasks = useMemo(() => {
         return tasks.filter(task => {
@@ -28,13 +23,8 @@ export function useGanttData(tasks, zoom, searchQuery, statusFilter, milestonesO
         });
     }, [tasks, searchQuery, statusFilter, milestonesOnly]);
 
-    const criticalPathTaskIds = useMemo(() => {
-        return calculateCriticalPath(tasks, highlightCriticalPath);
-    }, [tasks, highlightCriticalPath]);
-
-    const calcGeometry = useCallback((task) => {
-        return getTaskBarGeometry(task, startDateBound, columnWidth);
-    }, [startDateBound, columnWidth]);
+    const criticalPathTaskIds = useMemo(() => calculateCriticalPath(tasks, highlightCriticalPath), [tasks, highlightCriticalPath]);
+    const calcGeometry = useCallback((task) => getTaskBarGeometry(task, startDateBound, columnWidth), [startDateBound, columnWidth]);
 
     const dependencyLines = useMemo(() => {
         if (!showDependencies) return [];

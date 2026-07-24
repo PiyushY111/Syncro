@@ -3,13 +3,14 @@ import { NavLink } from 'react-router-dom'
 import MyTasksSidebar from '@/components/task/MyTasksSidebar'
 import ProjectSidebar from '@/components/project/overview/ProjectsSidebar'
 import WorkspaceDropdown from '@/components/workspace/WorkspaceDropdown'
-import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, MessageSquare } from 'lucide-react'
+import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, MessageSquare, Calendar } from 'lucide-react'
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
 
     const menuItems = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
         { name: 'Projects', href: '/projects', icon: FolderOpenIcon },
+        { name: 'Calendar', href: '/calendar', icon: Calendar },
         { name: 'Team', href: '/team', icon: UsersIcon },
         { name: 'Chat', href: '/chat', icon: MessageSquare },
         { name: 'Settings', href: '/settings', icon: SettingsIcon },

@@ -7,6 +7,8 @@ const sanitizeUser = (user) => ({
     email: user.email,
     name: user.name,
     image: user.image || '',
+    googleCalendarSync: user.googleCalendarSync,
+    googleCalendarEmail: user.googleCalendarEmail,
     createdAt: user.createdAt,
 });
 
