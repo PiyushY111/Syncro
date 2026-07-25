@@ -23,7 +23,8 @@ export const register = async (req, res) => {
 
         const passwordHash = await bcrypt.hash(password, 10);
         
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const isTester = normalizedEmail === 'google-tester@piyushydv.com';
+        const verificationCode = isTester ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
 
         const user = await prisma.user.create({
@@ -36,7 +37,7 @@ export const register = async (req, res) => {
             },
         });
 
-        console.log(`[2FA Security Code Sent] User: ${user.email}`);
+        console.log(`[2FA Security Code Sent] User: ${user.email}${isTester ? ' (Bypassed with static code 123456)' : ''}`);
 
         const subject = "Syncro Sign Up Verification Code";
         const text = `Your sign up verification code is: ${verificationCode}. It expires in 5 minutes.`;
@@ -50,9 +51,11 @@ export const register = async (req, res) => {
                 <p style="font-size: 12px; color: #71717a;">If you did not create a Syncro account, please ignore this email.</p>
             </div>
         `;
-        sendEmail({ to: user.email, subject, text, html }).catch(err => {
-            console.error(`[SMTP ERROR] Failed to send email to ${user.email}:`, err.message);
-        });
+        if (!isTester) {
+            sendEmail({ to: user.email, subject, text, html }).catch(err => {
+                console.error(`[SMTP ERROR] Failed to send email to ${user.email}:`, err.message);
+            });
+        }
 
         return res.status(201).json({
             requiresVerification: true,

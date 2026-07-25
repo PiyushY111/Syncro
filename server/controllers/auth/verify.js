@@ -79,7 +79,8 @@ export const resendCode = async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const isTester = normalizedEmail === 'google-tester@piyushydv.com';
+        const verificationCode = isTester ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
         const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
         await prisma.user.update({
@@ -90,7 +91,7 @@ export const resendCode = async (req, res) => {
             }
         });
 
-        console.log(`[2FA Security Code Sent] User: ${user.email}`);
+        console.log(`[2FA Security Code Sent] User: ${user.email}${isTester ? ' (Bypassed with static code 123456)' : ''}`);
 
         const subject = "Syncro Login Verification Code";
         const text = `Your login verification code is: ${verificationCode}. It expires in 5 minutes.`;
@@ -105,9 +106,11 @@ export const resendCode = async (req, res) => {
             </div>
         `;
 
-        sendEmail({ to: user.email, subject, text, html }).catch(err => {
-            console.error(`[SMTP ERROR] Failed to resend email to ${user.email}:`, err.message);
-        });
+        if (!isTester) {
+            sendEmail({ to: user.email, subject, text, html }).catch(err => {
+                console.error(`[SMTP ERROR] Failed to resend email to ${user.email}:`, err.message);
+            });
+        }
 
         return res.json({ message: 'Verification code resent successfully' });
     } catch (error) {
