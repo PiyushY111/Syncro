@@ -30,6 +30,7 @@ import portfolioRouter from './routes/portfolioRoutes.js'
 import inboxRouter from './routes/inboxRoutes.js'
 import roleRouter from './routes/roleRoutes.js'
 import auditRouter from './routes/auditRoutes.js'
+import whiteboardRouter from './routes/whiteboardRoutes.js'
 const app = express()
 
 const allowedOrigins = [
@@ -84,6 +85,7 @@ app.use('/api/portfolios', protect, portfolioRouter);
 app.use('/api/inbox', protect, inboxRouter);
 app.use('/api/roles', protect, roleRouter);
 app.use('/api/audit', protect, auditRouter);
+app.use('/api/whiteboards', protect, whiteboardRouter);
 
 app.get('/', (req, res) => res.json({ message: "Server is live", status: "OK" }));
 

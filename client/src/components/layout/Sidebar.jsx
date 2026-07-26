@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext'
 import MyTasksSidebar from '@/components/task/MyTasksSidebar'
 import ProjectSidebar from '@/components/project/overview/ProjectsSidebar'
 import WorkspaceDropdown from '@/components/workspace/WorkspaceDropdown'
-import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, MessageSquare, Calendar, FolderKanban, Inbox as InboxIcon, ShieldCheck, History, Crown } from 'lucide-react'
+import { FolderOpenIcon, LayoutDashboardIcon, SettingsIcon, UsersIcon, MessageSquare, Calendar, FolderKanban, Inbox as InboxIcon, ShieldCheck, History, Crown, Presentation } from 'lucide-react'
 
 const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
     const { user } = useAuth();
@@ -26,6 +26,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
         { name: 'Inbox', href: '/inbox', icon: InboxIcon },
         { name: 'Projects', href: '/projects', icon: FolderOpenIcon },
         { name: 'Portfolios', href: '/portfolios', icon: FolderKanban },
+        { name: 'Whiteboard', href: '/whiteboards', icon: Presentation },
         ...(canAccessRolePortal ? [{ name: 'Role Portal', href: '/roles', icon: ShieldCheck }] : []),
         ...(canAccessAuditLogs ? [{ name: 'Audit Logs', href: '/audit-logs', icon: History }] : []),
         ...(isOwner ? [{ name: 'Owner Command', href: '/owner-audit', icon: Crown }] : []),

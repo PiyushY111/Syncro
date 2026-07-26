@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { SettingsIcon, BarChart3Icon, CalendarIcon, FileStackIcon, WorkflowIcon, FlagIcon, History as HistoryIcon } from 'lucide-react';
+import { SettingsIcon, BarChart3Icon, CalendarIcon, FileStackIcon, WorkflowIcon, FlagIcon, History as HistoryIcon, Presentation } from 'lucide-react';
 import EntityVersionTimeline from '@/components/audit/EntityVersionTimeline';
 import ProjectAnalytics from '@/components/project/analytics/ProjectAnalytics';
 import ProjectSettings from '@/components/project/overview/ProjectSettings';
@@ -13,6 +13,7 @@ import ProjectStatsSummary from '@/components/project/overview/ProjectStatsSumma
 import ProjectGantt from '@/components/project/gantt/ProjectGantt';
 import ProjectMilestones from '@/components/project/milestones/ProjectMilestones';
 import ProjectHeader from './ProjectHeader';
+import WhiteboardView from '@/components/project/whiteboardView/WhiteboardView';
 
 export default function ProjectDetail() {
     const [searchParams, setSearchParams] = useSearchParams();

@@ -1,0 +1,124 @@
+import { prisma } from '../../config/prisma.js';
+
+// Get all whiteboards for a project
+export const getProjectWhiteboards = async (req, res) => {
+    try {
+        const { projectId } = req.params;
+        const whiteboards = await prisma.whiteboard.findMany({
+            where: { projectId },
+            orderBy: { createdAt: 'desc' }
+        });
+        return res.status(200).json(whiteboards);
+    } catch (err) {
+        console.error("[GET PROJECT WHITEBOARDS ERROR]", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// Get all whiteboards for a workspace
+export const getWorkspaceWhiteboards = async (req, res) => {
+    try {
+        const { workspaceId } = req.params;
+        const userId = req.user.id;
+        const userEmail = req.user.email;
+
+        const whiteboards = await prisma.whiteboard.findMany({
+            where: { workspaceId },
+            include: { project: true },
+            orderBy: [
+                { isStarred: 'desc' },
+                { createdAt: 'desc' }
+            ]
+        });
+
+        const filtered = whiteboards.filter(w => {
+            if (!w.isPrivate) return true;
+            if (w.creatorId === userId) return true;
+            const shared = typeof w.sharedEmails === 'string' ? JSON.parse(w.sharedEmails) : (w.sharedEmails || []);
+            return Array.isArray(shared) && shared.includes(userEmail);
+        });
+
+        return res.status(200).json(filtered);
+    } catch (err) {
+        console.error("[GET WORKSPACE WHITEBOARDS ERROR]", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// Get a single whiteboard by ID
+export const getWhiteboard = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const whiteboard = await prisma.whiteboard.findUnique({
+            where: { id }
+        });
+        if (!whiteboard) {
+            return res.status(404).json({ message: 'Whiteboard not found' });
+        }
+        if (whiteboard.isPrivate) {
+            const shared = typeof whiteboard.sharedEmails === 'string' ? JSON.parse(whiteboard.sharedEmails) : (whiteboard.sharedEmails || []);
+            if (whiteboard.creatorId !== req.user.id && !(Array.isArray(shared) && shared.includes(req.user.email))) {
+                return res.status(403).json({ message: 'Access denied' });
+            }
+        }
+        return res.status(200).json(whiteboard);
+    } catch (err) {
+        console.error("[GET WHITEBOARD ERROR]", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// Create a new whiteboard
+export const createWhiteboard = async (req, res) => {
+    try {
+        const { projectId, workspaceId, name, isPrivate = false } = req.body;
+        if (!workspaceId) {
+            return res.status(400).json({ message: 'workspaceId is required' });
+        }
+        const whiteboard = await prisma.whiteboard.create({
+            data: {
+                workspaceId,
+                projectId: projectId || null,
+                creatorId: req.user.id,
+                isPrivate,
+                name: name?.trim() || "Project Board",
+                data: { nodes: [], edges: [], drawings: [], viewport: { x: 0, y: 0, zoom: 1 } }
+            }
+        });
+        return res.status(201).json(whiteboard);
+    } catch (err) {
+        console.error("[CREATE WHITEBOARD ERROR]", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// Delete a whiteboard
+export const deleteWhiteboard = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.whiteboard.delete({
+            where: { id }
+        });
+        return res.status(200).json({ message: 'Whiteboard deleted successfully' });
+    } catch (err) {
+        console.error("[DELETE WHITEBOARD ERROR]", err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// Toggle star status on a whiteboard
+export const starWhiteboard = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const board = await prisma.whiteboard.findUnique({ where: { id } });
+        if (!board) return res.status(404).json({ message: 'Whiteboard not found' });
+        const updated = await prisma.whiteboard.update({
+            where: { id },
+            data: { isStarred: !board.isStarred }
+        });
+        return res.status(200).json(updated);
+    } catch (err) {
+        console.error("[STAR WHITEBOARD ERROR]", err);
+        return res.status(500).json({ message: err.message });
+    }
+};

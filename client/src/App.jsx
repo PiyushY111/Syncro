@@ -21,6 +21,7 @@ import RolePortal from '@/pages/roles/RolePortal';
 import AuditLogs from '@/pages/audit/AuditLogs';
 import OwnerAuditControl from '@/pages/ownerAudit/OwnerAuditControl';
 import Landing from '@/pages/landing/Landing';
+import WhiteboardsPage from '@/pages/whiteboard/WhiteboardsPage';
 import { Analytics } from '@vercel/analytics/react'
 
 const App = () => {
@@ -47,6 +48,7 @@ const App = () => {
                     <Route path="/owner-audit" element={<OwnerAuditControl />} />
                     <Route path="/taskDetails" element={<TaskDetails />} />
                     <Route path="/calendar" element={<SmartCalendar />} />
+                    <Route path="/whiteboards" element={<WhiteboardsPage />} />
                     <Route path="/team" element={<Team />} />
                     <Route path="/chat" element={<Chat />} />
                     <Route path="/settings" element={<SettingsPage />} />

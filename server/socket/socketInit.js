@@ -3,6 +3,7 @@ import { socketAuthMiddleware } from "./socketAuthMiddleware.js";
 import { registerPresenceHandlers } from "./presenceHandler.js";
 import { registerMessageHandlers } from "./messageHandler.js";
 import { registerReactionHandlers } from "./reactionHandler.js";
+import { registerWhiteboardHandlers } from "./whiteboardHandler.js";
 
 let ioInstance = null;
 
@@ -25,6 +26,7 @@ export const initSocketIO = (httpServer) => {
         registerPresenceHandlers(ioInstance, socket);
         registerMessageHandlers(ioInstance, socket);
         registerReactionHandlers(ioInstance, socket);
+        registerWhiteboardHandlers(ioInstance, socket);
     });
 
     return ioInstance;

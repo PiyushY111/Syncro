@@ -91,6 +91,7 @@ model Workspace {
     channels   Channel[]
     meetings   Meeting[]
     subTeams   SubTeam[]
+    whiteboards Whiteboard[]
 }
 
 model WorkspaceMember {
@@ -129,6 +130,7 @@ model Project {
     tasks     Task[]
     meetings  Meeting[]
     subTeams  SubTeam[]
+    whiteboards Whiteboard[]
 }
 
 model ProjectMember {
@@ -417,5 +419,25 @@ model AuditLog {
     workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
     user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model Whiteboard {
+    id            String   @id @default(uuid())
+    projectId     String?
+    workspaceId   String?
+    creatorId     String   @default("")
+    isPrivate     Boolean  @default(false)
+    isStarred     Boolean  @default(false)
+    sharedEmails  Json     @default("[]")
+    name          String   @default("Project Board")
+    pages         Json     @default("[{\"id\":\"page-1\",\"name\":\"Page 1\",\"nodes\":[],\"edges\":[],\"drawings\":[]}]")
+    currentPageId String   @default("page-1")
+    data          Json     @default("{\"nodes\":[],\"edges\":[],\"viewport\":{\"x\":0,\"y\":0,\"zoom\":1}}")
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    project     Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+    workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
 
 
