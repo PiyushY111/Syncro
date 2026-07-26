@@ -44,12 +44,23 @@ export default function Team() {
     };
 
     const handleRoleChange = async (memberId, newRole) => {
+        const member = users.find(m => m.id === memberId);
+        const name = member?.user?.name || "this user";
+        const oldRole = member?.customRole || member?.role || "MEMBER";
+        if (newRole === oldRole) return;
+
+        if (!window.confirm(`Are you sure you want to change ${name}'s role from ${oldRole} to ${newRole}?`)) {
+            setUsers([...users]);
+            return;
+        }
+
         try {
             const { data } = await api.put(`/api/workspaces/${currentWorkspace.id}/members/${memberId}`, { role: newRole });
             dispatch(updateWorkspace(data.workspace));
             toast.success("Member role updated successfully");
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to update role");
+            setUsers([...users]);
         }
     };
 
