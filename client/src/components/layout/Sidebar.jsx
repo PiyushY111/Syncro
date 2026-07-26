@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { useSelector } from 'react-redux'
 import { useAuth } from '@/context/AuthContext'
@@ -20,6 +20,25 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
 
     const canAccessRolePortal = isOwner || (userRole === 'MANAGER' && allowManagerPortalAccess) || (userRole === 'ADMIN');
     const canAccessAuditLogs = isOwner || userRole === 'ADMIN' || userRole === 'MANAGER';
+
+    const [hasUnread, setHasUnread] = useState(false);
+
+    useEffect(() => {
+        const checkUnread = () => {
+            try {
+                const unread = JSON.parse(localStorage.getItem('unread_chats') || "[]");
+                console.log("[DEBUG SIDEBAR] Checked unread list:", unread, "hasUnread:", unread.length > 0);
+                setHasUnread(unread.length > 0);
+            } catch (err) {
+                console.error("[DEBUG SIDEBAR] Failed to parse unread list", err);
+                setHasUnread(false);
+            }
+        };
+
+        checkUnread();
+        window.addEventListener('chat:unread_change', checkUnread);
+        return () => window.removeEventListener('chat:unread_change', checkUnread);
+    }, []);
 
     const menuItems = [
         { name: 'Dashboard', href: '/', icon: LayoutDashboardIcon },
@@ -64,8 +83,13 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
                     <div className='p-4'>
                         {menuItems.map((item) => (
                             <NavLink to={item.href} key={item.name} className={({ isActive }) => `flex items-center gap-3 py-2 px-4 text-gray-800 dark:text-zinc-100 cursor-pointer rounded transition-all  ${isActive ? 'bg-gray-100 dark:bg-zinc-900 dark:bg-gradient-to-br dark:from-zinc-800 dark:to-zinc-800/50  dark:ring-zinc-800' : 'hover:bg-gray-50 dark:hover:bg-zinc-800/60'}`} >
-                                <item.icon size={16} />
-                                <p className='text-sm truncate'>{item.name}</p>
+                                <div className="relative flex items-center gap-3 w-full">
+                                    <item.icon size={16} />
+                                    <p className='text-sm truncate'>{item.name}</p>
+                                    {item.name === 'Chat' && hasUnread && (
+                                        <span className="absolute right-0 size-2 bg-red-500 rounded-full animate-pulse" />
+                                    )}
+                                </div>
                             </NavLink>
                         ))}
                     </div>

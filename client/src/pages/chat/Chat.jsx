@@ -37,6 +37,68 @@ export default function Chat() {
     const [isPinnedOpen, setIsPinnedOpen] = useState(false);
     const [convertMsg, setConvertMsg] = useState(null);
 
+    const [unreadChats, setUnreadChats] = useState([]);
+    const [unreadMentions, setUnreadMentions] = useState([]);
+
+    useEffect(() => {
+        const updateUnread = () => {
+            try {
+                const list = JSON.parse(localStorage.getItem('unread_chats') || "[]");
+                console.log("[DEBUG CHAT VIEW] Unread list parsed:", list);
+                setUnreadChats(list);
+            } catch (err) {
+                setUnreadChats([]);
+            }
+            try {
+                const mList = JSON.parse(localStorage.getItem('unread_mentions') || "[]");
+                console.log("[DEBUG CHAT VIEW] Mentions list parsed:", mList);
+                setUnreadMentions(mList);
+            } catch {
+                setUnreadMentions([]);
+            }
+        };
+        updateUnread();
+        window.addEventListener('chat:unread_change', updateUnread);
+        return () => window.removeEventListener('chat:unread_change', updateUnread);
+    }, []);
+
+    useEffect(() => {
+        const activeId = activeChannel?.id || activeDM?.id;
+        console.log("[DEBUG CHAT VIEW] Active chat changed to:", activeId);
+        if (activeId) {
+            localStorage.setItem('active_chat_id', activeId);
+            const key = 'unread_chats';
+            let unread = [];
+            try { unread = JSON.parse(localStorage.getItem(key) || "[]"); } catch {}
+            let unreadChanged = false;
+
+            if (unread.includes(activeId)) {
+                unread = unread.filter(id => id !== activeId);
+                localStorage.setItem(key, JSON.stringify(unread));
+                unreadChanged = true;
+            }
+
+            const mKey = 'unread_mentions';
+            let mentions = [];
+            try { mentions = JSON.parse(localStorage.getItem(mKey) || "[]"); } catch {}
+            if (mentions.includes(activeId)) {
+                mentions = mentions.filter(id => id !== activeId);
+                localStorage.setItem(mKey, JSON.stringify(mentions));
+                unreadChanged = true;
+            }
+
+            if (unreadChanged) {
+                console.log("[DEBUG CHAT VIEW] Read status cleared for active chat:", activeId);
+                window.dispatchEvent(new CustomEvent('chat:unread_change'));
+            }
+        } else {
+            localStorage.removeItem('active_chat_id');
+        }
+        return () => {
+            localStorage.removeItem('active_chat_id');
+        };
+    }, [activeChannel?.id, activeDM?.id]);
+
     useEffect(() => {
         if (!currentWorkspace?.id) return;
         api.get(`/api/chat/workspaces/${currentWorkspace.id}/channels`).then(({ data }) => {
@@ -118,6 +180,8 @@ export default function Chat() {
                 onOpenCreateChannel={() => setIsCreateModalOpen(true)}
                 onOpenChannelBrowser={() => setIsBrowserOpen(true)}
                 canManage={canManageChat}
+                unreadChats={unreadChats}
+                unreadMentions={unreadMentions}
             />
 
             <section className="min-w-0 flex-1 flex flex-col h-full">
@@ -141,7 +205,7 @@ export default function Chat() {
                     onConvertTask={(msg) => setConvertMsg(msg)}
                 />
 
-                <ChatInput onSendMessage={handleSendMessage} onTypingStart={() => socket?.emit("typing:start", { channelId: activeChannel?.id, recipientId: activeDM?.id })} onTypingStop={() => socket?.emit("typing:stop", { channelId: activeChannel?.id, recipientId: activeDM?.id })} />
+                <ChatInput members={currentWorkspace?.members || []} onSendMessage={handleSendMessage} onTypingStart={() => socket?.emit("typing:start", { channelId: activeChannel?.id, recipientId: activeDM?.id })} onTypingStop={() => socket?.emit("typing:stop", { channelId: activeChannel?.id, recipientId: activeDM?.id })} />
             </section>
 
             {activeThreadMessage && <ThreadPanel parentMessage={activeThreadMessage} onClose={() => setActiveThreadMessage(null)} onSendReply={(pId, content) => handleSendMessage(content)} />}

@@ -42,6 +42,40 @@ export const SocketProvider = ({ children }) => {
             setOnlineUsers(usersList || []);
         });
 
+        socketInstance.on("message:received", (msg) => {
+            console.log("[DEBUG SOCKET PROVIDER] Message received:", msg);
+            const activeChatId = localStorage.getItem('active_chat_id');
+            const targetId = msg.channelId || msg.userId || msg.senderId;
+            console.log("[DEBUG SOCKET PROVIDER] targetId:", targetId, "activeChatId:", activeChatId, "senderId:", msg.userId, "currentUserId:", user?.id);
+            if (targetId && targetId !== activeChatId && msg.userId !== user?.id) {
+                // Add to standard unread chats
+                const key = 'unread_chats';
+                let unread = [];
+                try { unread = JSON.parse(localStorage.getItem(key) || "[]"); } catch {}
+                if (!unread.includes(targetId)) {
+                    unread.push(targetId);
+                    localStorage.setItem(key, JSON.stringify(unread));
+                    console.log("[DEBUG SOCKET PROVIDER] Unread list updated & event dispatched:", unread);
+                }
+
+                // Check for @mention (case-insensitive, matches first name / first word followed by word boundary)
+                const firstName = user?.name ? user.name.trim().toLowerCase().split(/\s+/)[0] : '';
+                const isMention = msg.content && firstName && new RegExp(`@${firstName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i').test(msg.content);
+                if (isMention) {
+                    const mentionKey = 'unread_mentions';
+                    let mentions = [];
+                    try { mentions = JSON.parse(localStorage.getItem(mentionKey) || "[]"); } catch {}
+                    if (!mentions.includes(targetId)) {
+                        mentions.push(targetId);
+                        localStorage.setItem(mentionKey, JSON.stringify(mentions));
+                        console.log("[DEBUG SOCKET PROVIDER] Mention list updated:", mentions);
+                    }
+                }
+
+                window.dispatchEvent(new CustomEvent('chat:unread_change'));
+            }
+        });
+
         setSocket(socketInstance);
 
         return () => {

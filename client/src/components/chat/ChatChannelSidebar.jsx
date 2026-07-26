@@ -12,7 +12,9 @@ export default function ChatChannelSidebar({
     onlineUsers = [],
     onOpenCreateChannel,
     onOpenChannelBrowser,
-    canManage = true
+    canManage = true,
+    unreadChats = [],
+    unreadMentions = []
 }) {
     return (
         <aside className="w-64 shrink-0 flex flex-col h-full bg-white border-r border-zinc-200 overflow-hidden">
@@ -46,14 +48,23 @@ export default function ChatChannelSidebar({
                     <div className="space-y-0.5">
                         {channels.map((ch) => {
                             const isActive = activeChannel?.id === ch.id && !activeDM;
+                            const isUnread = unreadChats.includes(ch.id);
+                            const hasMention = unreadMentions.includes(ch.id);
                             return (
                                 <button
                                     key={ch.id}
                                     onClick={() => onSelectChannel(ch)}
-                                    className={`w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${isActive ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-zinc-700 hover:bg-zinc-100'}`}
+                                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${isActive ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-zinc-700 hover:bg-zinc-100'}`}
                                 >
-                                    <ChannelIcon channel={ch} size="sm" className="rounded-md" />
-                                    <span className="truncate">{ch.name}</span>
+                                    <div className="flex items-center gap-2 truncate">
+                                        <ChannelIcon channel={ch} size="sm" className="rounded-md" />
+                                        <span className={`truncate ${isUnread ? 'font-bold text-zinc-900 dark:text-zinc-50' : ''}`}>{ch.name}</span>
+                                    </div>
+                                    {hasMention ? (
+                                        <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded-full shrink-0 animate-pulse">@</span>
+                                    ) : isUnread ? (
+                                        <span className="size-2 bg-blue-500 rounded-full shrink-0 animate-pulse" />
+                                    ) : null}
                                 </button>
                             );
                         })}
@@ -81,17 +92,23 @@ export default function ChatChannelSidebar({
                         {members.map((m) => {
                             const isActive = activeDM?.id === m.userId;
                             const isOnline = onlineUsers.includes(m.userId);
+                            const isUnread = unreadChats.includes(m.userId);
                             return (
                                 <button
                                     key={m.id}
                                     onClick={() => onSelectDM(m.user)}
-                                    className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${isActive ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-zinc-700 hover:bg-zinc-100'}`}
+                                    className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${isActive ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-zinc-700 hover:bg-zinc-100'}`}
                                 >
-                                    <div className="relative">
-                                        <ChatAvatar name={m.user?.name} imageUrl={m.user?.image} size="sm" />
-                                        <span className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-white ${isOnline ? 'bg-emerald-500' : 'bg-zinc-300'}`} />
+                                    <div className="flex items-center gap-2.5 truncate">
+                                        <div className="relative">
+                                            <ChatAvatar name={m.user?.name} imageUrl={m.user?.image} size="sm" />
+                                            <span className={`absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full ring-2 ring-white ${isOnline ? 'bg-emerald-500' : 'bg-zinc-300'}`} />
+                                        </div>
+                                        <span className={`truncate ${isUnread ? 'font-bold text-zinc-900 dark:text-zinc-50' : ''}`}>{m.user?.name || 'Unknown member'}</span>
                                     </div>
-                                    <span className="truncate">{m.user?.name || 'Unknown member'}</span>
+                                    {isUnread && (
+                                        <span className="size-2 bg-red-500 rounded-full shrink-0" />
+                                    )}
                                 </button>
                             );
                         })}
