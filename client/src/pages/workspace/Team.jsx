@@ -20,6 +20,7 @@ export default function Team() {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [activeTab, setActiveTab] = useState("members");
     const [users, setUsers] = useState([]);
+    const [confirmState, setConfirmState] = useState({ isOpen: false, memberId: null, memberName: '', oldRole: '', newRole: '' });
     
     const currentWorkspace = useSelector((state) => state?.workspace?.currentWorkspace || null);
     const projects = currentWorkspace?.projects || [];
@@ -43,17 +44,24 @@ export default function Team() {
         return false;
     };
 
-    const handleRoleChange = async (memberId, newRole) => {
+    const handleRoleChange = (memberId, newRole) => {
         const member = users.find(m => m.id === memberId);
         const name = member?.user?.name || "this user";
         const oldRole = member?.customRole || member?.role || "MEMBER";
         if (newRole === oldRole) return;
 
-        if (!window.confirm(`Are you sure you want to change ${name}'s role from ${oldRole} to ${newRole}?`)) {
-            setUsers([...users]);
-            return;
-        }
+        setConfirmState({
+            isOpen: true,
+            memberId,
+            memberName: name,
+            oldRole,
+            newRole
+        });
+    };
 
+    const executeRoleChange = async () => {
+        const { memberId, newRole } = confirmState;
+        setConfirmState(prev => ({ ...prev, isOpen: false }));
         try {
             const { data } = await api.put(`/api/workspaces/${currentWorkspace.id}/members/${memberId}`, { role: newRole });
             dispatch(updateWorkspace(data.workspace));
@@ -62,6 +70,11 @@ export default function Team() {
             toast.error(error.response?.data?.message || "Failed to update role");
             setUsers([...users]);
         }
+    };
+
+    const cancelRoleChange = () => {
+        setConfirmState(prev => ({ ...prev, isOpen: false }));
+        setUsers([...users]);
     };
 
     const handleRemoveMember = async (memberId, memberName, isSelf = false) => {
@@ -161,6 +174,43 @@ export default function Team() {
                     currentUserRole={currentUserRole}
                 />
             )}
+
+            <ConfirmModal
+                isOpen={confirmState.isOpen}
+                onClose={cancelRoleChange}
+                onConfirm={executeRoleChange}
+                memberName={confirmState.memberName}
+                oldRole={confirmState.oldRole}
+                newRole={confirmState.newRole}
+            />
+        </div>
+    );
+}
+
+function ConfirmModal({ isOpen, onClose, onConfirm, memberName, oldRole, newRole }) {
+    if (!isOpen) return null;
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/70 backdrop-blur-xs">
+            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 w-full max-w-sm shadow-2xl flex flex-col space-y-4 text-left">
+                <h3 className="text-base font-bold text-zinc-900 dark:text-white">Confirm Role Change</h3>
+                <p className="text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+                    Are you sure you want to change the role of <strong>{memberName}</strong> from <strong>{oldRole}</strong> to <strong>{newRole}</strong>?
+                </p>
+                <div className="flex justify-end gap-3 pt-2">
+                    <button
+                        onClick={onClose}
+                        className="px-4 py-2 text-xs font-semibold rounded-lg border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 transition cursor-pointer"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={onConfirm}
+                        className="px-4 py-2 text-xs font-semibold rounded-lg bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition cursor-pointer"
+                    >
+                        Confirm
+                    </button>
+                </div>
+            </div>
         </div>
     );
 }
