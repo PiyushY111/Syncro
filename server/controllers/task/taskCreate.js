@@ -1,6 +1,8 @@
 import { prisma } from '../../config/prisma.js';
 import { inngest } from '../../inngest/index.js';
 import { notifyAssignee } from './taskHelpers.js';
+import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
+import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Create task
 export const createTask = async (req, res) => {
@@ -21,12 +23,10 @@ export const createTask = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const workspaceMembers = project.workspace.members;
-        const userMember = workspaceMembers.find(m => m.userId === userId);
-        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
         const isSubTeamMember = project.subTeams.some(subTeam => subTeam.members.some(m => m.userId === userId));
         const isProjectMember = project.team_lead === userId || project.members.some(m => m.userId === userId) || isSubTeamMember;
-        const canCreate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isProjectMember;
+        const hasTaskCreatePerm = await hasWorkspacePermission(userId, project.workspaceId, 'createTasks');
+        const canCreate = hasTaskCreatePerm || isProjectMember;
 
         if (!canCreate) {
             return res.status(403).json({ message: "You do not have permission to create task for this project" });
@@ -86,6 +86,17 @@ export const createTask = async (req, res) => {
             console.error("Inngest send event failed:", inngestError);
         }
 
+        await logAuditEvent({
+            workspaceId: project.workspaceId,
+            userId,
+            action: "CREATE",
+            entityType: "TASK",
+            entityId: task.id,
+            entityName: task.title,
+            newState: taskWithAssignee,
+            req
+        });
+
         return res.status(201).json({ message: "Task created successfully", task: taskWithAssignee });
     }
     catch (err) {
@@ -118,17 +129,26 @@ export const deleteTask = async (req, res) => {
         }
 
         for (const task of tasks) {
-            const workspaceMembers = task.project.workspace.members;
-            const userMember = workspaceMembers.find(m => m.userId === userId);
-            const userRole = userMember?.role || (task.project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-            
             const isLead = task.project.team_lead === userId;
             const isAssignee = task.assigneeId === userId;
-            const hasRolePerm = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+            const hasRolePerm = await hasWorkspacePermission(userId, task.project.workspaceId, 'deleteTasks');
 
             if (!hasRolePerm && !isLead && !isAssignee) {
                 return res.status(403).json({ message: "You do not have permission to delete one or more of these tasks" });
             }
+        }
+
+        for (const task of tasks) {
+            await logAuditEvent({
+                workspaceId: task.project.workspaceId,
+                userId,
+                action: "DELETE",
+                entityType: "TASK",
+                entityId: task.id,
+                entityName: task.title,
+                previousState: task,
+                req
+            });
         }
 
         const deletedTasks = await prisma.task.deleteMany({

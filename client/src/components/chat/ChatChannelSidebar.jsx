@@ -11,7 +11,8 @@ export default function ChatChannelSidebar({
     onSelectDM,
     onlineUsers = [],
     onOpenCreateChannel,
-    onOpenChannelBrowser
+    onOpenChannelBrowser,
+    canManage = true
 }) {
     return (
         <aside className="w-64 shrink-0 flex flex-col h-full bg-white border-r border-zinc-200 overflow-hidden">
@@ -35,9 +36,11 @@ export default function ChatChannelSidebar({
                 <div>
                     <div className="flex items-center justify-between px-2 mb-1">
                         <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Channels</span>
-                        <button onClick={onOpenCreateChannel} title="Create channel" className="text-zinc-400 hover:text-blue-600 hover:bg-zinc-100 rounded p-0.5 transition cursor-pointer">
-                            <Plus className="size-3.5" strokeWidth={2.5} />
-                        </button>
+                        {canManage && (
+                            <button onClick={onOpenCreateChannel} title="Create channel" className="text-zinc-400 hover:text-blue-600 hover:bg-zinc-100 rounded p-0.5 transition cursor-pointer">
+                                <Plus className="size-3.5" strokeWidth={2.5} />
+                            </button>
+                        )}
                     </div>
 
                     <div className="space-y-0.5">
@@ -57,13 +60,15 @@ export default function ChatChannelSidebar({
                         {channels.length === 0 && <p className="px-3 py-2 text-xs text-zinc-400">No channels yet</p>}
                     </div>
 
-                    <button
-                        onClick={onOpenCreateChannel}
-                        className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-xs text-zinc-400 hover:text-blue-600 transition-colors cursor-pointer"
-                    >
-                        <Plus className="size-3.5" />
-                        <span>Add channels</span>
-                    </button>
+                    {canManage && (
+                        <button
+                            onClick={onOpenCreateChannel}
+                            className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-xs text-zinc-400 hover:text-blue-600 transition-colors cursor-pointer"
+                        >
+                            <Plus className="size-3.5" />
+                            <span>Add channels</span>
+                        </button>
+                    )}
                 </div>
 
                 {/* Direct Messages section */}

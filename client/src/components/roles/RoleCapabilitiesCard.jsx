@@ -13,11 +13,12 @@ export default function RoleCapabilitiesCard({ roleMatrix }) {
             {roles.map((r) => {
                 const perms = roleMatrix?.[r.name] || {};
                 const allowedCount = Object.values(perms).filter(Boolean).length;
+                const totalCount = Object.keys(perms).length || 13;
                 return (
                     <div key={r.name} className={`p-4 rounded-xl border ${r.color} space-y-2`}>
                         <div className="flex items-center justify-between">
                             <h4 className="font-bold text-sm">{r.name}</h4>
-                            <span className="text-[11px] font-semibold">{allowedCount} / 10 Active</span>
+                            <span className="text-[11px] font-semibold">{allowedCount} / {totalCount} Active</span>
                         </div>
                         <p className="text-[11px] opacity-80">
                             {r.name === 'ADMIN' && 'Full administrative management'}

@@ -1,107 +1,60 @@
-export const ROLE_HIERARCHY = {
-    OWNER: 4,
-    ADMIN: 3,
-    MANAGER: 2,
-    MEMBER: 1
-};
+export const ROLE_HIERARCHY = { OWNER: 4, ADMIN: 3, MANAGER: 2, MEMBER: 1 };
 
 export const getUserWorkspaceRole = (workspace, userId) => {
     if (!workspace || !userId) return 'MEMBER';
     if (workspace.ownerId === userId) return 'OWNER';
     const member = workspace.members?.find(m => m.userId === userId || m.user?.id === userId);
-    return member?.role || 'MEMBER';
+    return member?.customRole || member?.role || 'MEMBER';
 };
 
-export const canManageWorkspace = (role) => {
-    return ['OWNER', 'ADMIN'].includes(role);
-};
-
-export const canDeleteWorkspace = (workspace, userId) => {
-    return workspace?.ownerId === userId;
-};
-
-export const canManageMemberRoles = (currentUserRole) => {
-    return ['OWNER', 'ADMIN'].includes(currentUserRole);
-};
-
-export const canInviteMembers = (currentUserRole) => {
-    return ['OWNER', 'ADMIN', 'MANAGER'].includes(currentUserRole);
-};
-
-export const canRemoveMember = (currentUserRole, targetMemberRole, isSelf, workspace, targetUserId) => {
-    if (workspace && workspace.ownerId === targetUserId) {
-        return false; // Primary workspace owner cannot be removed
+const checkPerm = (role, ws, key, def) => {
+    if (role === 'OWNER') return true;
+    if (ws?.settings?.rolePermissions?.[role]) {
+        return ws.settings.rolePermissions[role][key] ?? false;
     }
-    if (isSelf) return true; // Any member can leave workspace
-    
-    const userLevel = ROLE_HIERARCHY[currentUserRole] || 1;
-    const targetLevel = ROLE_HIERARCHY[targetMemberRole] || 1;
-    
-    if (currentUserRole === 'OWNER') return true;
-    if (currentUserRole === 'ADMIN') return targetLevel < 3; // ADMIN can remove MANAGER (2) and MEMBER (1)
-    if (currentUserRole === 'MANAGER') return targetLevel < 2; // MANAGER can remove MEMBER (1)
+    return def.includes(role);
+};
+
+export const canManageWorkspace = (role) => ['OWNER', 'ADMIN'].includes(role);
+export const canDeleteWorkspace = (workspace, userId) => workspace?.ownerId === userId;
+export const canManageMemberRoles = (role) => ['OWNER', 'ADMIN'].includes(role);
+export const canInviteMembers = (role, ws) => checkPerm(role, ws, 'manageMembers', ['OWNER', 'ADMIN', 'MANAGER']);
+export const canRemoveMember = (role, targetRole, isSelf, ws, targetUserId) => {
+    if (ws && ws.ownerId === targetUserId) return false;
+    if (isSelf) return true;
+    const targetLevel = ROLE_HIERARCHY[targetRole] || 1;
+    if (role === 'OWNER') return true;
+    if (role === 'ADMIN') return targetLevel < 3;
+    if (role === 'MANAGER') return targetLevel < 2;
     return false;
 };
 
-export const canCreateProject = (role) => {
-    return ['OWNER', 'ADMIN', 'MANAGER'].includes(role);
-};
+export const canCreateProject = (role, ws) => checkPerm(role, ws, 'createProject', ['OWNER', 'ADMIN', 'MANAGER']);
+export const canEditProject = (role, project, userId, ws) => 
+    role === 'OWNER' || (project?.team_lead === userId) || checkPerm(role, ws, 'editProject', ['OWNER', 'ADMIN', 'MANAGER']);
+export const canDeleteProject = (role, project, userId, ws) => 
+    role === 'OWNER' || (project?.team_lead === userId) || checkPerm(role, ws, 'deleteProject', ['OWNER', 'ADMIN']);
+export const canManageProjectStages = (role, project, userId, ws) => 
+    role === 'OWNER' || (project?.team_lead === userId) || checkPerm(role, ws, 'editProject', ['OWNER', 'ADMIN', 'MANAGER']);
+export const canManageProjectMembers = (role, project, userId, ws) => 
+    role === 'OWNER' || (project?.team_lead === userId) || checkPerm(role, ws, 'editProject', ['OWNER', 'ADMIN', 'MANAGER']);
 
-export const canEditProject = (role, project, userId) => {
-    if (['OWNER', 'ADMIN', 'MANAGER'].includes(role)) return true;
-    if (project && project.team_lead === userId) return true;
-    return false;
-};
+export const isProjectMember = (project, userId) => 
+    !!project && !!userId && (project.team_lead === userId || project.members?.some(m => m.userId === userId || m.user?.id === userId));
 
-export const canDeleteProject = (role, project, userId) => {
-    if (['OWNER', 'ADMIN'].includes(role)) return true;
-    if (project && project.team_lead === userId) return true;
-    return false;
-};
+export const canCreateTask = (role, project, userId, ws) => 
+    role === 'OWNER' || (isProjectMember(project, userId) && checkPerm(role, ws, 'createTasks', ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER'])) || checkPerm(role, ws, 'createTasks', ['OWNER', 'ADMIN', 'MANAGER']);
 
-export const canManageProjectStages = (role, project, userId) => {
-    if (['OWNER', 'ADMIN', 'MANAGER'].includes(role)) return true;
-    if (project && project.team_lead === userId) return true;
-    return false;
-};
+export const canEditTask = (role, project, task, userId, ws) => 
+    role === 'OWNER' || project?.team_lead === userId || task?.assigneeId === userId || (isProjectMember(project, userId) && checkPerm(role, ws, 'editTasks', ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER'])) || checkPerm(role, ws, 'editTasks', ['OWNER', 'ADMIN', 'MANAGER']);
 
-export const canManageProjectMembers = (role, project, userId) => {
-    if (['OWNER', 'ADMIN', 'MANAGER'].includes(role)) return true;
-    if (project && project.team_lead === userId) return true;
-    return false;
-};
+export const canUpdateTaskStatus = (role, project, task, userId, ws) => canEditTask(role, project, task, userId, ws);
+export const canDeleteTask = (role, project, task, userId, ws) => 
+    role === 'OWNER' || project?.team_lead === userId || task?.assigneeId === userId || checkPerm(role, ws, 'deleteTasks', ['OWNER', 'ADMIN', 'MANAGER']);
 
-export const isProjectMember = (project, userId) => {
-    if (!project || !userId) return false;
-    if (project.team_lead === userId) return true;
-    return project.members?.some(m => m.userId === userId || m.user?.id === userId);
-};
+export const canManageChannel = (role, channel, userId, ws) => 
+    role === 'OWNER' || channel?.creatorId === userId || checkPerm(role, ws, 'manageChannels', ['OWNER', 'ADMIN']);
 
-export const canCreateTask = (role, project, userId) => {
-    if (['OWNER', 'ADMIN', 'MANAGER'].includes(role)) return true;
-    return isProjectMember(project, userId);
-};
-
-export const canEditTask = (role, project, task, userId) => {
-    if (['OWNER', 'ADMIN', 'MANAGER'].includes(role)) return true;
-    if (project && project.team_lead === userId) return true;
-    if (task && task.assigneeId === userId) return true;
-    return isProjectMember(project, userId);
-};
-
-export const canUpdateTaskStatus = (role, project, task, userId) => {
-    return canEditTask(role, project, task, userId);
-};
-
-export const canDeleteTask = (role, project, task, userId) => {
-    if (['OWNER', 'ADMIN', 'MANAGER'].includes(role)) return true;
-    if (project && project.team_lead === userId) return true;
-    if (task && task.assigneeId === userId) return true;
-    return false;
-};
-
-export const canManageChannel = (role, channel, userId) => {
-    if (['OWNER', 'ADMIN'].includes(role)) return true;
-    if (channel && channel.creatorId === userId) return true;
-    return false;
-};
+export const canManageWhiteboards = (role, ws) => checkPerm(role, ws, 'manageWhiteboards', ['OWNER', 'ADMIN', 'MANAGER', 'MEMBER']);
+export const canManageChannels = (role, ws) => checkPerm(role, ws, 'manageChannels', ['OWNER', 'ADMIN', 'MANAGER']);
+export const canManageSubTeams = (role, ws) => checkPerm(role, ws, 'manageSubTeams', ['OWNER', 'ADMIN', 'MANAGER']);

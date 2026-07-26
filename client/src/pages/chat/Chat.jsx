@@ -14,11 +14,15 @@ import ChannelBrowserModal from '@/components/chat/dialogs/ChannelBrowserModal';
 import ChannelDetailsModal from '@/components/chat/dialogs/ChannelDetailsModal';
 import PinnedMessagesModal from '@/components/chat/dialogs/PinnedMessagesModal';
 import ConvertMessageModal from '@/components/chat/dialogs/ConvertMessageModal';
+import { getUserWorkspaceRole, canManageChannels } from '@/utils/permissions';
 
 export default function Chat() {
     const { socket, isConnected, onlineUsers } = useSocket();
     const { user: currentUser } = useAuth();
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace);
+
+    const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
+    const canManageChat = canManageChannels(currentUserRole, currentWorkspace);
 
     const [channels, setChannels] = useState([]);
     const [activeChannel, setActiveChannel] = useState(null);
@@ -113,6 +117,7 @@ export default function Chat() {
                 onlineUsers={onlineUsers}
                 onOpenCreateChannel={() => setIsCreateModalOpen(true)}
                 onOpenChannelBrowser={() => setIsBrowserOpen(true)}
+                canManage={canManageChat}
             />
 
             <section className="min-w-0 flex-1 flex flex-col h-full">
@@ -143,7 +148,7 @@ export default function Chat() {
 
             <CreateChannelModal isOpen={isCreateModalOpen} onClose={() => setIsCreateModalOpen(false)} workspaceId={currentWorkspace?.id} onChannelCreated={(ch) => { setChannels(prev => [...prev, ch]); setActiveChannel(ch); }} />
             <ChannelBrowserModal isOpen={isBrowserOpen} onClose={() => setIsBrowserOpen(false)} workspaceId={currentWorkspace?.id} onChannelJoined={(ch) => { setChannels(prev => prev.some(c => c.id === ch.id) ? prev : [...prev, ch]); setActiveChannel(ch); }} />
-            <ChannelDetailsModal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} channel={activeChannel} workspaceMembers={currentWorkspace?.members || []} messages={messages} onChannelUpdated={(ch) => { setActiveChannel(ch); setChannels((prev) => prev.map((item) => item.id === ch.id ? ch : item)); }} onChannelDeleted={(id) => setChannels(prev => prev.filter(c => c.id !== id))} onSelectDM={(user) => { setActiveDM(user); setActiveChannel(null); setIsDetailsOpen(false); }} />
+            <ChannelDetailsModal isOpen={isDetailsOpen} onClose={() => setIsDetailsOpen(false)} channel={activeChannel} workspaceMembers={currentWorkspace?.members || []} messages={messages} onChannelUpdated={(ch) => { setActiveChannel(ch); setChannels((prev) => prev.map((item) => item.id === ch.id ? ch : item)); }} onChannelDeleted={(id) => setChannels(prev => prev.filter(c => c.id !== id))} onSelectDM={(user) => { setActiveDM(user); setActiveChannel(null); setIsDetailsOpen(false); }} canManage={canManageChat} currentUser={currentUser} />
             <PinnedMessagesModal isOpen={isPinnedOpen} onClose={() => setIsPinnedOpen(false)} channelId={activeChannel?.id} />
             <ConvertMessageModal isOpen={Boolean(convertMsg)} onClose={() => setConvertMsg(null)} message={convertMsg} projects={currentWorkspace?.projects || []} />
         </main>

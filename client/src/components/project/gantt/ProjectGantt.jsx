@@ -83,7 +83,7 @@ export default function ProjectGantt({ tasks = [], project }) {
 
     const handleOpenEdit = (task) => {
         const proj = project || currentWorkspace?.projects?.find(p => p.id === task.projectId);
-        if (!canEditTask(currentUserRole, proj, task, user?.id)) return toast.error("No permission to edit task schedule");
+        if (!canEditTask(currentUserRole, proj, task, user?.id, currentWorkspace)) return toast.error("No permission to edit task schedule");
         setSelectedTask(task);
         const s = task.start_date ? new Date(task.start_date) : new Date(task.createdAt);
         setEditingDates({ start_date: format(s, 'yyyy-MM-dd'), due_date: format(new Date(task.due_date), 'yyyy-MM-dd') });

@@ -1,15 +1,17 @@
 import { prisma } from "../../config/prisma.js";
+import { logAuditEvent } from "../../services/auditLogger.js";
 
 export const updateMilestone = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, dueDate, startDate, status, color } = req.body;
 
-        const milestoneExists = await prisma.milestone.findUnique({
-            where: { id }
+        const previousState = await prisma.milestone.findUnique({
+            where: { id },
+            include: { project: true }
         });
 
-        if (!milestoneExists) {
+        if (!previousState) {
             return res.status(404).json({ message: "Milestone not found" });
         }
 
@@ -27,6 +29,18 @@ export const updateMilestone = async (req, res) => {
             include: {
                 tasks: { select: { id: true, title: true, status: true } }
             }
+        });
+
+        await logAuditEvent({
+            workspaceId: previousState.project.workspaceId,
+            userId: req.user.id,
+            action: "UPDATE",
+            entityType: "MILESTONE",
+            entityId: id,
+            entityName: updatedMilestone.title,
+            previousState,
+            newState: updatedMilestone,
+            req
         });
 
         return res.status(200).json({

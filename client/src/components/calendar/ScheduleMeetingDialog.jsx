@@ -54,6 +54,15 @@ export default function ScheduleMeetingDialog({
         );
     };
 
+    const handleAddGMeet = () => {
+        const chars = 'abcdefghijklmnopqrstuvwxyz';
+        const p1 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * 26)]).join('');
+        const p2 = Array.from({ length: 4 }, () => chars[Math.floor(Math.random() * 26)]).join('');
+        const p3 = Array.from({ length: 3 }, () => chars[Math.floor(Math.random() * 26)]).join('');
+        setMeetingLink(`https://meet.google.com/${p1}-${p2}-${p3}`);
+        toast.success("Google Meet link added!");
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (isSubmitting) return;
@@ -208,10 +217,19 @@ export default function ScheduleMeetingDialog({
                     {/* Meeting Link and Location */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label className="flex items-center gap-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider mb-1.5">
-                                <Video className="size-3.5 text-zinc-400" />
-                                Video Link (Optional)
-                            </label>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <label className="flex items-center gap-1 text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-wider">
+                                    <Video className="size-3.5 text-zinc-400" />
+                                    Video Link (Optional)
+                                </label>
+                                <button
+                                    type="button"
+                                    onClick={handleAddGMeet}
+                                    className="text-[10px] text-purple-600 dark:text-purple-400 hover:underline font-semibold cursor-pointer"
+                                >
+                                    Add GMeet
+                                </button>
+                            </div>
                             <input
                                 type="url"
                                 value={meetingLink}

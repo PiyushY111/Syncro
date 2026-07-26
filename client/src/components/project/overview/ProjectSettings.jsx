@@ -17,8 +17,8 @@ export default function ProjectSettings({ project }) {
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
 
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, user?.id);
-    const hasEditPermission = canEditProject(currentUserRole, project, user?.id);
-    const hasDeletePermission = canDeleteProject(currentUserRole, project, user?.id);
+    const hasEditPermission = canEditProject(currentUserRole, project, user?.id, currentWorkspace);
+    const hasDeletePermission = canDeleteProject(currentUserRole, project, user?.id, currentWorkspace);
 
     const [formData, setFormData] = useState({
         name: "",

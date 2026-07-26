@@ -8,7 +8,8 @@ export default function CreateCustomRoleModal({ isOpen, onClose, onCreate }) {
     const [permissions, setPermissions] = useState({
         createProject: false, editProject: false, deleteProject: false,
         createTasks: true, editTasks: true, deleteTasks: false,
-        manageMilestones: false, managePortfolios: false, viewAnalytics: true, manageMembers: false
+        manageMilestones: false, managePortfolios: false, viewAnalytics: true, manageMembers: false,
+        manageWhiteboards: true, manageChannels: false, manageSubTeams: false
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -24,7 +25,10 @@ export default function CreateCustomRoleModal({ isOpen, onClose, onCreate }) {
         { key: 'manageMilestones', label: 'Manage Milestones' },
         { key: 'managePortfolios', label: 'Manage Portfolios' },
         { key: 'viewAnalytics', label: 'View Analytics' },
-        { key: 'manageMembers', label: 'Manage Members' }
+        { key: 'manageMembers', label: 'Manage Members' },
+        { key: 'manageWhiteboards', label: 'Manage Whiteboards' },
+        { key: 'manageChannels', label: 'Manage Channels' },
+        { key: 'manageSubTeams', label: 'Manage Sub-Teams' }
     ];
 
     const togglePermission = (key) => {

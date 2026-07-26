@@ -4,7 +4,7 @@ import ChannelInfoTab from '../channelSettings/ChannelInfoTab';
 import ChannelMembersTab from '../channelSettings/ChannelMembersTab';
 import ChannelStarredTab from '../channelSettings/ChannelStarredTab';
 
-export default function ChannelDetailsModal({ isOpen, onClose, channel, workspaceMembers = [], onChannelUpdated, onChannelDeleted, onSelectDM }) {
+export default function ChannelDetailsModal({ isOpen, onClose, channel, workspaceMembers = [], onChannelUpdated, onChannelDeleted, onSelectDM, canManage, currentUser }) {
     const [activeTab, setActiveTab] = useState('info');
 
     if (!isOpen || !channel) return null;
@@ -40,7 +40,7 @@ export default function ChannelDetailsModal({ isOpen, onClose, channel, workspac
                                 activeTab === tab.key
                                     ? 'bg-zinc-100 text-zinc-900 font-semibold border-l-[3px] border-l-blue-500'
                                     : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 border-l-[3px] border-l-transparent'
-                            }`}
+                             }`}
                         >
                             <tab.icon className={`size-4 ${activeTab === tab.key ? tab.color : 'text-zinc-400'}`} />
                             {tab.label}
@@ -51,7 +51,7 @@ export default function ChannelDetailsModal({ isOpen, onClose, channel, workspac
                 {/* Content area */}
                 <div className="flex-1 overflow-y-auto p-5">
                     {activeTab === 'info' && (
-                        <ChannelInfoTab channel={channel} onChannelUpdated={onChannelUpdated} onChannelDeleted={onChannelDeleted} onClose={onClose} />
+                        <ChannelInfoTab channel={channel} onChannelUpdated={onChannelUpdated} onChannelDeleted={onChannelDeleted} onClose={onClose} canManage={canManage} currentUser={currentUser} />
                     )}
                     {activeTab === 'starred' && (
                         <ChannelStarredTab channelId={channel.id} />

@@ -396,6 +396,8 @@ enum AuditEntity {
     WORKSPACE
     USER
     MEETING
+    SUBTEAM
+    WHITEBOARD
 }
 
 enum SeverityLevel {

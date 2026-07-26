@@ -15,7 +15,7 @@ export default function ProjectHeader({ project, navigate, setShowCreateTask }) 
     const { user } = useAuth();
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, user?.id);
-    const canCreate = canCreateTask(currentUserRole, project, user?.id);
+    const canCreate = canCreateTask(currentUserRole, project, user?.id, currentWorkspace);
 
     return (
         <div className="flex max-md:flex-col gap-4 flex-wrap items-start justify-between max-w-6xl text-left">

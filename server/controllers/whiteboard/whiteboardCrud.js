@@ -1,4 +1,6 @@
 import { prisma } from '../../config/prisma.js';
+import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
+import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Get all whiteboards for a project
 export const getProjectWhiteboards = async (req, res) => {
@@ -75,6 +77,10 @@ export const createWhiteboard = async (req, res) => {
         if (!workspaceId) {
             return res.status(400).json({ message: 'workspaceId is required' });
         }
+        const canManage = await hasWorkspacePermission(req.user.id, workspaceId, 'manageWhiteboards');
+        if (!canManage) {
+            return res.status(403).json({ message: "You do not have permission to create whiteboards in this workspace" });
+        }
         const whiteboard = await prisma.whiteboard.create({
             data: {
                 workspaceId,
@@ -85,6 +91,18 @@ export const createWhiteboard = async (req, res) => {
                 data: { nodes: [], edges: [], drawings: [], viewport: { x: 0, y: 0, zoom: 1 } }
             }
         });
+
+        await logAuditEvent({
+            workspaceId,
+            userId: req.user.id,
+            action: "CREATE",
+            entityType: "WHITEBOARD",
+            entityId: whiteboard.id,
+            entityName: whiteboard.name,
+            newState: whiteboard,
+            req
+        });
+
         return res.status(201).json(whiteboard);
     } catch (err) {
         console.error("[CREATE WHITEBOARD ERROR]", err);
@@ -96,9 +114,30 @@ export const createWhiteboard = async (req, res) => {
 export const deleteWhiteboard = async (req, res) => {
     try {
         const { id } = req.params;
+        const board = await prisma.whiteboard.findUnique({ where: { id } });
+        if (!board) return res.status(404).json({ message: 'Whiteboard not found' });
+        const isCreator = board.creatorId === req.user.id;
+        const canManage = await hasWorkspacePermission(req.user.id, board.workspaceId, 'manageWhiteboards');
+        if (!isCreator && !canManage) {
+            return res.status(403).json({ message: 'You do not have permission to delete this whiteboard' });
+        }
+        const previousState = { ...board };
+
         await prisma.whiteboard.delete({
             where: { id }
         });
+
+        await logAuditEvent({
+            workspaceId: board.workspaceId,
+            userId: req.user.id,
+            action: "DELETE",
+            entityType: "WHITEBOARD",
+            entityId: id,
+            entityName: board.name,
+            previousState,
+            req
+        });
+
         return res.status(200).json({ message: 'Whiteboard deleted successfully' });
     } catch (err) {
         console.error("[DELETE WHITEBOARD ERROR]", err);
@@ -116,6 +155,19 @@ export const starWhiteboard = async (req, res) => {
             where: { id },
             data: { isStarred: !board.isStarred }
         });
+
+        await logAuditEvent({
+            workspaceId: board.workspaceId,
+            userId: req.user.id,
+            action: "UPDATE",
+            entityType: "WHITEBOARD",
+            entityId: id,
+            entityName: board.name,
+            previousState: board,
+            newState: updated,
+            req
+        });
+
         return res.status(200).json(updated);
     } catch (err) {
         console.error("[STAR WHITEBOARD ERROR]", err);

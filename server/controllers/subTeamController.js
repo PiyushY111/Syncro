@@ -1,4 +1,6 @@
 import { prisma } from '../config/prisma.js';
+import { hasWorkspacePermission } from './role/checkPermissionHelper.js';
+import { logAuditEvent } from '../services/auditLogger.js';
 
 // 1. Create a sub-team
 export const createSubTeam = async (req, res) => {
@@ -22,10 +24,7 @@ export const createSubTeam = async (req, res) => {
             return res.status(404).json({ message: "Workspace not found" });
         }
 
-        // Check if user is Workspace Owner/Admin/Manager
-        const member = workspace.members.find(m => m.userId === userId);
-        const userRole = member?.role || (workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const hasPermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        const hasPermission = await hasWorkspacePermission(userId, workspaceId, 'manageSubTeams');
 
         if (!hasPermission) {
             return res.status(403).json({ message: "Only workspace owners or managers can create sub-teams" });
@@ -41,6 +40,17 @@ export const createSubTeam = async (req, res) => {
                 members: { include: { user: true } },
                 project: true
             }
+        });
+
+        await logAuditEvent({
+            workspaceId,
+            userId,
+            action: "CREATE",
+            entityType: "SUBTEAM",
+            entityId: subTeam.id,
+            entityName: subTeam.name,
+            newState: subTeam,
+            req
         });
 
         return res.status(201).json({ subTeam, message: "Sub-team created successfully" });
@@ -104,9 +114,7 @@ export const updateSubTeam = async (req, res) => {
         }
 
         const workspace = subTeam.workspace;
-        const member = workspace.members.find(m => m.userId === userId);
-        const userRole = member?.role || (workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const hasPermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        const hasPermission = await hasWorkspacePermission(userId, subTeam.workspaceId, 'manageSubTeams');
 
         if (!hasPermission) {
             return res.status(403).json({ message: "Only workspace owners or managers can modify sub-teams" });
@@ -123,6 +131,14 @@ export const updateSubTeam = async (req, res) => {
             }
         }
 
+        const previousState = await prisma.subTeam.findUnique({
+            where: { id },
+            include: {
+                members: { include: { user: true } },
+                project: true
+            }
+        });
+
         const updated = await prisma.subTeam.update({
             where: { id },
             data: {
@@ -134,6 +150,18 @@ export const updateSubTeam = async (req, res) => {
                 members: { include: { user: true } },
                 project: true
             }
+        });
+
+        await logAuditEvent({
+            workspaceId: subTeam.workspaceId,
+            userId,
+            action: "UPDATE",
+            entityType: "SUBTEAM",
+            entityId: id,
+            entityName: updated.name,
+            previousState,
+            newState: updated,
+            req
         });
 
         return res.json({ subTeam: updated, message: "Sub-team updated successfully" });
@@ -159,15 +187,32 @@ export const deleteSubTeam = async (req, res) => {
         }
 
         const workspace = subTeam.workspace;
-        const member = workspace.members.find(m => m.userId === userId);
-        const userRole = member?.role || (workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const hasPermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        const hasPermission = await hasWorkspacePermission(userId, subTeam.workspaceId, 'manageSubTeams');
 
         if (!hasPermission) {
             return res.status(403).json({ message: "Only workspace owners or managers can delete sub-teams" });
         }
 
+        const previousState = await prisma.subTeam.findUnique({
+            where: { id },
+            include: {
+                members: { include: { user: true } },
+                project: true
+            }
+        });
+
         await prisma.subTeam.delete({ where: { id } });
+
+        await logAuditEvent({
+            workspaceId: subTeam.workspaceId,
+            userId,
+            action: "DELETE",
+            entityType: "SUBTEAM",
+            entityId: id,
+            entityName: subTeam.name,
+            previousState,
+            req
+        });
 
         return res.json({ message: "Sub-team deleted successfully" });
     } catch (err) {
@@ -197,9 +242,7 @@ export const addSubTeamMember = async (req, res) => {
         }
 
         const workspace = subTeam.workspace;
-        const member = workspace.members.find(m => m.userId === adminUserId);
-        const userRole = member?.role || (workspace.ownerId === adminUserId ? 'OWNER' : 'MEMBER');
-        const hasPermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        const hasPermission = await hasWorkspacePermission(adminUserId, subTeam.workspaceId, 'manageSubTeams');
 
         if (!hasPermission) {
             return res.status(403).json({ message: "Only workspace owners or managers can manage sub-team members" });
@@ -219,6 +262,17 @@ export const addSubTeamMember = async (req, res) => {
             include: {
                 user: { select: { id: true, name: true, email: true, image: true } }
             }
+        });
+
+        await logAuditEvent({
+            workspaceId: subTeam.workspaceId,
+            userId: adminUserId,
+            action: "UPDATE",
+            entityType: "SUBTEAM",
+            entityId: id,
+            entityName: `${subTeam.name} - Add member ${membership.user?.name}`,
+            newState: membership,
+            req
         });
 
         return res.status(201).json({ membership, message: "Member added to sub-team" });
@@ -247,19 +301,32 @@ export const removeSubTeamMember = async (req, res) => {
         }
 
         const workspace = subTeam.workspace;
-        const member = workspace.members.find(m => m.userId === adminUserId);
-        const userRole = member?.role || (workspace.ownerId === adminUserId ? 'OWNER' : 'MEMBER');
-        const hasPermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        const hasPermission = await hasWorkspacePermission(adminUserId, subTeam.workspaceId, 'manageSubTeams');
 
         if (!hasPermission) {
             return res.status(403).json({ message: "Only workspace owners or managers can manage sub-team members" });
         }
+
+        const targetMember = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { name: true }
+        });
 
         await prisma.subTeamMember.deleteMany({
             where: {
                 subTeamId: id,
                 userId
             }
+        });
+
+        await logAuditEvent({
+            workspaceId: subTeam.workspaceId,
+            userId: adminUserId,
+            action: "UPDATE",
+            entityType: "SUBTEAM",
+            entityId: id,
+            entityName: `${subTeam.name} - Remove member ${targetMember?.name || userId}`,
+            req
         });
 
         return res.json({ message: "Member removed from sub-team successfully" });

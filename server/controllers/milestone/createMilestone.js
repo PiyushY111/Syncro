@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { logAuditEvent } from "../../services/auditLogger.js";
 
 export const createMilestone = async (req, res) => {
     try {
@@ -31,6 +32,17 @@ export const createMilestone = async (req, res) => {
                     include: { assignee: true }
                 }
             }
+        });
+
+        await logAuditEvent({
+            workspaceId: project.workspaceId,
+            userId: req.user.id,
+            action: "CREATE",
+            entityType: "MILESTONE",
+            entityId: milestone.id,
+            entityName: milestone.title,
+            newState: milestone,
+            req
         });
 
         return res.status(201).json({

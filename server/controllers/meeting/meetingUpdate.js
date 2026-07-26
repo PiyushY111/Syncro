@@ -1,5 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { updateMeetingInGoogleCalendar, deleteMeetingFromGoogleCalendar } from '../../services/googleCalendarService.js';
+import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Update a meeting
 export const updateMeeting = async (req, res) => {
@@ -32,6 +33,11 @@ export const updateMeeting = async (req, res) => {
         if (meeting.creatorId !== userId) {
             return res.status(403).json({ message: 'Only the meeting creator can update details' });
         }
+
+        const previousState = await prisma.meeting.findUnique({
+            where: { id },
+            include: { invites: true }
+        });
 
         // Update basic details
         const updatedMeeting = await prisma.meeting.update({
@@ -107,6 +113,18 @@ export const updateMeeting = async (req, res) => {
             }
         }
 
+        await logAuditEvent({
+            workspaceId: meeting.workspaceId,
+            userId,
+            action: "UPDATE",
+            entityType: "MEETING",
+            entityId: id,
+            entityName: fullMeeting.title,
+            previousState,
+            newState: fullMeeting,
+            req
+        });
+
         return res.json({ message: 'Meeting updated successfully', meeting: fullMeeting });
     } catch (error) {
         console.error('Error in updateMeeting:', error);
@@ -146,8 +164,21 @@ export const deleteMeeting = async (req, res) => {
             }
         }
 
+        const previousState = { ...meeting };
+
         await prisma.meeting.delete({
             where: { id }
+        });
+
+        await logAuditEvent({
+            workspaceId: meeting.workspaceId,
+            userId,
+            action: "DELETE",
+            entityType: "MEETING",
+            entityId: id,
+            entityName: meeting.title,
+            previousState,
+            req
         });
 
         return res.json({ message: 'Meeting cancelled successfully', meetingId: id });

@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { logAuditEvent } from "../../services/auditLogger.js";
 
 export const createPortfolio = async (req, res) => {
     try {
@@ -51,6 +52,17 @@ export const createPortfolio = async (req, res) => {
                 },
                 owner: true
             }
+        });
+
+        await logAuditEvent({
+            workspaceId,
+            userId,
+            action: "CREATE",
+            entityType: "PORTFOLIO",
+            entityId: portfolio.id,
+            entityName: portfolio.name,
+            newState: fullPortfolio,
+            req
         });
 
         return res.status(201).json({

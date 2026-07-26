@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, Plus, Trash2, Folder, UserPlus, UserMinus, ChevronRight, Edit3 } from 'lucide-react';
 import api from '@/configs/api';
 import toast from 'react-hot-toast';
+import { canManageSubTeams } from '@/utils/permissions';
 
 export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
     const [subTeams, setSubTeams] = useState([]);
@@ -13,7 +14,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
     const [selectedProjectId, setSelectedProjectId] = useState('');
     const [addingMemberId, setAddingMemberId] = useState('');
 
-    const canManage = ['OWNER', 'ADMIN', 'MANAGER'].includes(currentUserRole);
+    const canManage = canManageSubTeams(currentUserRole, currentWorkspace);
 
     const fetchSubTeams = async () => {
         try {

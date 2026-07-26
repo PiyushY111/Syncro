@@ -1,5 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { pushMeetingToGoogleCalendar } from '../../services/googleCalendarService.js';
+import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Create a meeting and send invites
 export const createMeeting = async (req, res) => {
@@ -116,6 +117,17 @@ export const createMeeting = async (req, res) => {
         } catch (gcalErr) {
             console.error('[Google Calendar Push Error]', gcalErr);
         }
+
+        await logAuditEvent({
+            workspaceId,
+            userId: creatorId,
+            action: "CREATE",
+            entityType: "MEETING",
+            entityId: meeting.id,
+            entityName: meeting.title,
+            newState: fullMeeting,
+            req
+        });
 
         return res.status(201).json({ message: 'Meeting scheduled successfully', meeting: fullMeeting });
     } catch (error) {

@@ -1,12 +1,20 @@
 import { prisma } from "../../config/prisma.js";
+import { logAuditEvent } from "../../services/auditLogger.js";
 
 export const updatePortfolio = async (req, res) => {
     try {
         const { id } = req.params;
         const { name, description, color, icon, status } = req.body;
 
-        const existing = await prisma.portfolio.findUnique({ where: { id } });
-        if (!existing) {
+        const previousState = await prisma.portfolio.findUnique({
+            where: { id },
+            include: {
+                projects: { include: { project: true } },
+                owner: true
+            }
+        });
+
+        if (!previousState) {
             return res.status(404).json({ message: "Portfolio not found" });
         }
 
@@ -24,6 +32,18 @@ export const updatePortfolio = async (req, res) => {
                 projects: { include: { project: true } },
                 owner: true
             }
+        });
+
+        await logAuditEvent({
+            workspaceId: previousState.workspaceId,
+            userId: req.user.id,
+            action: "UPDATE",
+            entityType: "PORTFOLIO",
+            entityId: id,
+            entityName: updated.name,
+            previousState,
+            newState: updated,
+            req
         });
 
         return res.status(200).json({

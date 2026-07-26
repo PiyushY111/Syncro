@@ -1,4 +1,6 @@
 import { prisma } from "../../config/prisma.js";
+import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
+import { logAuditEvent } from "../../services/auditLogger.js";
 
 // Create Project
 export const createProject = async (req, res) => {
@@ -24,9 +26,8 @@ export const createProject = async (req, res) => {
         if (!workspace) {
             return res.status(404).json({ message: "WorkSpace not found" });
         }
-        const userMember = workspace.members.find((member) => member.userId === userId);
-        const userRole = userMember?.role || (workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const canCreate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        
+        const canCreate = await hasWorkspacePermission(userId, workspaceId, 'createProject');
 
         if (!canCreate) {
             return res.status(403).json({ message: "You do not have permission to create a project in this workspace" });
@@ -77,6 +78,17 @@ export const createProject = async (req, res) => {
                 members: { include: { user: true } },
                 tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } }
             }
+        });
+
+        await logAuditEvent({
+            workspaceId,
+            userId,
+            action: "CREATE",
+            entityType: "PROJECT",
+            entityId: project.id,
+            entityName: project.name,
+            newState: projectWithMembers,
+            req
         });
 
         return res.status(201).json({ message: "Project created successfully", project: projectWithMembers });

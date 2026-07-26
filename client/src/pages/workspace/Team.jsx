@@ -25,7 +25,7 @@ export default function Team() {
     const projects = currentWorkspace?.projects || [];
 
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
-    const canInvite = canInviteMembers(currentUserRole);
+    const canInvite = canInviteMembers(currentUserRole, currentWorkspace);
 
     const canEditMember = (targetMember) => {
         const isCallerOwner = currentWorkspace?.ownerId === currentUser?.id || currentUserRole === 'OWNER';

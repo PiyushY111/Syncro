@@ -1,5 +1,7 @@
 import { prisma } from '../../config/prisma.js';
 import { notifyAssignee, wouldCreateCycle } from './taskHelpers.js';
+import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
+import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Update task
 export const updateTask = async (req, res) => {
@@ -26,15 +28,13 @@ export const updateTask = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const workspaceMembers = project.workspace.members;
-        const userMember = workspaceMembers.find(m => m.userId === userId);
-        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        
         const isLead = project.team_lead === userId;
         const isAssignee = task.assigneeId === userId;
         const isMember = project.members.some(m => m.userId === userId);
         const isSubTeamMember = project.subTeams.some(subTeam => subTeam.members.some(m => m.userId === userId));
-        const canUpdate = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isLead || isAssignee || isMember || isSubTeamMember;
+        
+        const hasTaskUpdatePerm = await hasWorkspacePermission(userId, project.workspaceId, 'editTasks');
+        const canUpdate = hasTaskUpdatePerm || isLead || isAssignee || isMember || isSubTeamMember;
 
         if (!canUpdate) {
             return res.status(403).json({ message: "You do not have permission to update this task" });
@@ -88,6 +88,16 @@ export const updateTask = async (req, res) => {
             };
         }
 
+        const previousState = await prisma.task.findUnique({
+            where: { id: req.params.id },
+            include: { 
+                assignee: true, 
+                project: true,
+                dependencies: true,
+                blockedTasks: true
+            }
+        });
+
         const updatedTask = await prisma.task.update({
             where: { id: req.params.id },
             data: updateData
@@ -111,6 +121,18 @@ export const updateTask = async (req, res) => {
                 console.error("Email notification failed:", emailError);
             }
         }
+
+        await logAuditEvent({
+            workspaceId: project.workspaceId,
+            userId,
+            action: "UPDATE",
+            entityType: "TASK",
+            entityId: req.params.id,
+            entityName: taskWithAssignee.title,
+            previousState,
+            newState: taskWithAssignee,
+            req
+        });
 
         return res.status(201).json({ message: "Task updated successfully", task: taskWithAssignee });
     }

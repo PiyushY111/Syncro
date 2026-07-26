@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { logAuditEvent } from "../../services/auditLogger.js";
 
 export const addProjectsToPortfolio = async (req, res) => {
     try {
@@ -22,9 +23,22 @@ export const addProjectsToPortfolio = async (req, res) => {
             order: currentCount + index
         }));
 
+        const previousState = { ...portfolio };
+
         await prisma.portfolioProject.createMany({
             data: newEntries,
             skipDuplicates: true
+        });
+
+        await logAuditEvent({
+            workspaceId: portfolio.workspaceId,
+            userId: req.user.id,
+            action: "UPDATE",
+            entityType: "PORTFOLIO",
+            entityId: id,
+            entityName: `${portfolio.name} - Added projects`,
+            previousState,
+            req
         });
 
         return res.status(200).json({ message: "Projects added to portfolio successfully" });
@@ -36,10 +50,25 @@ export const addProjectsToPortfolio = async (req, res) => {
 
 export const removeProjectFromPortfolio = async (req, res) => {
     try {
-        const { id, projectId } = req.params;
+        const portfolio = await prisma.portfolio.findUnique({ where: { id } });
+        if (!portfolio) {
+            return res.status(404).json({ message: "Portfolio not found" });
+        }
+        const previousState = { ...portfolio };
 
         await prisma.portfolioProject.deleteMany({
             where: { portfolioId: id, projectId }
+        });
+
+        await logAuditEvent({
+            workspaceId: portfolio.workspaceId,
+            userId: req.user.id,
+            action: "UPDATE",
+            entityType: "PORTFOLIO",
+            entityId: id,
+            entityName: `${portfolio.name} - Removed project ${projectId}`,
+            previousState,
+            req
         });
 
         return res.status(200).json({ message: "Project removed from portfolio" });

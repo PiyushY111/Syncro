@@ -17,7 +17,7 @@ export default function ProjectKanban({ tasks, project }) {
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
 
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
-    const canManageStages = canManageProjectStages(currentUserRole, project, currentUser?.id);
+    const canManageStages = canManageProjectStages(currentUserRole, project, currentUser?.id, currentWorkspace);
     const stages = project?.stages ? project.stages.split(",") : ["TODO", "IN_PROGRESS", "DONE"];
 
     const columns = stages.map(stageId => ({

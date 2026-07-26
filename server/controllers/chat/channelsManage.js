@@ -1,19 +1,11 @@
 import { prisma } from '../../config/prisma.js';
+import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
 
 const canManageChannel = async (channel, userId) => {
     if (!channel) return false;
     if (channel.creatorId === userId) return true;
 
-    const workspace = await prisma.workspace.findUnique({
-        where: { id: channel.workspaceId },
-        select: { ownerId: true }
-    });
-    if (workspace?.ownerId === userId) return true;
-
-    const member = await prisma.workspaceMember.findFirst({
-        where: { workspaceId: channel.workspaceId, userId, role: { in: ['OWNER', 'ADMIN', 'MANAGER'] } }
-    });
-    return !!member;
+    return await hasWorkspacePermission(userId, channel.workspaceId, 'manageChannels');
 };
 
 export const updateChannelDetails = async (req, res) => {

@@ -1,4 +1,6 @@
 import { prisma } from "../../config/prisma.js";
+import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
+import { logAuditEvent } from "../../services/auditLogger.js";
 
 // Update Project
 export const updateProject = async (req, res) => {
@@ -27,11 +29,10 @@ export const updateProject = async (req, res) => {
         if (!workspace) {
             return res.status(404).json({ message: "Workspace not found" });
         }
-        const userMember = workspace.members.find(m => m.userId === userId);
-        const userRole = userMember?.role || (workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const hasWorkspacePermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        
+        const hasEditPerm = await hasWorkspacePermission(userId, workspaceId, 'editProject');
 
-        if (!hasWorkspacePermission) {
+        if (!hasEditPerm) {
             const project = await prisma.project.findUnique({
                 where: { id }
             });
@@ -56,6 +57,15 @@ export const updateProject = async (req, res) => {
             }
             resolvedTeamLeadId = user.id;
         }
+
+        const previousState = await prisma.project.findUnique({
+            where: { id },
+            include: {
+                owner: true,
+                members: { include: { user: true } },
+                tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } }
+            }
+        });
 
         await prisma.project.update({
             where: { id },
@@ -100,6 +110,18 @@ export const updateProject = async (req, res) => {
                 members: { include: { user: true } },
                 tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } }
             }
+        });
+
+        await logAuditEvent({
+            workspaceId,
+            userId,
+            action: "UPDATE",
+            entityType: "PROJECT",
+            entityId: id,
+            entityName: name,
+            previousState,
+            newState: projectWithMembers,
+            req
         });
 
         return res.status(200).json({ project: projectWithMembers, message: "Project updated successfully" });

@@ -11,7 +11,10 @@ export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggle
         { key: 'manageMilestones', label: 'Manage Project Milestones', category: 'Milestones' },
         { key: 'managePortfolios', label: 'Manage Executive Portfolios', category: 'Portfolios' },
         { key: 'viewAnalytics', label: 'Access Project Analytics', category: 'Analytics' },
-        { key: 'manageMembers', label: 'Manage Workspace Members', category: 'Team' }
+        { key: 'manageMembers', label: 'Manage Workspace Members', category: 'Team' },
+        { key: 'manageWhiteboards', label: 'Manage Whiteboards', category: 'Whiteboard' },
+        { key: 'manageChannels', label: 'Manage Channels', category: 'Chat' },
+        { key: 'manageSubTeams', label: 'Manage Sub-Teams', category: 'Sub-Teams' }
     ];
 
     const standardRoles = ['ADMIN', 'MANAGER', 'MEMBER', 'VIEWER'];

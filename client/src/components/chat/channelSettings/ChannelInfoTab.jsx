@@ -4,7 +4,7 @@ import api from '@/configs/api';
 import toast from 'react-hot-toast';
 import ChannelIcon from '../ChannelIcon';
 
-export default function ChannelInfoTab({ channel, onChannelUpdated, onChannelDeleted, onClose }) {
+export default function ChannelInfoTab({ channel, onChannelUpdated, onChannelDeleted, onClose, canManage = true, currentUser }) {
     const [name, setName] = useState(channel?.name || '');
     const [description, setDescription] = useState(channel?.description || '');
     const [iconUrl, setIconUrl] = useState(channel?.iconUrl || '');
@@ -86,9 +86,11 @@ export default function ChannelInfoTab({ channel, onChannelUpdated, onChannelDel
                 <div>
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold text-zinc-900">About Channel</span>
-                        <button onClick={() => setIsEditing(true)} className="text-blue-500 text-xs font-medium flex items-center gap-1 hover:text-blue-600 cursor-pointer transition">
-                            <Edit2 className="size-3" /> Edit
-                        </button>
+                        {(canManage || channel.creatorId === currentUser?.id) && (
+                            <button onClick={() => setIsEditing(true)} className="text-blue-500 text-xs font-medium flex items-center gap-1 hover:text-blue-600 cursor-pointer transition">
+                                <Edit2 className="size-3" /> Edit
+                            </button>
+                        )}
                     </div>
                     <p className="text-zinc-500 text-sm leading-relaxed">{channel.description || "No topic description provided."}</p>
                 </div>
@@ -96,18 +98,22 @@ export default function ChannelInfoTab({ channel, onChannelUpdated, onChannelDel
 
             {/* Danger actions */}
             <div className="border-t border-zinc-100 pt-4 space-y-1">
-                <button onClick={handleClearChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-700 hover:bg-zinc-50 font-medium transition cursor-pointer text-sm">
-                    <Trash2 className="size-4 text-amber-500" />
-                    Clear Chat History
-                </button>
+                {(canManage || channel.creatorId === currentUser?.id) && (
+                    <button onClick={handleClearChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-700 hover:bg-zinc-50 font-medium transition cursor-pointer text-sm">
+                        <Trash2 className="size-4 text-amber-500" />
+                        Clear Chat History
+                    </button>
+                )}
                 <button onClick={async () => { if (window.confirm("Exit group?")) { onClose(); } }} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-rose-600 hover:bg-rose-50 font-medium transition cursor-pointer text-sm">
                     <LogOut className="size-4" />
                     Exit Group / Leave Channel
                 </button>
-                <button onClick={handleDeleteChannel} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-rose-600 hover:bg-rose-50 font-medium transition cursor-pointer text-sm">
-                    <Trash2 className="size-4 text-rose-500" />
-                    Delete Channel permanently
-                </button>
+                {(canManage || channel.creatorId === currentUser?.id) && (
+                    <button onClick={handleDeleteChannel} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-rose-600 hover:bg-rose-50 font-medium transition cursor-pointer text-sm">
+                        <Trash2 className="size-4 text-rose-500" />
+                        Delete Channel permanently
+                    </button>
+                )}
             </div>
         </div>
     );

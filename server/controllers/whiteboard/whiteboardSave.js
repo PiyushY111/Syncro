@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Update/Save whiteboard elements and viewport
 export const saveWhiteboard = async (req, res) => {
@@ -12,9 +13,25 @@ export const saveWhiteboard = async (req, res) => {
         if (pages !== undefined) updateData.pages = pages;
         if (currentPageId !== undefined) updateData.currentPageId = currentPageId;
 
+        const board = await prisma.whiteboard.findUnique({ where: { id } });
+        if (!board) return res.status(404).json({ message: 'Whiteboard not found' });
+        const previousState = { ...board };
+
         const whiteboard = await prisma.whiteboard.update({
             where: { id },
             data: updateData
+        });
+
+        await logAuditEvent({
+            workspaceId: board.workspaceId,
+            userId: req.user.id,
+            action: "UPDATE",
+            entityType: "WHITEBOARD",
+            entityId: id,
+            entityName: whiteboard.name,
+            previousState,
+            newState: whiteboard,
+            req
         });
 
         return res.status(200).json(whiteboard);
@@ -39,10 +56,24 @@ export const shareWhiteboard = async (req, res) => {
         if (board.creatorId && board.creatorId !== req.user.id) {
             return res.status(403).json({ message: 'Only the creator can share this whiteboard' });
         }
+        const previousState = { ...board };
         const updated = await prisma.whiteboard.update({
             where: { id },
             data: { sharedEmails: emails }
         });
+
+        await logAuditEvent({
+            workspaceId: board.workspaceId,
+            userId: req.user.id,
+            action: "UPDATE",
+            entityType: "WHITEBOARD",
+            entityId: id,
+            entityName: `${board.name} - Shared`,
+            previousState,
+            newState: updated,
+            req
+        });
+
         return res.status(200).json(updated);
     } catch (err) {
         console.error("[SHARE WHITEBOARD ERROR]", err);

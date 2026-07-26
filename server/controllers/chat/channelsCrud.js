@@ -1,10 +1,16 @@
 import { prisma } from '../../config/prisma.js';
+import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
 
 export const createChannel = async (req, res) => {
     try {
         const { name, description, iconUrl, workspaceId, isPrivate } = req.body;
         const userId = req.user.id;
         if (!name || !workspaceId) return res.status(400).json({ message: "Name and Workspace ID are required" });
+
+        const canManage = await hasWorkspacePermission(userId, workspaceId, 'manageChannels');
+        if (!canManage) {
+            return res.status(403).json({ message: "You do not have permission to create channels in this workspace" });
+        }
 
         const channel = await prisma.channel.create({
             data: {

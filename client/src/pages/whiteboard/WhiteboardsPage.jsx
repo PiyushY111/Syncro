@@ -5,9 +5,12 @@ import { Presentation, Plus, ArrowLeft, Trash2, Folder, Star } from 'lucide-reac
 import api from '@/configs/api';
 import WhiteboardCanvas from '@/components/project/whiteboard/WhiteboardCanvas';
 import { CreateBoardModal, ConfirmDeleteModal } from '@/components/project/whiteboardView/WhiteboardModals';
+import { useAuth } from '@/context/AuthContext';
+import { getUserWorkspaceRole, canManageWhiteboards } from '@/utils/permissions';
 
 export default function WhiteboardsPage() {
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
+    const { user } = useAuth();
     const [searchParams, setSearchParams] = useSearchParams();
     const boardId = searchParams.get('id');
 
@@ -16,6 +19,9 @@ export default function WhiteboardsPage() {
     const [loading, setLoading] = useState(true);
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [boardToDelete, setBoardToDelete] = useState(null);
+
+    const currentUserRole = getUserWorkspaceRole(currentWorkspace, user?.id);
+    const canManage = canManageWhiteboards(currentUserRole, currentWorkspace);
 
     const loadBoards = () => {
         if (!currentWorkspace?.id) return;
@@ -89,14 +95,18 @@ export default function WhiteboardsPage() {
                     <div className="flex items-center gap-2">
                         <Presentation className="size-5 text-blue-500" /><h2 className="text-xl font-bold">Workspace Whiteboards</h2>
                     </div>
-                    <button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer shadow-sm"><Plus className="size-4" /> New Whiteboard</button>
+                    {canManage && (
+                        <button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer shadow-sm"><Plus className="size-4" /> New Whiteboard</button>
+                    )}
                 </div>
 
                 {loading ? <div className="text-center py-10 text-zinc-500">Loading boards...</div> : sortedBoards.length === 0 ? (
                     <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
                         <Presentation className="size-12 text-zinc-300 dark:text-zinc-700 mx-auto mb-3" />
                         <p className="text-zinc-500 dark:text-zinc-400 font-medium">No whiteboards created yet</p>
-                        <button onClick={() => setIsCreateOpen(true)} className="mt-3 text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">Create first board</button>
+                        {canManage && (
+                            <button onClick={() => setIsCreateOpen(true)} className="mt-3 text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">Create first board</button>
+                        )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -112,7 +122,9 @@ export default function WhiteboardsPage() {
                                 </div>
                                 <div className="flex flex-col items-center gap-2">
                                     <button onClick={(e) => handleToggleStar(e, board.id)} className="p-1 cursor-pointer"><Star className={`size-4.5 ${board.isStarred ? 'text-yellow-500 fill-yellow-500' : 'text-zinc-300 dark:text-zinc-700 hover:text-yellow-500'}`} /></button>
-                                    <button onClick={(e) => { e.stopPropagation(); setBoardToDelete(board); }} className="p-2 text-zinc-400 hover:text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"><Trash2 className="size-4.5" /></button>
+                                    {canManage && (
+                                        <button onClick={(e) => { e.stopPropagation(); setBoardToDelete(board); }} className="p-2 text-zinc-400 hover:text-red-500 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"><Trash2 className="size-4.5" /></button>
+                                    )}
                                 </div>
                             </div>
                         ))}
