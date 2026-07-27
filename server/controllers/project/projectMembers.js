@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { getUserWorkspaceRole, hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 // Add member to project
 export const addMember = async (req, res) => {
@@ -19,12 +20,11 @@ export const addMember = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const workspaceMembers = project.workspace.members;
-        const userMember = workspaceMembers.find(m => m.userId === userId);
-        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const hasWorkspacePermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole);
+        const { role, isOwner } = await getUserWorkspaceRole(userId, project.workspaceId);
+        const canManageMembers = await hasWorkspacePermission(userId, project.workspaceId, "manageMembers");
+        const hasWorkspacePermissionVal = isOwner || ['ADMIN', 'MANAGER'].includes(role) || canManageMembers;
 
-        if (project.team_lead !== userId && !hasWorkspacePermission) {
+        if (project.team_lead !== userId && !hasWorkspacePermissionVal) {
             return res.status(403).json({ message: "You do not have permission to add members to this project" });
         }
 
@@ -71,10 +71,8 @@ export const updateProjectStages = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const workspaceMembers = project.workspace.members;
-        const userMember = workspaceMembers.find(m => m.userId === userId);
-        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
-        const hasPermission = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || project.team_lead === userId;
+        const { role, isOwner } = await getUserWorkspaceRole(userId, project.workspaceId);
+        const hasPermission = isOwner || ['ADMIN', 'MANAGER'].includes(role) || project.team_lead === userId;
 
         if (!hasPermission) {
             return res.status(403).json({ message: "You do not have permission to configure stages for this project" });

@@ -17,7 +17,8 @@ export const getDirectMessages = async (req, res) => {
                 user: true,
                 _count: {
                     select: { replies: true }
-                }
+                },
+                reactions: { include: { user: { select: { id: true, name: true } } } }
             },
             orderBy: { createdAt: "asc" }
         });

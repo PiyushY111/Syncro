@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { getUserWorkspaceRole } from "../role/checkPermissionHelper.js";
 
 export const getWorkspacePortfolios = async (req, res) => {
     try {
@@ -6,6 +7,11 @@ export const getWorkspacePortfolios = async (req, res) => {
 
         if (!workspaceId) {
             return res.status(400).json({ message: "workspaceId is required" });
+        }
+
+        const { role } = await getUserWorkspaceRole(req.user.id, workspaceId);
+        if (!role) {
+            return res.status(403).json({ message: "Access restricted to workspace members only" });
         }
 
         const portfolios = await prisma.portfolio.findMany({

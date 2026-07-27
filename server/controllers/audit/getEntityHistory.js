@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { getUserWorkspaceRole } from "../role/checkPermissionHelper.js";
 
 export const getEntityHistory = async (req, res) => {
     try {
@@ -16,6 +17,13 @@ export const getEntityHistory = async (req, res) => {
             include: { user: { select: { id: true, name: true, email: true, image: true } } },
             orderBy: { createdAt: "desc" }
         });
+
+        if (history.length > 0) {
+            const { role, workspace } = await getUserWorkspaceRole(req.user.id, history[0].workspaceId);
+            if (!workspace || !role) {
+                return res.status(403).json({ message: "Access restricted to workspace members only" });
+            }
+        }
 
         return res.status(200).json({ history });
     } catch (error) {

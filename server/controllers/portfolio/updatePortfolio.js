@@ -1,5 +1,6 @@
 import { prisma } from "../../config/prisma.js";
 import { logAuditEvent } from "../../services/auditLogger.js";
+import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 export const updatePortfolio = async (req, res) => {
     try {
@@ -16,6 +17,13 @@ export const updatePortfolio = async (req, res) => {
 
         if (!previousState) {
             return res.status(404).json({ message: "Portfolio not found" });
+        }
+
+        const isOwner = previousState.ownerId === req.user.id;
+        const canManage = await hasWorkspacePermission(req.user.id, previousState.workspaceId, "managePortfolios");
+
+        if (!isOwner && !canManage) {
+            return res.status(403).json({ message: "You do not have permission to update this portfolio" });
         }
 
         const dataToUpdate = {};

@@ -2,7 +2,8 @@ export {
     createChannel,
     getWorkspaceChannels,
     browsePublicChannels,
-    joinPublicChannel
+    joinPublicChannel,
+    toggleStarChannel
 } from './chat/channelsCrud.js';
 
 export {
@@ -27,7 +28,8 @@ export {
     sendMessage,
     pinMessage,
     getPinnedMessages,
-    deleteMessage
+    deleteMessage,
+    searchMessages
 } from './chat/messagesCrud.js';
 
 export {

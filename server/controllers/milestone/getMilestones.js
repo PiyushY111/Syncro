@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { getUserWorkspaceRole } from "../role/checkPermissionHelper.js";
 
 export const getMilestones = async (req, res) => {
     try {
@@ -6,6 +7,19 @@ export const getMilestones = async (req, res) => {
 
         if (!projectId) {
             return res.status(400).json({ message: "projectId is required" });
+        }
+
+        const project = await prisma.project.findUnique({
+            where: { id: projectId }
+        });
+
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const { role } = await getUserWorkspaceRole(req.user.id, project.workspaceId);
+        if (!role) {
+            return res.status(403).json({ message: "Access restricted to workspace members only" });
         }
 
         const milestones = await prisma.milestone.findMany({

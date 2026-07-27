@@ -28,19 +28,30 @@ export const defaultPermissions = {
 };
 
 export const getUserWorkspaceRole = async (userId, workspaceId) => {
-    const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId },
-        include: { members: true }
+    const member = await prisma.workspaceMember.findUnique({
+        where: { userId_workspaceId: { userId, workspaceId } },
+        include: { workspace: true }
     });
 
-    if (!workspace) return { role: null, isOwner: false, workspace: null };
+    if (member) {
+        const workspace = member.workspace;
+        const isOwner = workspace.ownerId === userId;
+        const activeRole = member.customRole || member.role || "MEMBER";
+        return { role: isOwner ? "OWNER" : activeRole, isOwner, workspace, member };
+    }
+
+    const workspace = await prisma.workspace.findUnique({
+        where: { id: workspaceId }
+    });
+
+    if (!workspace) return { role: null, isOwner: false, workspace: null, member: null };
 
     const isOwner = workspace.ownerId === userId;
-    if (isOwner) return { role: "OWNER", isOwner: true, workspace };
+    if (isOwner) {
+        return { role: "OWNER", isOwner: true, workspace, member: null };
+    }
 
-    const member = workspace.members.find(m => m.userId === userId);
-    const activeRole = member?.customRole || member?.role || "MEMBER";
-    return { role: activeRole, isOwner: false, workspace, member };
+    return { role: null, isOwner: false, workspace, member: null };
 };
 
 export const hasWorkspacePermission = async (userId, workspaceId, permissionKey) => {

@@ -1,5 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { logAuditEvent } from '../../services/auditLogger.js';
+import { getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
 
 // Update/Save whiteboard elements and viewport
 export const saveWhiteboard = async (req, res) => {
@@ -15,6 +16,18 @@ export const saveWhiteboard = async (req, res) => {
 
         const board = await prisma.whiteboard.findUnique({ where: { id } });
         if (!board) return res.status(404).json({ message: 'Whiteboard not found' });
+
+        const { role } = await getUserWorkspaceRole(req.user.id, board.workspaceId);
+        if (!role) {
+            return res.status(403).json({ message: 'Access denied: not a member of this workspace' });
+        }
+        if (board.isPrivate && board.creatorId !== req.user.id) {
+            const shared = typeof board.sharedEmails === 'string' ? JSON.parse(board.sharedEmails) : (board.sharedEmails || []);
+            if (!(Array.isArray(shared) && shared.includes(req.user.email))) {
+                return res.status(403).json({ message: 'Access denied to this private whiteboard' });
+            }
+        }
+
         const previousState = { ...board };
 
         const whiteboard = await prisma.whiteboard.update({

@@ -12,6 +12,7 @@ export const me = async (req, res) => {
                 image: true,
                 googleCalendarSync: true,
                 googleCalendarEmail: true,
+                starredChannelIds: true,
                 createdAt: true,
             },
         });
@@ -49,6 +50,7 @@ export const updateProfile = async (req, res) => {
                 image: true,
                 googleCalendarSync: true,
                 googleCalendarEmail: true,
+                starredChannelIds: true,
                 createdAt: true,
             },
         });

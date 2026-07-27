@@ -26,6 +26,19 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
 
     const senderName = message.user?.name || message.sender?.name || 'User';
 
+    // Group reactions by emoji
+    const groupedReactions = (message.reactions || []).reduce((acc, r) => {
+        if (!acc[r.emoji]) {
+            acc[r.emoji] = { emoji: r.emoji, count: 0, userIds: [], users: [] };
+        }
+        acc[r.emoji].count += 1;
+        acc[r.emoji].userIds.push(r.userId);
+        if (r.user?.name) acc[r.emoji].users.push(r.user.name);
+        return acc;
+    }, {});
+
+    const reactionsList = Object.values(groupedReactions);
+
     return (
         <div className={`group relative flex items-start gap-3 px-5 py-2 animate-stiff-slide-up ${isOwner ? 'flex-row-reverse' : 'flex-row'}`}>
             {/* Avatar */}
@@ -49,19 +62,32 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
                         ? 'bg-blue-600 text-white rounded-tr-none' 
                         : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-tl-none'
                 }`}>
-                    <p className="break-words">{message.content}</p>
+                    <p className="break-words text-left">{message.content}</p>
                     
-                    {message.reactions?.length > 0 && (
-                        <div className={`flex items-center gap-1 mt-2 flex-wrap ${isOwner ? 'justify-end' : 'justify-start'}`}>
-                            {message.reactions.map((r, i) => (
-                                <button key={i} onClick={() => onReact(message.id, r.emoji)} className={`px-1.5 py-0.5 rounded-full text-[10px] font-medium border cursor-pointer transition-colors ${
-                                    isOwner 
-                                        ? 'bg-white/20 hover:bg-white/30 border-white/10 text-white' 
-                                        : 'bg-zinc-200 hover:bg-zinc-300 border-zinc-300 text-zinc-800 dark:bg-zinc-700 dark:hover:bg-zinc-600 dark:border-zinc-600 dark:text-zinc-200'
-                                }`}>
-                                    {r.emoji}
-                                </button>
-                            ))}
+                    {reactionsList.length > 0 && (
+                        <div className={`flex items-center gap-1.5 mt-2 flex-wrap ${isOwner ? 'justify-end' : 'justify-start'}`}>
+                            {reactionsList.map((r, i) => {
+                                const hasReacted = r.userIds.includes(user?.id);
+                                return (
+                                    <button 
+                                        key={i} 
+                                        onClick={() => onReact(message.id, r.emoji)} 
+                                        title={r.users.length > 0 ? r.users.join(", ") : "Reacted"}
+                                        className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-all duration-200 flex items-center gap-1 ${
+                                            hasReacted
+                                                ? isOwner
+                                                    ? 'bg-white text-blue-600 border-white font-extrabold shadow-sm'
+                                                    : 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-955/40 dark:border-blue-900/60 dark:text-blue-400 font-extrabold shadow-xs'
+                                                : isOwner 
+                                                    ? 'bg-white/10 hover:bg-white/20 border-white/10 text-white' 
+                                                    : 'bg-zinc-50 hover:bg-zinc-150 border-zinc-200 text-zinc-600 dark:bg-zinc-800/60 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:text-zinc-355'
+                                        }`}
+                                    >
+                                        <span>{r.emoji}</span>
+                                        <span className="text-[9px]">{r.count}</span>
+                                    </button>
+                                );
+                            })}
                         </div>
                     )}
                 </div>
@@ -71,14 +97,16 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
             <div className={`opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 flex items-center gap-0.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-0.5 shadow-sm z-10 ${
                 isOwner ? 'left-4' : 'right-4'
             }`}>
-                <button onClick={() => onReact(message.id, '👍')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-750 rounded text-zinc-400 cursor-pointer text-sm">👍</button>
-                <button onClick={() => onReact(message.id, '❤️')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-750 rounded text-zinc-400 cursor-pointer text-sm">❤️</button>
-                <button onClick={() => onStar && onStar(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-750 rounded text-zinc-400 cursor-pointer" title="Star Message"><Star className="size-3.5" /></button>
-                <button onClick={() => onOpenThread(message)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-750 rounded text-zinc-400 cursor-pointer" title="Thread Reply"><MessageSquare className="size-3.5" /></button>
-                <button onClick={() => onPin(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-750 rounded text-zinc-400 cursor-pointer" title="Pin Message"><Pin className="size-3.5" /></button>
-                <button onClick={() => onConvertTask(message)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-750 rounded text-zinc-400 cursor-pointer" title="Convert to Task"><CheckSquare className="size-3.5" /></button>
+                <button onClick={() => onReact(message.id, '👍')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React 👍">👍</button>
+                <button onClick={() => onReact(message.id, '❤️')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React ❤️">❤️</button>
+                <button onClick={() => onReact(message.id, '🔥')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React 🔥">🔥</button>
+                <button onClick={() => onReact(message.id, '🎉')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React 🎉">🎉</button>
+                <button onClick={() => onStar && onStar(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Star Message"><Star className="size-3.5" /></button>
+                <button onClick={() => onOpenThread(message)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Thread Reply"><MessageSquare className="size-3.5" /></button>
+                <button onClick={() => onPin(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Pin Message"><Pin className="size-3.5" /></button>
+                <button onClick={() => onConvertTask(message)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Convert to Task"><CheckSquare className="size-3.5" /></button>
                 {isOwner && (
-                    <button onClick={() => onDelete(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-750 rounded text-rose-400 cursor-pointer" title="Delete"><Trash2 className="size-3.5" /></button>
+                    <button onClick={() => onDelete(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-rose-455 cursor-pointer" title="Delete"><Trash2 className="size-3.5" /></button>
                 )}
             </div>
         </div>

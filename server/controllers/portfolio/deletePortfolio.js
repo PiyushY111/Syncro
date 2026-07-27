@@ -1,5 +1,6 @@
 import { prisma } from "../../config/prisma.js";
 import { logAuditEvent } from "../../services/auditLogger.js";
+import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 export const deletePortfolio = async (req, res) => {
     try {
@@ -8,6 +9,13 @@ export const deletePortfolio = async (req, res) => {
         const existing = await prisma.portfolio.findUnique({ where: { id } });
         if (!existing) {
             return res.status(404).json({ message: "Portfolio not found" });
+        }
+
+        const isOwner = existing.ownerId === req.user.id;
+        const canManage = await hasWorkspacePermission(req.user.id, existing.workspaceId, "managePortfolios");
+
+        if (!isOwner && !canManage) {
+            return res.status(403).json({ message: "You do not have permission to delete this portfolio" });
         }
 
         const previousState = { ...existing };

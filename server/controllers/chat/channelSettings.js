@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { getUserWorkspaceRole, hasWorkspacePermission } from '../role/checkPermissionHelper.js';
 
 export const clearChannelChat = async (req, res) => {
     try {
@@ -7,6 +8,15 @@ export const clearChannelChat = async (req, res) => {
 
         const channel = await prisma.channel.findUnique({ where: { id: channelId } });
         if (!channel) return res.status(404).json({ message: "Channel not found" });
+
+        const { role, isOwner } = await getUserWorkspaceRole(userId, channel.workspaceId);
+        if (!role) return res.status(403).json({ message: "Access restricted to workspace members only" });
+
+        const isCreator = channel.creatorId === userId;
+        const canManage = isOwner || role === 'ADMIN' || await hasWorkspacePermission(userId, channel.workspaceId, 'manageChannels');
+        if (!isCreator && !canManage) {
+            return res.status(403).json({ message: "Only channel creator or admins can clear chat history" });
+        }
 
         await prisma.message.deleteMany({
             where: { channelId }
@@ -26,10 +36,24 @@ export const clearChannelChat = async (req, res) => {
 
 export const exportChannelChat = async (req, res) => {
     try {
+        const userId = req.user.id;
         const { channelId } = req.params;
 
-        const channel = await prisma.channel.findUnique({ where: { id: channelId } });
+        const channel = await prisma.channel.findUnique({
+            where: { id: channelId },
+            include: { members: { select: { id: true } } }
+        });
         if (!channel) return res.status(404).json({ message: "Channel not found" });
+
+        const { role, isOwner } = await getUserWorkspaceRole(userId, channel.workspaceId);
+        if (!role) return res.status(403).json({ message: "Access restricted to workspace members only" });
+
+        if (channel.isPrivate && !isOwner && role !== 'ADMIN' && channel.creatorId !== userId) {
+            const isMember = channel.members.some(m => m.id === userId);
+            if (!isMember) {
+                return res.status(403).json({ message: "Access denied to private channel" });
+            }
+        }
 
         const messages = await prisma.message.findMany({
             where: { channelId },
@@ -56,9 +80,32 @@ export const exportChannelChat = async (req, res) => {
 
 export const toggleStarMessage = async (req, res) => {
     try {
+        const userId = req.user.id;
         const { messageId } = req.params;
         const message = await prisma.message.findUnique({ where: { id: messageId } });
         if (!message) return res.status(404).json({ message: "Message not found" });
+
+        if (message.channelId) {
+            const channel = await prisma.channel.findUnique({
+                where: { id: message.channelId },
+                include: { members: { select: { id: true } } }
+            });
+            if (!channel) return res.status(404).json({ message: "Channel not found" });
+
+            const { role, isOwner } = await getUserWorkspaceRole(userId, channel.workspaceId);
+            if (!role) return res.status(403).json({ message: "Access restricted to workspace members only" });
+
+            if (channel.isPrivate && !isOwner && role !== 'ADMIN' && channel.creatorId !== userId) {
+                const isMember = channel.members.some(m => m.id === userId);
+                if (!isMember) {
+                    return res.status(403).json({ message: "Access denied to private channel" });
+                }
+            }
+        } else {
+            if (message.userId !== userId && message.recipientId !== userId) {
+                return res.status(403).json({ message: "Access denied" });
+            }
+        }
 
         const updated = await prisma.message.update({
             where: { id: messageId },
@@ -74,7 +121,25 @@ export const toggleStarMessage = async (req, res) => {
 
 export const getStarredMessages = async (req, res) => {
     try {
+        const userId = req.user.id;
         const { channelId } = req.params;
+
+        const channel = await prisma.channel.findUnique({
+            where: { id: channelId },
+            include: { members: { select: { id: true } } }
+        });
+        if (!channel) return res.status(404).json({ message: "Channel not found" });
+
+        const { role, isOwner } = await getUserWorkspaceRole(userId, channel.workspaceId);
+        if (!role) return res.status(403).json({ message: "Access restricted to workspace members only" });
+
+        if (channel.isPrivate && !isOwner && role !== 'ADMIN' && channel.creatorId !== userId) {
+            const isMember = channel.members.some(m => m.id === userId);
+            if (!isMember) {
+                return res.status(403).json({ message: "Access denied to private channel" });
+            }
+        }
+
         const messages = await prisma.message.findMany({
             where: { channelId, isStarred: true },
             include: { user: { select: { id: true, name: true, image: true } } },

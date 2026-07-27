@@ -1,16 +1,35 @@
 import { prisma } from '../../config/prisma.js';
-import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
+import { hasWorkspacePermission, getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
 import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Get all whiteboards for a project
 export const getProjectWhiteboards = async (req, res) => {
     try {
         const { projectId } = req.params;
+        const project = await prisma.project.findUnique({
+            where: { id: projectId }
+        });
+        if (!project) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+        const { role } = await getUserWorkspaceRole(req.user.id, project.workspaceId);
+        if (!role) {
+            return res.status(403).json({ message: "Access restricted to workspace members only" });
+        }
+
         const whiteboards = await prisma.whiteboard.findMany({
             where: { projectId },
             orderBy: { createdAt: 'desc' }
         });
-        return res.status(200).json(whiteboards);
+
+        const filtered = whiteboards.filter(w => {
+            if (!w.isPrivate) return true;
+            if (w.creatorId === req.user.id) return true;
+            const shared = typeof w.sharedEmails === 'string' ? JSON.parse(w.sharedEmails) : (w.sharedEmails || []);
+            return Array.isArray(shared) && shared.includes(req.user.email);
+        });
+
+        return res.status(200).json(filtered);
     } catch (err) {
         console.error("[GET PROJECT WHITEBOARDS ERROR]", err);
         return res.status(500).json({ message: err.message });
@@ -23,6 +42,11 @@ export const getWorkspaceWhiteboards = async (req, res) => {
         const { workspaceId } = req.params;
         const userId = req.user.id;
         const userEmail = req.user.email;
+
+        const { role } = await getUserWorkspaceRole(userId, workspaceId);
+        if (!role) {
+            return res.status(403).json({ message: "Access restricted to workspace members only" });
+        }
 
         const whiteboards = await prisma.whiteboard.findMany({
             where: { workspaceId },

@@ -58,6 +58,8 @@ model User {
     updatedAt DateTime @updatedAt
     deletedAt DateTime?
 
+    starredChannelIds String[] @default([])
+
     workspaces      WorkspaceMember[]
     projects        Project[]         @relation("ProjectOwner")
     tasks           Task[]            @relation("TaskAssignee")
@@ -75,6 +77,7 @@ model User {
     notifications    Notification[]
     auditLogs        AuditLog[]
     subTeamMemberships SubTeamMember[]
+    reactions          MessageReaction[]
 }
 
 model Workspace {
@@ -305,6 +308,7 @@ model Message {
     
     createdAt   DateTime  @default(now())
     updatedAt   DateTime  @updatedAt
+    reactions   MessageReaction[]
 
     @@index([channelId, createdAt])
     @@index([recipientId])
@@ -521,4 +525,19 @@ model Whiteboard {
 
     @@index([projectId])
     @@index([workspaceId])
+}
+
+model MessageReaction {
+    id        String   @id @default(uuid())
+    messageId String
+    userId    String
+    emoji     String
+    createdAt DateTime @default(now())
+
+    message   Message  @relation(fields: [messageId], references: [id], onDelete: Cascade)
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([messageId, userId, emoji])
+    @@index([messageId])
+    @@index([userId])
 }

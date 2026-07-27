@@ -41,12 +41,13 @@ const sendTaskAssignmentEmail = inngest.createFunction(
                 const updatedTask = await step.run('check-task-completion', async () => {
                     return await prisma.task.findUnique({
                         where: { id: taskId },
+                        include: { assignee: true }
                     });
                 });
 
-                if (updatedTask && updatedTask.status !== 'DONE') {
+                if (updatedTask && updatedTask.status !== 'DONE' && updatedTask.assignee) {
                     await sendEmail({
-                        to: task.assignee.email,
+                        to: updatedTask.assignee.email,
                         subject: `Task Overdue: ${task.project.name} - ${task.title}`,
                         text: `The task "${task.title}" is now overdue. Please check the task details at ${origin}/taskDetails?id=${task.id}`,
                         html: `<p>The task "<strong>${task.title}</strong>" is now overdue.</p><p>Please check the task details <a href="${origin}/taskDetails?id=${task.id}">here</a>.</p>`,
@@ -61,18 +62,16 @@ const sendTaskAssignmentEmail = inngest.createFunction(
 const recurrenceJob = inngest.createFunction(
     { id: 'recurrence-scheduler-cron', cron: '* * * * *' },
     async ({ step }) => {
-        const now = new Date();
-        const recurringTasks = await step.run('fetch-recurring-tasks', async () => {
-            return await prisma.task.findMany({
+        await step.run('process-all-recurring-tasks', async () => {
+            const now = new Date();
+            const recurringTasks = await prisma.task.findMany({
                 where: {
                     isRecurring: true,
                     recurrence: { in: ["DAILY", "WEEKLY", "MONTHLY"] }
                 }
             });
-        });
 
-        for (const task of recurringTasks) {
-            await step.run(`process-recurrence-${task.id}`, async () => {
+            for (const task of recurringTasks) {
                 const referenceDate = task.lastRecurredAt || task.createdAt;
                 const diffTime = now.getTime() - new Date(referenceDate).getTime();
                 const diffDays = diffTime / (1000 * 60 * 60 * 24);
@@ -109,8 +108,8 @@ const recurrenceJob = inngest.createFunction(
                         data: { lastRecurredAt: now }
                     });
                 }
-            });
-        }
+            }
+        });
     }
 );
 

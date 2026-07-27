@@ -1,5 +1,5 @@
 import { prisma } from '../../config/prisma.js';
-import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
+import { hasWorkspacePermission, getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
 
 export const createChannel = async (req, res) => {
     try {
@@ -47,8 +47,10 @@ export const getWorkspaceChannels = async (req, res) => {
         const userId = req.user.id;
         const { workspaceId } = req.params;
 
-        const workspace = await prisma.workspace.findUnique({ where: { id: workspaceId }, select: { ownerId: true } });
-        const isOwner = workspace?.ownerId === userId;
+        const { role, isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
+        if (!workspace || !role) {
+            return res.status(403).json({ message: "Access restricted to workspace members only" });
+        }
 
         const whereCondition = {
             workspaceId,
@@ -81,6 +83,11 @@ export const browsePublicChannels = async (req, res) => {
         const userId = req.user.id;
         const { workspaceId } = req.params;
         const { search = "" } = req.query;
+
+        const { role } = await getUserWorkspaceRole(userId, workspaceId);
+        if (!role) {
+            return res.status(403).json({ message: "Access restricted to workspace members only" });
+        }
 
         const channels = await prisma.channel.findMany({
             where: {
@@ -117,6 +124,11 @@ export const joinPublicChannel = async (req, res) => {
         if (!channel) return res.status(404).json({ message: "Channel not found" });
         if (channel.isPrivate) return res.status(403).json({ message: "Cannot join a private channel without invitation" });
 
+        const { role } = await getUserWorkspaceRole(userId, channel.workspaceId);
+        if (!role) {
+            return res.status(403).json({ message: "Cannot join a channel in a workspace you are not a member of" });
+        }
+
         const updated = await prisma.channel.update({
             where: { id: channelId },
             data: { members: { connect: { id: userId } } },
@@ -131,6 +143,57 @@ export const joinPublicChannel = async (req, res) => {
         return res.json({ channel: updated, message: "Joined channel successfully" });
     } catch (err) {
         console.error(err);
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+export const toggleStarChannel = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { channelId } = req.params;
+
+        const channel = await prisma.channel.findUnique({ where: { id: channelId } });
+        if (!channel) return res.status(404).json({ message: "Channel not found" });
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { starredChannelIds: true }
+        });
+
+        if (!user) return res.status(404).json({ message: "User not found" });
+
+        let starredIds = user.starredChannelIds || [];
+        const isStarred = starredIds.includes(channelId);
+
+        if (isStarred) {
+            starredIds = starredIds.filter(id => id !== channelId);
+        } else {
+            starredIds = [...starredIds, channelId];
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id: userId },
+            data: { starredChannelIds: starredIds },
+            select: {
+                id: true,
+                email: true,
+                name: true,
+                image: true,
+                googleCalendarSync: true,
+                googleCalendarEmail: true,
+                starredChannelIds: true,
+                createdAt: true,
+            }
+        });
+
+        return res.json({ 
+            starredChannelIds: updatedUser.starredChannelIds, 
+            isStarred: !isStarred, 
+            message: !isStarred ? "Channel starred successfully" : "Channel unstarred successfully",
+            user: updatedUser
+        });
+    } catch (err) {
+        console.error("[TOGGLE STAR CHANNEL ERROR]", err);
         return res.status(500).json({ message: err.message });
     }
 };

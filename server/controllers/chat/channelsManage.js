@@ -17,6 +17,10 @@ export const updateChannelDetails = async (req, res) => {
         const channel = await prisma.channel.findUnique({ where: { id: channelId } });
         if (!channel) return res.status(404).json({ message: "Channel not found" });
 
+        if (!(await canManageChannel(channel, userId))) {
+            return res.status(403).json({ message: "You do not have permission to update channel details" });
+        }
+
         const updated = await prisma.channel.update({
             where: { id: channelId },
             data: {

@@ -32,7 +32,6 @@ export const updateWorkspace = async (req, res) => {
             where: { id },
             data: {
                 name: name.trim(),
-                slug: createWorkspaceSlug(name),
                 description: description ? description.trim() : null,
                 image_url: image_url !== undefined ? image_url.trim() : "",
             },

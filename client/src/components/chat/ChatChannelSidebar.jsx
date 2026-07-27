@@ -1,4 +1,4 @@
-import { Plus, Compass } from 'lucide-react';
+import { Plus, Compass, Star, Search, X } from 'lucide-react';
 import ChatAvatar from './ChatAvatar';
 import ChannelIcon from './ChannelIcon';
 
@@ -14,18 +14,45 @@ export default function ChatChannelSidebar({
     onOpenChannelBrowser,
     canManage = true,
     unreadChats = [],
-    unreadMentions = []
+    unreadMentions = [],
+    starredChannelIds = [],
+    searchQuery = "",
+    setSearchQuery
 }) {
+    const starredChannels = channels.filter(ch => starredChannelIds.includes(ch.id));
+    const regularChannels = channels.filter(ch => !starredChannelIds.includes(ch.id));
+
     return (
         <aside className="w-64 shrink-0 flex flex-col h-full bg-white border-r border-zinc-200 overflow-hidden">
             {/* Workspace header */}
-            <div className="px-4 pt-4 pb-3 border-b border-zinc-100">
-                <div className="flex items-center justify-between mb-3">
+            <div className="px-4 pt-4 pb-3 border-b border-zinc-100 text-left space-y-2.5">
+                <div className="flex items-center justify-between">
                     <h2 className="text-sm font-bold text-zinc-900 truncate">Team conversations</h2>
                 </div>
+                
+                {/* Search Bar */}
+                <div className="relative">
+                    <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-zinc-400 size-3.5" />
+                    <input 
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search messages..."
+                        className="pl-8 pr-7 w-full text-xs rounded-lg border border-zinc-200 text-zinc-900 placeholder-zinc-455 py-1.5 focus:outline-none focus:border-blue-500 bg-zinc-50 focus:bg-white transition"
+                    />
+                    {searchQuery && (
+                        <button 
+                            onClick={() => setSearchQuery("")} 
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
+                        >
+                            <X className="size-3.5" />
+                        </button>
+                    )}
+                </div>
+
                 <button
                     onClick={onOpenChannelBrowser}
-                    className="w-full flex items-center gap-2 px-3 py-2 text-xs text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition-colors cursor-pointer"
                 >
                     <Compass className="size-4" />
                     Browse Channels
@@ -33,7 +60,42 @@ export default function ChatChannelSidebar({
             </div>
 
             {/* Scrollable content */}
-            <div className="flex-1 overflow-y-auto px-2 py-3 space-y-5">
+            <div className="flex-1 overflow-y-auto px-2 py-3 space-y-5 text-left">
+                {/* Starred Channels section */}
+                {starredChannels.length > 0 && (
+                    <div>
+                        <div className="flex items-center gap-1.5 px-2 mb-1">
+                            <Star className="size-3 text-amber-500 fill-amber-500" />
+                            <span className="text-[11px] font-semibold text-zinc-400 uppercase tracking-wider">Starred</span>
+                        </div>
+
+                        <div className="space-y-0.5">
+                            {starredChannels.map((ch) => {
+                                const isActive = activeChannel?.id === ch.id && !activeDM;
+                                const isUnread = unreadChats.includes(ch.id);
+                                const hasMention = unreadMentions.includes(ch.id);
+                                return (
+                                    <button
+                                        key={ch.id}
+                                        onClick={() => onSelectChannel(ch)}
+                                        className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${isActive ? 'bg-blue-50 text-blue-600 font-semibold' : 'text-zinc-700 hover:bg-zinc-100'}`}
+                                    >
+                                        <div className="flex items-center gap-2 truncate">
+                                            <ChannelIcon channel={ch} size="sm" className="rounded-md" />
+                                            <span className={`truncate ${isUnread ? 'font-bold text-zinc-900' : ''}`}>{ch.name}</span>
+                                        </div>
+                                        {hasMention ? (
+                                            <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded-full shrink-0 animate-pulse">@</span>
+                                        ) : isUnread ? (
+                                            <span className="size-2 bg-blue-500 rounded-full shrink-0 animate-pulse" />
+                                        ) : null}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* Channels section */}
                 <div>
                     <div className="flex items-center justify-between px-2 mb-1">
@@ -46,7 +108,7 @@ export default function ChatChannelSidebar({
                     </div>
 
                     <div className="space-y-0.5">
-                        {channels.map((ch) => {
+                        {regularChannels.map((ch) => {
                             const isActive = activeChannel?.id === ch.id && !activeDM;
                             const isUnread = unreadChats.includes(ch.id);
                             const hasMention = unreadMentions.includes(ch.id);
@@ -58,7 +120,7 @@ export default function ChatChannelSidebar({
                                 >
                                     <div className="flex items-center gap-2 truncate">
                                         <ChannelIcon channel={ch} size="sm" className="rounded-md" />
-                                        <span className={`truncate ${isUnread ? 'font-bold text-zinc-900 dark:text-zinc-50' : ''}`}>{ch.name}</span>
+                                        <span className={`truncate ${isUnread ? 'font-bold text-zinc-900' : ''}`}>{ch.name}</span>
                                     </div>
                                     {hasMention ? (
                                         <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded-full shrink-0 animate-pulse">@</span>
@@ -68,7 +130,8 @@ export default function ChatChannelSidebar({
                                 </button>
                             );
                         })}
-                        {channels.length === 0 && <p className="px-3 py-2 text-xs text-zinc-400">No channels yet</p>}
+                        {regularChannels.length === 0 && starredChannels.length === 0 && <p className="px-3 py-2 text-xs text-zinc-400">No channels yet</p>}
+                        {regularChannels.length === 0 && starredChannels.length > 0 && <p className="px-3 py-2 text-xs text-zinc-450 italic text-center">All channels starred</p>}
                     </div>
 
                     {canManage && (

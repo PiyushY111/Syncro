@@ -1,5 +1,6 @@
 import { prisma } from "../../config/prisma.js";
 import { logAuditEvent } from "../../services/auditLogger.js";
+import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 export const updateMilestone = async (req, res) => {
     try {
@@ -13,6 +14,11 @@ export const updateMilestone = async (req, res) => {
 
         if (!previousState) {
             return res.status(404).json({ message: "Milestone not found" });
+        }
+
+        const canManage = await hasWorkspacePermission(req.user.id, previousState.project.workspaceId, "manageMilestones");
+        if (!canManage) {
+            return res.status(403).json({ message: "You do not have permission to manage milestones in this workspace" });
         }
 
         const dataToUpdate = {};

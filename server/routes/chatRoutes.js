@@ -4,6 +4,7 @@ import {
     getWorkspaceChannels, 
     browsePublicChannels,
     joinPublicChannel,
+    toggleStarChannel,
     getChannelMessages, 
     getThreadReplies,
     archiveChannel,
@@ -20,15 +21,19 @@ import {
     getStarredMessages,
     getDirectMessages,
     clearDirectMessages,
-    sendMessage
+    sendMessage,
+    searchMessages
 } from '../controllers/chatController.js';
 
 const chatRouter = express.Router();
+
+chatRouter.get('/search', searchMessages);
 
 chatRouter.post('/channels', createChannel);
 chatRouter.get('/workspaces/:workspaceId/channels', getWorkspaceChannels);
 chatRouter.get('/workspaces/:workspaceId/browse', browsePublicChannels);
 chatRouter.post('/channels/:channelId/join', joinPublicChannel);
+chatRouter.post('/channels/:channelId/star', toggleStarChannel);
 
 chatRouter.post('/channels/:channelId/members', addMemberToChannel);
 chatRouter.delete('/channels/:channelId/members/:memberUserId', removeMemberFromChannel);

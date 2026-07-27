@@ -30,7 +30,7 @@ export const rollbackEntity = async (req, res) => {
         let restoredItem = null;
 
         if (targetLog.entityType === "TASK" && targetLog.entityId) {
-            const allowedTaskFields = ["title", "description", "status", "priority", "dueDate", "assigneeId"];
+            const allowedTaskFields = ["title", "description", "status", "priority", "due_date", "assigneeId"];
             const cleanData = {};
             allowedTaskFields.forEach(f => { if (previousState[f] !== undefined) cleanData[f] = previousState[f]; });
 
@@ -39,7 +39,7 @@ export const rollbackEntity = async (req, res) => {
                 data: cleanData
             });
         } else if (targetLog.entityType === "PROJECT" && targetLog.entityId) {
-            const allowedProjFields = ["name", "description", "status", "priority", "startDate", "endDate"];
+            const allowedProjFields = ["name", "description", "status", "priority", "start_date", "end_date"];
             const cleanData = {};
             allowedProjFields.forEach(f => { if (previousState[f] !== undefined) cleanData[f] = previousState[f]; });
 

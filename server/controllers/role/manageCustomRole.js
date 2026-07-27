@@ -85,8 +85,8 @@ export const deleteCustomRole = async (req, res) => {
         delete rolePermissions[roleKey];
 
         await prisma.workspaceMember.updateMany({
-            where: { workspaceId, message: roleKey },
-            data: { role: "MEMBER", message: "" }
+            where: { workspaceId, customRole: roleKey },
+            data: { role: "MEMBER", customRole: "" }
         });
 
         const updatedWorkspace = await prisma.workspace.update({

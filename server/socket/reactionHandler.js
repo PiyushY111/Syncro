@@ -12,7 +12,22 @@ export const registerReactionHandlers = (io, socket) => {
                 include: { user: { select: { id: true, name: true } } }
             });
 
-            io.to(`channel:${channelId}`).emit("reaction:added", { messageId, reaction });
+            const rooms = channelId 
+                ? [`channel:${channelId}`] 
+                : await (async () => {
+                    const msg = await prisma.message.findUnique({
+                        where: { id: messageId },
+                        select: { userId: true, recipientId: true }
+                    });
+                    if (!msg) return [];
+                    const list = [`user:${msg.userId}`];
+                    if (msg.recipientId) list.push(`user:${msg.recipientId}`);
+                    return list;
+                })();
+
+            rooms.forEach(room => {
+                io.to(room).emit("reaction:added", { messageId, reaction });
+            });
         } catch (error) {
             console.error("[SOCKET REACTION ADD ERROR]", error);
         }
@@ -28,7 +43,22 @@ export const registerReactionHandlers = (io, socket) => {
                 }
             });
 
-            io.to(`channel:${channelId}`).emit("reaction:removed", { messageId, emoji, userId: socket.user.id });
+            const rooms = channelId 
+                ? [`channel:${channelId}`] 
+                : await (async () => {
+                    const msg = await prisma.message.findUnique({
+                        where: { id: messageId },
+                        select: { userId: true, recipientId: true }
+                    });
+                    if (!msg) return [];
+                    const list = [`user:${msg.userId}`];
+                    if (msg.recipientId) list.push(`user:${msg.recipientId}`);
+                    return list;
+                })();
+
+            rooms.forEach(room => {
+                io.to(room).emit("reaction:removed", { messageId, emoji, userId: socket.user.id });
+            });
         } catch (error) {
             console.error("[SOCKET REACTION REMOVE ERROR]", error);
         }

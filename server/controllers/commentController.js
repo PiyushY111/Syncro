@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js';
+import { getUserWorkspaceRole } from './role/checkPermissionHelper.js';
 
 export const addComment = async (req, res) => {
     try {
@@ -23,16 +24,14 @@ export const addComment = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const workspaceMembers = project.workspace.members;
-        const userMember = workspaceMembers.find(m => m.userId === userId);
-        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
+        const { role, isOwner } = await getUserWorkspaceRole(userId, project.workspaceId);
+        const isWorkspaceMember = !!role;
 
         const isMember = project.members.some((member) => member.userId === userId);
         const isProjectLead = project.team_lead === userId;
         const isAssignee = task.assigneeId === userId;
-        const isWorkspaceMember = !!userMember || project.workspace.ownerId === userId;
 
-        const canComment = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isProjectLead || isMember || isAssignee || isWorkspaceMember;
+        const canComment = isOwner || ['OWNER', 'ADMIN', 'MANAGER'].includes(role) || isProjectLead || isMember || isAssignee || isWorkspaceMember;
 
         if (!canComment) {
             return res.status(403).json({ message: "You do not have permission to comment on this task" });
@@ -74,16 +73,14 @@ export const getComments = async (req, res) => {
             return res.status(404).json({ message: "Project not found" });
         }
 
-        const workspaceMembers = project.workspace.members;
-        const userMember = workspaceMembers.find(m => m.userId === userId);
-        const userRole = userMember?.role || (project.workspace.ownerId === userId ? 'OWNER' : 'MEMBER');
+        const { role, isOwner } = await getUserWorkspaceRole(userId, project.workspaceId);
+        const isWorkspaceMember = !!role;
 
         const isMember = project.members.some((member) => member.userId === userId);
         const isProjectLead = project.team_lead === userId;
         const isAssignee = task.assigneeId === userId;
-        const isWorkspaceMember = !!userMember || project.workspace.ownerId === userId;
 
-        const canViewComments = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || isProjectLead || isMember || isAssignee || isWorkspaceMember;
+        const canViewComments = isOwner || ['OWNER', 'ADMIN', 'MANAGER'].includes(role) || isProjectLead || isMember || isAssignee || isWorkspaceMember;
 
         if (!canViewComments) {
             return res.status(403).json({ message: "You do not have permission to view comments for this task" });
