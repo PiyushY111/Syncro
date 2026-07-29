@@ -1,12 +1,7 @@
 import express from "express";
 import { protect } from "../middlewares/authMiddleware.js";
-import {
-    initializeRetro,
-    getSprintRetro,
-    addRetroItem,
-    voteRetroItem,
-    deleteRetroItem
-} from "../controllers/retro/retroController.js";
+import { initializeRetro, getSprintRetro } from "../controllers/retro/getSprintRetro.js";
+import { addRetroItem, voteRetroItem, deleteRetroItem } from "../controllers/retro/retroItemActions.js";
 
 const router = express.Router();
 

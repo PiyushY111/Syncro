@@ -1,15 +1,11 @@
 import express from "express";
 import { protect } from "../middlewares/authMiddleware.js";
 import { checkProjectAccessMiddleware } from "../middlewares/projectAccessCheck.js";
-import {
-    createSprint,
-    getProjectSprints,
-    startSprint,
-    completeSprint,
-    updateSprint,
-    deleteSprint,
-    updateCapacity
-} from "../controllers/sprint/sprintController.js";
+import { createSprint } from "../controllers/sprint/createSprint.js";
+import { getProjectSprints } from "../controllers/sprint/getProjectSprints.js";
+import { startSprint, completeSprint } from "../controllers/sprint/sprintLifecycle.js";
+import { updateSprint, deleteSprint } from "../controllers/sprint/sprintManage.js";
+import { updateCapacity } from "../controllers/sprint/sprintCapacity.js";
 
 const router = express.Router();
 

@@ -14,11 +14,11 @@ import ProjectGantt from '@/components/project/gantt/ProjectGantt';
 import ProjectMilestones from '@/components/project/milestones/ProjectMilestones';
 import ProjectHeader from './ProjectHeader';
 import WhiteboardView from '@/components/project/whiteboardView/WhiteboardView';
-import EpicMapping from '@/components/project/scrum/EpicMapping';
+import EpicMapping from '@/components/project/scrum/epic/EpicMapping';
 import BacklogPlanning from '@/components/project/scrum/BacklogPlanning';
 import ActiveSprint from '@/components/project/scrum/ActiveSprint';
 import BurndownAnalytics from '@/components/project/scrum/BurndownAnalytics';
-import SprintRetro from '@/components/project/scrum/SprintRetro';
+import SprintRetro from '@/components/project/scrum/retro/SprintRetro';
 
 export default function ProjectDetail() {
     const [searchParams, setSearchParams] = useSearchParams();
