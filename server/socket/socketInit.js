@@ -4,6 +4,7 @@ import { registerPresenceHandlers } from "./presenceHandler.js";
 import { registerMessageHandlers } from "./messageHandler.js";
 import { registerReactionHandlers } from "./reactionHandler.js";
 import { registerWhiteboardHandlers } from "./whiteboardHandler.js";
+import { registerRetroHandlers } from "./retroHandler.js";
 
 let ioInstance = null;
 
@@ -18,6 +19,8 @@ export const initSocketIO = (httpServer) => {
         allowEIO3: true
     });
 
+    global.io = ioInstance;
+
     ioInstance.use(socketAuthMiddleware);
 
     ioInstance.on("connection", (socket) => {
@@ -27,6 +30,7 @@ export const initSocketIO = (httpServer) => {
         registerMessageHandlers(ioInstance, socket);
         registerReactionHandlers(ioInstance, socket);
         registerWhiteboardHandlers(ioInstance, socket);
+        registerRetroHandlers(ioInstance, socket);
     });
 
     return ioInstance;

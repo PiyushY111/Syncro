@@ -5,7 +5,14 @@ import {
     updateProjectHelper,
     addTaskHelper,
     updateTaskHelper,
-    deleteTaskHelper
+    deleteTaskHelper,
+    addSprintHelper,
+    updateSprintHelper,
+    deleteSprintHelper,
+    addEpicHelper,
+    updateEpicHelper,
+    deleteEpicHelper,
+    updateCapacityHelper
 } from '@/features/workspaceHelpers';
 
 export const fetchWorkspaces = createAsyncThunk('workspace/fetchWorkspaces', async () => {
@@ -67,6 +74,13 @@ const workspaceSlice = createSlice({
         addTask: addTaskHelper,
         updateTask: updateTaskHelper,
         deleteTask: deleteTaskHelper,
+        addSprint: addSprintHelper,
+        updateSprint: updateSprintHelper,
+        deleteSprint: deleteSprintHelper,
+        addEpic: addEpicHelper,
+        updateEpic: updateEpicHelper,
+        deleteEpic: deleteEpicHelper,
+        updateCapacity: updateCapacityHelper,
     },
     extraReducers: (builder) => {
         builder.addCase(fetchWorkspaces.pending, (state) => {
@@ -107,7 +121,14 @@ export const {
     updateProject,
     addTask,
     updateTask,
-    deleteTask
+    deleteTask,
+    addSprint,
+    updateSprint,
+    deleteSprint,
+    addEpic,
+    updateEpic,
+    deleteEpic,
+    updateCapacity
 } = workspaceSlice.actions;
 
 export default workspaceSlice.reducer;

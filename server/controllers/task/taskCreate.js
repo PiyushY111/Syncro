@@ -8,7 +8,7 @@ import { logAuditEvent } from '../../services/auditLogger.js';
 export const createTask = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { title, description, type, status, priority, projectId, assigneeId, due_date, start_date, dependenciesIds, isRecurring, recurrence } = req.body;
+        const { title, description, type, status, priority, projectId, assigneeId, due_date, start_date, dependenciesIds, isRecurring, recurrence, sprintId, epicId, storyPoints } = req.body;
         const origin = req.get('origin');
 
         const project = await prisma.project.findUnique({
@@ -56,6 +56,9 @@ export const createTask = async (req, res) => {
                 } : undefined,
                 isRecurring: typeof isRecurring === 'boolean' ? isRecurring : false,
                 recurrence: recurrence || "NONE",
+                sprintId: sprintId || null,
+                epicId: epicId || null,
+                storyPoints: storyPoints ? parseInt(storyPoints, 10) : null,
             },
         });
 

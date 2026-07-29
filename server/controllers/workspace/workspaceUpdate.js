@@ -42,6 +42,12 @@ export const updateWorkspace = async (req, res) => {
                     include: {
                         tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
                         members: { include: { user: true } },
+                        sprints: {
+                            include: {
+                                capacities: { include: { user: true } }
+                            }
+                        },
+                        epics: true
                     },
                 },
             },

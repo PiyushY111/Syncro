@@ -31,6 +31,12 @@ export const createWorkspace = async (req, res) => {
                     include: {
                         tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
                         members: { include: { user: true } },
+                        sprints: {
+                            include: {
+                                capacities: { include: { user: true } }
+                            }
+                        },
+                        epics: true
                     },
                 },
             },
@@ -57,7 +63,13 @@ export const getUserWorkspaces = async (req, res) => {
                         projects: {
                             include: {
                                 tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
-                                members: { include: { user: true } }
+                                members: { include: { user: true } },
+                                sprints: {
+                                    include: {
+                                        capacities: { include: { user: true } }
+                                    }
+                                },
+                                epics: true
                             }
                         },
                         owner: true,
