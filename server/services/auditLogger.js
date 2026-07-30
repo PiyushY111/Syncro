@@ -10,6 +10,8 @@ export const logAuditEvent = async ({
     severity = null,
     previousState = null,
     newState = null,
+    ipAddress = null,
+    userAgent = null,
     req = null
 }) => {
     try {
@@ -26,8 +28,8 @@ export const logAuditEvent = async ({
             }
         }
 
-        const ipAddress = req?.headers?.["x-forwarded-for"] || req?.socket?.remoteAddress || "127.0.0.1";
-        const userAgent = req?.headers?.["user-agent"] || "System";
+        const ip = ipAddress || req?.headers?.["x-forwarded-for"] || req?.socket?.remoteAddress || "127.0.0.1";
+        const ua = userAgent || req?.headers?.["user-agent"] || "System";
 
         const logEntry = await prisma.auditLog.create({
             data: {
@@ -41,8 +43,8 @@ export const logAuditEvent = async ({
                 details: {
                     previousState: previousState || {},
                     newState: newState || {},
-                    ipAddress,
-                    userAgent
+                    ipAddress: ip,
+                    userAgent: ua
                 }
             }
         });

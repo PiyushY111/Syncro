@@ -1,6 +1,5 @@
 import { prisma } from '../../config/prisma.js';
-import { updateMeetingInGoogleCalendar, deleteMeetingFromGoogleCalendar } from '../../services/googleCalendarService.js';
-import { logAuditEvent } from '../../services/auditLogger.js';
+import { eventBus } from '../../services/eventBus.js';
 
 // Update a meeting
 export const updateMeeting = async (req, res) => {
@@ -100,29 +99,15 @@ export const updateMeeting = async (req, res) => {
             }
         });
 
-        // Update Google Calendar if synced
-        if (fullMeeting.googleEventId) {
-            try {
-                await updateMeetingInGoogleCalendar({
-                    userId,
-                    meeting: fullMeeting,
-                    invites: fullMeeting.invites
-                });
-            } catch (gcalErr) {
-                console.error('[Google Calendar Update Error]', gcalErr);
-            }
-        }
-
-        await logAuditEvent({
-            workspaceId: meeting.workspaceId,
-            userId,
-            action: "UPDATE",
-            entityType: "MEETING",
-            entityId: id,
-            entityName: fullMeeting.title,
+        await eventBus.publish('app/meeting.updated', {
+            meetingId: id,
             previousState,
-            newState: fullMeeting,
-            req
+            auditContext: {
+                workspaceId: meeting.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.json({ message: 'Meeting updated successfully', meeting: fullMeeting });
@@ -152,33 +137,20 @@ export const deleteMeeting = async (req, res) => {
             return res.status(403).json({ message: 'Only the meeting creator can cancel the meeting' });
         }
 
-        // Delete from Google Calendar if synced
-        if (meeting.googleEventId) {
-            try {
-                await deleteMeetingFromGoogleCalendar({
-                    userId,
-                    googleEventId: meeting.googleEventId
-                });
-            } catch (gcalErr) {
-                console.error('[Google Calendar Delete Error]', gcalErr);
-            }
-        }
-
         const previousState = { ...meeting };
 
         await prisma.meeting.delete({
             where: { id }
         });
 
-        await logAuditEvent({
-            workspaceId: meeting.workspaceId,
-            userId,
-            action: "DELETE",
-            entityType: "MEETING",
-            entityId: id,
-            entityName: meeting.title,
-            previousState,
-            req
+        await eventBus.publish('app/meeting.deleted', {
+            meeting,
+            auditContext: {
+                workspaceId: meeting.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.json({ message: 'Meeting cancelled successfully', meetingId: id });

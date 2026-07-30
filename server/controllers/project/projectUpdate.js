@@ -1,6 +1,6 @@
 import { prisma } from "../../config/prisma.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 
 // Update Project
 export const updateProject = async (req, res) => {
@@ -112,16 +112,16 @@ export const updateProject = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
-            workspaceId,
-            userId,
-            action: "UPDATE",
-            entityType: "PROJECT",
-            entityId: id,
-            entityName: name,
+        await eventBus.publish('app/project.updated', {
+            project: projectWithMembers,
             previousState,
-            newState: projectWithMembers,
-            req
+            workspaceId,
+            auditContext: {
+                workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ project: projectWithMembers, message: "Project updated successfully" });

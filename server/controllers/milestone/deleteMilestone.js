@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 export const deleteMilestone = async (req, res) => {
@@ -30,15 +30,17 @@ export const deleteMilestone = async (req, res) => {
             where: { id }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/milestone.deleted', {
+            milestoneId: id,
+            milestoneName: previousState.title,
             workspaceId: previousState.project.workspaceId,
-            userId: req.user.id,
-            action: "DELETE",
-            entityType: "MILESTONE",
-            entityId: id,
-            entityName: previousState.title,
             previousState,
-            req
+            auditContext: {
+                workspaceId: previousState.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Milestone deleted successfully" });

@@ -1,7 +1,7 @@
 import { prisma } from '../../config/prisma.js';
-import { notifyAssignee, wouldCreateCycle } from './taskHelpers.js';
+import { wouldCreateCycle } from './taskHelpers.js';
 import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
-import { logAuditEvent } from '../../services/auditLogger.js';
+import { eventBus } from '../../services/eventBus.js';
 
 // Update task
 export const updateTask = async (req, res) => {
@@ -49,7 +49,7 @@ export const updateTask = async (req, res) => {
                 if (isCycle) {
                     return res.status(400).json({ 
                         message: "Circular dependency detected! This prerequisite depends on the current task." 
-                    });
+                     });
                 }
             }
         }
@@ -113,25 +113,16 @@ export const updateTask = async (req, res) => {
             }
         });
 
-        const assigneeChanged = typeof assigneeId !== 'undefined' && assigneeId !== task.assigneeId;
-        if (assigneeChanged && taskWithAssignee?.assignee) {
-            try {
-                await notifyAssignee(taskWithAssignee, origin);
-            } catch (emailError) {
-                console.error("Email notification failed:", emailError);
+        await eventBus.publish('app/task.updated', {
+            task: taskWithAssignee,
+            previousTask: previousState,
+            origin,
+            auditContext: {
+                workspaceId: project.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
             }
-        }
-
-        await logAuditEvent({
-            workspaceId: project.workspaceId,
-            userId,
-            action: "UPDATE",
-            entityType: "TASK",
-            entityId: req.params.id,
-            entityName: taskWithAssignee.title,
-            previousState,
-            newState: taskWithAssignee,
-            req
         });
 
         return res.status(201).json({ message: "Task updated successfully", task: taskWithAssignee });

@@ -1,6 +1,6 @@
 import { prisma } from '../config/prisma.js';
 import { hasWorkspacePermission } from './role/checkPermissionHelper.js';
-import { logAuditEvent } from '../services/auditLogger.js';
+import { eventBus } from '../services/eventBus.js';
 
 // 1. Create a sub-team
 export const createSubTeam = async (req, res) => {
@@ -42,15 +42,15 @@ export const createSubTeam = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/subteam.created', {
+            subTeam,
             workspaceId,
-            userId,
-            action: "CREATE",
-            entityType: "SUBTEAM",
-            entityId: subTeam.id,
-            entityName: subTeam.name,
-            newState: subTeam,
-            req
+            auditContext: {
+                workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(201).json({ subTeam, message: "Sub-team created successfully" });
@@ -152,16 +152,16 @@ export const updateSubTeam = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
-            workspaceId: subTeam.workspaceId,
-            userId,
-            action: "UPDATE",
-            entityType: "SUBTEAM",
-            entityId: id,
-            entityName: updated.name,
+        await eventBus.publish('app/subteam.updated', {
+            subTeam: updated,
             previousState,
-            newState: updated,
-            req
+            workspaceId: subTeam.workspaceId,
+            auditContext: {
+                workspaceId: subTeam.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.json({ subTeam: updated, message: "Sub-team updated successfully" });
@@ -203,15 +203,17 @@ export const deleteSubTeam = async (req, res) => {
 
         await prisma.subTeam.delete({ where: { id } });
 
-        await logAuditEvent({
+        await eventBus.publish('app/subteam.deleted', {
+            subTeamId: id,
+            subTeamName: subTeam.name,
             workspaceId: subTeam.workspaceId,
-            userId,
-            action: "DELETE",
-            entityType: "SUBTEAM",
-            entityId: id,
-            entityName: subTeam.name,
             previousState,
-            req
+            auditContext: {
+                workspaceId: subTeam.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.json({ message: "Sub-team deleted successfully" });
@@ -264,15 +266,17 @@ export const addSubTeamMember = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/subteam.member_added', {
+            subTeamId: id,
+            subTeamName: subTeam.name,
             workspaceId: subTeam.workspaceId,
-            userId: adminUserId,
-            action: "UPDATE",
-            entityType: "SUBTEAM",
-            entityId: id,
-            entityName: `${subTeam.name} - Add member ${membership.user?.name}`,
-            newState: membership,
-            req
+            membership,
+            auditContext: {
+                workspaceId: subTeam.workspaceId,
+                userId: adminUserId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(201).json({ membership, message: "Member added to sub-team" });
@@ -319,14 +323,18 @@ export const removeSubTeamMember = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/subteam.member_removed', {
+            subTeamId: id,
+            subTeamName: subTeam.name,
             workspaceId: subTeam.workspaceId,
-            userId: adminUserId,
-            action: "UPDATE",
-            entityType: "SUBTEAM",
-            entityId: id,
-            entityName: `${subTeam.name} - Remove member ${targetMember?.name || userId}`,
-            req
+            targetUserId: userId,
+            targetUserName: targetMember?.name || userId,
+            auditContext: {
+                workspaceId: subTeam.workspaceId,
+                userId: adminUserId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.json({ message: "Member removed from sub-team successfully" });

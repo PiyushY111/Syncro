@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { eventBus } from "../../services/eventBus.js";
 
 export const addRetroItem = async (req, res) => {
     try {
@@ -15,9 +16,10 @@ export const addRetroItem = async (req, res) => {
             include: { user: true }
         });
 
-        if (global.io) {
-            global.io.to(`sprint-${column.sprintId}`).emit("retro:item_added", item);
-        }
+        await eventBus.publish('app/retro.item_added', {
+            item,
+            sprintId: column.sprintId
+        });
 
         return res.status(201).json({ message: "Feedback card added", item });
     } catch (error) {
@@ -54,9 +56,10 @@ export const voteRetroItem = async (req, res) => {
             include: { user: true }
         });
 
-        if (global.io) {
-            global.io.to(`sprint-${item.column.sprintId}`).emit("retro:item_voted", updatedItem);
-        }
+        await eventBus.publish('app/retro.item_voted', {
+            item: updatedItem,
+            sprintId: item.column.sprintId
+        });
 
         return res.status(200).json({ message: voteChange === 1 ? "Vote added" : "Vote removed", item: updatedItem });
     } catch (error) {
@@ -80,9 +83,10 @@ export const deleteRetroItem = async (req, res) => {
 
         await prisma.retroItem.delete({ where: { id: itemId } });
 
-        if (global.io) {
-            global.io.to(`sprint-${item.column.sprintId}`).emit("retro:item_deleted", { itemId });
-        }
+        await eventBus.publish('app/retro.item_deleted', {
+            itemId,
+            sprintId: item.column.sprintId
+        });
 
         return res.status(200).json({ message: "Retro card deleted successfully" });
     } catch (error) {

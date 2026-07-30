@@ -1,5 +1,5 @@
 import { prisma } from '../../../config/prisma.js';
-import { logAuditEvent } from '../../../services/auditLogger.js';
+import { eventBus } from '../../../services/eventBus.js';
 
 export const updateMemberRole = async (req, res) => {
     try {
@@ -64,17 +64,19 @@ export const updateMemberRole = async (req, res) => {
             data: updateData,
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/workspace.member_role_changed', {
             workspaceId,
-            userId,
-            action: 'ROLE_CHANGE',
-            entityType: 'USER',
-            entityId: targetMember.userId,
-            entityName: targetMember.user?.name || 'Member',
-            severity: 'CRITICAL',
-            previousState: { role: targetMember.customRole || targetMember.role },
-            newState: { role: role || customRole },
-            req
+            memberId,
+            targetUserId: targetMember.userId,
+            targetUserName: targetMember.user?.name || 'Member',
+            previousRole: targetMember.customRole || targetMember.role,
+            newRole: role || customRole,
+            auditContext: {
+                workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         const updatedWorkspace = await prisma.workspace.findUnique({

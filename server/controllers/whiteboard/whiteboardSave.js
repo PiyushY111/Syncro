@@ -1,5 +1,5 @@
 import { prisma } from '../../config/prisma.js';
-import { logAuditEvent } from '../../services/auditLogger.js';
+import { eventBus } from '../../services/eventBus.js';
 import { getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
 
 // Update/Save whiteboard elements and viewport
@@ -35,16 +35,16 @@ export const saveWhiteboard = async (req, res) => {
             data: updateData
         });
 
-        await logAuditEvent({
-            workspaceId: board.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "WHITEBOARD",
-            entityId: id,
-            entityName: whiteboard.name,
+        await eventBus.publish('app/whiteboard.updated', {
+            whiteboard,
             previousState,
-            newState: whiteboard,
-            req
+            workspaceId: board.workspaceId,
+            auditContext: {
+                workspaceId: board.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json(whiteboard);
@@ -75,16 +75,16 @@ export const shareWhiteboard = async (req, res) => {
             data: { sharedEmails: emails }
         });
 
-        await logAuditEvent({
-            workspaceId: board.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "WHITEBOARD",
-            entityId: id,
-            entityName: `${board.name} - Shared`,
+        await eventBus.publish('app/whiteboard.updated', {
+            whiteboard: updated,
             previousState,
-            newState: updated,
-            req
+            workspaceId: board.workspaceId,
+            auditContext: {
+                workspaceId: board.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json(updated);

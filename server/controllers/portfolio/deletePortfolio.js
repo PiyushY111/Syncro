@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 export const deletePortfolio = async (req, res) => {
@@ -22,15 +22,17 @@ export const deletePortfolio = async (req, res) => {
 
         await prisma.portfolio.delete({ where: { id } });
 
-        await logAuditEvent({
+        await eventBus.publish('app/portfolio.deleted', {
+            portfolioId: id,
+            portfolioName: existing.name,
             workspaceId: existing.workspaceId,
-            userId: req.user.id,
-            action: "DELETE",
-            entityType: "PORTFOLIO",
-            entityId: id,
-            entityName: existing.name,
             previousState,
-            req
+            auditContext: {
+                workspaceId: existing.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Portfolio deleted successfully" });

@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../config/prisma.js';
-import sendEmail from '../../config/nodemailer.js';
+import { eventBus } from '../../services/eventBus.js';
 
 export const register = async (req, res) => {
     try {
@@ -39,23 +39,11 @@ export const register = async (req, res) => {
 
         console.log(`[2FA Security Code Sent] User: ${user.email}${isTester ? ' (Bypassed with static code 123456)' : ''}`);
 
-        const subject = "Syncro Sign Up Verification Code";
-        const text = `Your sign up verification code is: ${verificationCode}. It expires in 5 minutes.`;
-        const html = `
-            <div style="font-family: sans-serif; padding: 24px; max-width: 480px; margin: auto; border: 1px solid #e4e4e7; border-radius: 16px;">
-                <h2 style="color: #4f46e5; margin-bottom: 16px;">Syncro Security Code</h2>
-                <p>Use the following 6-digit verification code to complete your registration. This code is valid for 5 minutes:</p>
-                <div style="font-size: 32px; font-weight: bold; letter-spacing: 6px; padding: 12px 24px; background-color: #f4f4f5; text-align: center; border-radius: 8px; margin: 20px 0; color: #18181b;">
-                    ${verificationCode}
-                </div>
-                <p style="font-size: 12px; color: #71717a;">If you did not create a Syncro account, please ignore this email.</p>
-            </div>
-        `;
-        if (!isTester) {
-            sendEmail({ to: user.email, subject, text, html }).catch(err => {
-                console.error(`[SMTP ERROR] Failed to send email to ${user.email}:`, err.message);
-            });
-        }
+        await eventBus.publish('app/auth.registered', {
+            email: user.email,
+            verificationCode,
+            isTester
+        });
 
         return res.status(201).json({
             requiresVerification: true,

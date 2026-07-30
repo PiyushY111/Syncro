@@ -1,5 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { createWorkspaceSlug } from './workspaceHelpers.js';
+import { eventBus } from '../../services/eventBus.js';
 
 export const updateWorkspace = async (req, res) => {
     try {
@@ -53,6 +54,18 @@ export const updateWorkspace = async (req, res) => {
             },
         });
 
+        await eventBus.publish('app/workspace.updated', {
+            workspaceId: id,
+            previousState: workspace,
+            newState: updatedWorkspace,
+            auditContext: {
+                workspaceId: id,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
+        });
+
         return res.json({ workspace: updatedWorkspace, message: 'Workspace updated successfully' });
     } catch (err) {
         console.error(err);
@@ -79,6 +92,17 @@ export const deleteWorkspace = async (req, res) => {
 
         await prisma.workspace.delete({
             where: { id }
+        });
+
+        await eventBus.publish('app/workspace.deleted', {
+            workspaceId: id,
+            workspace,
+            auditContext: {
+                workspaceId: id,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.json({ id, message: 'Workspace deleted successfully' });

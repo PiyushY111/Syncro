@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { prisma } from "../config/prisma.js";
 import { redisCache } from "../config/redis.js";
+import { eventBus } from "../services/eventBus.js";
 
 export const registerMessageHandlers = (io, socket) => {
     socket.join(`user:${socket.user.id}`);
@@ -66,57 +67,15 @@ export const registerMessageHandlers = (io, socket) => {
                 }
             });
 
+            await eventBus.publish('app/chat.message_sent', {
+                message,
+                channelId: channelId || null,
+                recipientId: recipientId || null,
+                senderName: socket.user.name
+            });
+            
             if (channelId) {
-                io.to(`channel:${channelId}`).emit("message:received", message);
                 redisCache.del(`messages:${channelId}`).catch(() => {});
-
-                // Parse mentions and create database notifications for mentioned users
-                try {
-                    const mentionNames = (content.match(/@\S+/g) || [])
-                        .map(m => m.slice(1).replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, "").toLowerCase())
-                        .filter(Boolean);
-                    if (mentionNames.length > 0) {
-                        const chan = await prisma.channel.findUnique({
-                            where: { id: channelId },
-                            select: { name: true, workspaceId: true }
-                        });
-                        if (chan) {
-                            const workspaceMembers = await prisma.workspaceMember.findMany({
-                                where: { workspaceId: chan.workspaceId },
-                                include: { user: { select: { id: true, name: true } } }
-                            });
-
-                            const mentionedUsers = workspaceMembers
-                                .map(m => m.user)
-                                .filter(u => {
-                                    if (!u || u.id === socket.user.id || !u.name) return false;
-                                    const userWords = u.name.trim().toLowerCase().split(/\s+/).map(w => w.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()]/g, ""));
-                                    return mentionNames.some(mention => 
-                                        userWords.some(word => word === mention || word.startsWith(mention))
-                                    );
-                                });
-
-                            for (const u of mentionedUsers) {
-                                await prisma.notification.create({
-                                    data: {
-                                        userId: u.id,
-                                        workspaceId: chan.workspaceId,
-                                        type: 'COMMENT_MENTION',
-                                        title: `${message.user.name} mentioned you in #${chan.name}`,
-                                        content: content,
-                                        entityType: 'CHAT',
-                                        entityId: channelId,
-                                        priority: 'HIGH'
-                                    }
-                                });
-                            }
-                        }
-                    }
-                } catch (err) {
-                    console.error("Error creating mention notification:", err);
-                }
-            } else if (recipientId) {
-                io.to(`user:${recipientId}`).to(`user:${socket.user.id}`).emit("message:received", message);
             }
         } catch (error) {
             console.error("[SOCKET MESSAGE SEND ERROR]", error);
@@ -126,9 +85,18 @@ export const registerMessageHandlers = (io, socket) => {
 
     socket.on("message:delete", async ({ messageId, channelId }) => {
         try {
+            const message = await prisma.message.findUnique({ where: { id: messageId } });
+            if (!message) return;
+
             await prisma.message.delete({ where: { id: messageId } });
+
+            await eventBus.publish('app/chat.message_deleted', {
+                messageId,
+                channelId: channelId || null,
+                recipientId: message.recipientId
+            });
+
             if (channelId) {
-                io.to(`channel:${channelId}`).emit("message:deleted", { messageId });
                 redisCache.del(`messages:${channelId}`).catch(() => {});
             }
         } catch (error) {

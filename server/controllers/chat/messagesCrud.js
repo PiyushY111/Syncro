@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { prisma } from '../../config/prisma.js';
-import { getIO } from '../../socket/socketInit.js';
+import { eventBus } from '../../services/eventBus.js';
 import { redisCache } from '../../config/redis.js';
 import { getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
 
@@ -72,17 +72,12 @@ export const sendMessage = async (req, res) => {
             }
         });
 
-        try {
-            const io = getIO();
-            if (channelId) {
-                io.to(`channel:${channelId}`).emit("message:received", message);
-                redisCache.del(`messages:${channelId}`).catch(() => {});
-            } else if (recipientId) {
-                io.to(`user:${recipientId}`).to(`user:${userId}`).emit("message:received", message);
-            }
-        } catch (socketErr) {
-            console.error("[HTTP SEND MESSAGE SOCKET EMIT ERROR]", socketErr);
-        }
+        await eventBus.publish('app/chat.message_sent', {
+            message,
+            channelId: channelId || null,
+            recipientId: recipientId || null,
+            senderName: req.user.name
+        });
 
         return res.status(201).json({ message });
     } catch (err) {
@@ -173,6 +168,13 @@ export const deleteMessage = async (req, res) => {
         if (message.userId !== userId) return res.status(403).json({ message: "Can only delete your own message" });
 
         await prisma.message.delete({ where: { id: messageId } });
+
+        await eventBus.publish('app/chat.message_deleted', {
+            messageId,
+            channelId: message.channelId,
+            recipientId: message.recipientId
+        });
+
         return res.json({ message: "Message deleted" });
     } catch (err) {
         console.error(err);

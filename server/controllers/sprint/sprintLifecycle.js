@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 const canManageSprints = async (userId, workspaceId) => {
@@ -31,15 +31,16 @@ export const startSprint = async (req, res) => {
             data: { status: "ACTIVE" }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/sprint.updated', {
+            sprint: updatedSprint,
+            previousState: sprint,
             workspaceId: sprint.project.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "PROJECT",
-            entityId: sprint.id,
-            entityName: sprint.name,
-            newState: updatedSprint,
-            req
+            auditContext: {
+                workspaceId: sprint.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Sprint started successfully", sprint: updatedSprint });
@@ -78,15 +79,16 @@ export const completeSprint = async (req, res) => {
             });
         }
 
-        await logAuditEvent({
+        await eventBus.publish('app/sprint.updated', {
+            sprint: updatedSprint,
+            previousState: sprint,
             workspaceId: sprint.project.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "PROJECT",
-            entityId: sprint.id,
-            entityName: sprint.name,
-            newState: updatedSprint,
-            req
+            auditContext: {
+                workspaceId: sprint.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({

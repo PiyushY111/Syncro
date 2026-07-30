@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 const canManageEpics = async (userId, workspaceId) => {
@@ -31,15 +31,16 @@ export const updateEpic = async (req, res) => {
             data: updateData
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/epic.updated', {
+            epic: updatedEpic,
+            previousState: epic,
             workspaceId: epic.project.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "PROJECT",
-            entityId: epic.id,
-            entityName: epic.name,
-            newState: updatedEpic,
-            req
+            auditContext: {
+                workspaceId: epic.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Epic updated successfully", epic: updatedEpic });
@@ -63,18 +64,23 @@ export const deleteEpic = async (req, res) => {
         const hasPermission = await canManageEpics(req.user.id, epic.project.workspaceId);
         if (!hasPermission) return res.status(403).json({ message: "You do not have permission to delete Epics" });
 
+        const previousState = { ...epic };
+
         await prisma.epic.delete({
             where: { id: epicId }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/epic.deleted', {
+            epicId,
+            epicName: epic.name,
             workspaceId: epic.project.workspaceId,
-            userId: req.user.id,
-            action: "DELETE",
-            entityType: "PROJECT",
-            entityId: epic.id,
-            entityName: epic.name,
-            req
+            previousState,
+            auditContext: {
+                workspaceId: epic.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Epic deleted successfully" });

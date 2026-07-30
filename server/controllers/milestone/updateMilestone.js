@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 export const updateMilestone = async (req, res) => {
@@ -37,16 +37,16 @@ export const updateMilestone = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
-            workspaceId: previousState.project.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "MILESTONE",
-            entityId: id,
-            entityName: updatedMilestone.title,
+        await eventBus.publish('app/milestone.updated', {
+            milestone: updatedMilestone,
             previousState,
-            newState: updatedMilestone,
-            req
+            workspaceId: previousState.project.workspaceId,
+            auditContext: {
+                workspaceId: previousState.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({

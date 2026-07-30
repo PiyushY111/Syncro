@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 const canManageEpics = async (userId, workspaceId) => {
@@ -37,15 +37,15 @@ export const createEpic = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/epic.created', {
+            epic,
             workspaceId: project.workspaceId,
-            userId: req.user.id,
-            action: "CREATE",
-            entityType: "PROJECT",
-            entityId: epic.id,
-            entityName: epic.name,
-            newState: epic,
-            req
+            auditContext: {
+                workspaceId: project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(201).json({ message: "Epic created successfully", epic });

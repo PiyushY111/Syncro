@@ -1,6 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
-import { logAuditEvent } from '../../services/auditLogger.js';
+import { eventBus } from '../../services/eventBus.js';
 
 // Delete Project
 export const deleteProject = async (req, res) => {
@@ -30,15 +30,17 @@ export const deleteProject = async (req, res) => {
             where: { id }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/project.deleted', {
+            projectId: id,
+            projectName: project.name,
             workspaceId: project.workspaceId,
-            userId,
-            action: "DELETE",
-            entityType: "PROJECT",
-            entityId: id,
-            entityName: project.name,
             previousState,
-            req
+            auditContext: {
+                workspaceId: project.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.json({ id, message: "Project deleted successfully" });

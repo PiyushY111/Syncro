@@ -1,8 +1,6 @@
 import { prisma } from '../../config/prisma.js';
-import { inngest } from '../../inngest/index.js';
-import { notifyAssignee } from './taskHelpers.js';
+import { eventBus } from '../../services/eventBus.js';
 import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
-import { logAuditEvent } from '../../services/auditLogger.js';
 
 // Create task
 export const createTask = async (req, res) => {
@@ -72,32 +70,15 @@ export const createTask = async (req, res) => {
             }
         });
 
-        if (taskWithAssignee?.assignee) {
-            try {
-                await notifyAssignee(taskWithAssignee, origin);
-            } catch (emailError) {
-                console.error("Email notification failed:", emailError);
+        await eventBus.publish('app/task.created', {
+            task: taskWithAssignee,
+            origin,
+            auditContext: {
+                workspaceId: project.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
             }
-        }
-
-        try {
-            await inngest.send({
-                name: "app/task.assigned",
-                data: { taskId: task.id, origin }
-            });
-        } catch (inngestError) {
-            console.error("Inngest send event failed:", inngestError);
-        }
-
-        await logAuditEvent({
-            workspaceId: project.workspaceId,
-            userId,
-            action: "CREATE",
-            entityType: "TASK",
-            entityId: task.id,
-            entityName: task.title,
-            newState: taskWithAssignee,
-            req
         });
 
         return res.status(201).json({ message: "Task created successfully", task: taskWithAssignee });
@@ -142,15 +123,14 @@ export const deleteTask = async (req, res) => {
         }
 
         for (const task of tasks) {
-            await logAuditEvent({
-                workspaceId: task.project.workspaceId,
-                userId,
-                action: "DELETE",
-                entityType: "TASK",
-                entityId: task.id,
-                entityName: task.title,
-                previousState: task,
-                req
+            await eventBus.publish('app/task.deleted', {
+                task,
+                auditContext: {
+                    workspaceId: task.project.workspaceId,
+                    userId,
+                    ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                    userAgent: req.headers["user-agent"]
+                }
             });
         }
 

@@ -1,5 +1,5 @@
 import { prisma } from '../../../config/prisma.js';
-import sendEmail from '../../../config/nodemailer.js';
+import { eventBus } from '../../../services/eventBus.js';
 import { createInvitationToken, getInviteTokenTtlMs } from '../workspaceHelpers.js';
 
 export const sendWorkspaceInvitationEmail = async (req, res) => {
@@ -68,7 +68,21 @@ export const sendWorkspaceInvitationEmail = async (req, res) => {
             </div>
         `;
 
-        await sendEmail(email, subject, text, html);
+        await eventBus.publish('app/workspace.member_invited', {
+            email: email.toLowerCase(),
+            subject,
+            text,
+            html,
+            workspaceId,
+            role: normalizedRole,
+            auditContext: {
+                workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
+        });
+
         return res.json({ message: "Invitation email sent successfully" });
     } catch (err) {
         console.error(err);

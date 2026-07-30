@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 export const createPortfolio = async (req, res) => {
@@ -60,15 +60,15 @@ export const createPortfolio = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/portfolio.created', {
+            portfolio: fullPortfolio,
             workspaceId,
-            userId,
-            action: "CREATE",
-            entityType: "PORTFOLIO",
-            entityId: portfolio.id,
-            entityName: portfolio.name,
-            newState: fullPortfolio,
-            req
+            auditContext: {
+                workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(201).json({

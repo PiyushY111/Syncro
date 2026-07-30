@@ -1,5 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { createWorkspaceSlug } from './workspaceHelpers.js';
+import { eventBus } from '../../services/eventBus.js';
 
 export const createWorkspace = async (req, res) => {
     try {
@@ -40,6 +41,17 @@ export const createWorkspace = async (req, res) => {
                     },
                 },
             },
+        });
+
+        await eventBus.publish('app/workspace.created', {
+            workspaceId: workspace.id,
+            workspace,
+            auditContext: {
+                workspaceId: workspace.id,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(201).json({ workspace, message: 'Workspace created successfully' });

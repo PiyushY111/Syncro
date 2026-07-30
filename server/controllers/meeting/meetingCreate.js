@@ -1,6 +1,5 @@
 import { prisma } from '../../config/prisma.js';
-import { pushMeetingToGoogleCalendar } from '../../services/googleCalendarService.js';
-import { logAuditEvent } from '../../services/auditLogger.js';
+import { eventBus } from '../../services/eventBus.js';
 
 // Create a meeting and send invites
 export const createMeeting = async (req, res) => {
@@ -92,41 +91,16 @@ export const createMeeting = async (req, res) => {
             }
         });
 
-        // Push to Google Calendar if creator has active Google Calendar sync
-        try {
-            const gcalResult = await pushMeetingToGoogleCalendar({
+        await eventBus.publish('app/meeting.created', {
+            meetingId: meeting.id,
+            creatorId,
+            inviteeIds: uniqueInvitees,
+            auditContext: {
+                workspaceId,
                 userId: creatorId,
-                meeting: fullMeeting,
-                invites: fullMeeting.invites
-            });
-
-            if (gcalResult) {
-                const updateData = {};
-                if (gcalResult.googleEventId) updateData.googleEventId = gcalResult.googleEventId;
-                if (gcalResult.meetingLink && !fullMeeting.meetingLink) updateData.meetingLink = gcalResult.meetingLink;
-
-                if (Object.keys(updateData).length > 0) {
-                    await prisma.meeting.update({
-                        where: { id: meeting.id },
-                        data: updateData
-                    });
-                    if (updateData.googleEventId) fullMeeting.googleEventId = updateData.googleEventId;
-                    if (updateData.meetingLink) fullMeeting.meetingLink = updateData.meetingLink;
-                }
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
             }
-        } catch (gcalErr) {
-            console.error('[Google Calendar Push Error]', gcalErr);
-        }
-
-        await logAuditEvent({
-            workspaceId,
-            userId: creatorId,
-            action: "CREATE",
-            entityType: "MEETING",
-            entityId: meeting.id,
-            entityName: meeting.title,
-            newState: fullMeeting,
-            req
         });
 
         return res.status(201).json({ message: 'Meeting scheduled successfully', meeting: fullMeeting });

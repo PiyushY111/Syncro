@@ -1,5 +1,6 @@
 import { prisma } from '../config/prisma.js';
 import { getUserWorkspaceRole } from './role/checkPermissionHelper.js';
+import { eventBus } from '../services/eventBus.js';
 
 export const addComment = async (req, res) => {
     try {
@@ -43,7 +44,23 @@ export const addComment = async (req, res) => {
                 user: { connect: { id: userId } },
             }
         });
-        return res.status(201).json({ comment, message: "Comment added successfully" });
+
+        const commentWithUser = await prisma.comment.findUnique({
+            where: { id: comment.id },
+            include: { user: true, task: { include: { assignee: true, project: true } } }
+        });
+
+        await eventBus.publish('app/comment.created', {
+            comment: commentWithUser,
+            auditContext: {
+                workspaceId: project.workspaceId,
+                userId,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
+        });
+
+        return res.status(201).json({ comment: commentWithUser, message: "Comment added successfully" });
     }
     catch (err) {
         console.error(err);

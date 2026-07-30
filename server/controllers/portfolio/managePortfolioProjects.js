@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 
 export const addProjectsToPortfolio = async (req, res) => {
     try {
@@ -30,15 +30,16 @@ export const addProjectsToPortfolio = async (req, res) => {
             skipDuplicates: true
         });
 
-        await logAuditEvent({
-            workspaceId: portfolio.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "PORTFOLIO",
-            entityId: id,
-            entityName: `${portfolio.name} - Added projects`,
+        await eventBus.publish('app/portfolio.updated', {
+            portfolio,
             previousState,
-            req
+            workspaceId: portfolio.workspaceId,
+            auditContext: {
+                workspaceId: portfolio.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Projects added to portfolio successfully" });
@@ -50,6 +51,7 @@ export const addProjectsToPortfolio = async (req, res) => {
 
 export const removeProjectFromPortfolio = async (req, res) => {
     try {
+        const { id, projectId } = req.params; // Make sure these are parsed correctly from parameters or request body
         const portfolio = await prisma.portfolio.findUnique({ where: { id } });
         if (!portfolio) {
             return res.status(404).json({ message: "Portfolio not found" });
@@ -60,15 +62,16 @@ export const removeProjectFromPortfolio = async (req, res) => {
             where: { portfolioId: id, projectId }
         });
 
-        await logAuditEvent({
-            workspaceId: portfolio.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "PORTFOLIO",
-            entityId: id,
-            entityName: `${portfolio.name} - Removed project ${projectId}`,
+        await eventBus.publish('app/portfolio.updated', {
+            portfolio,
             previousState,
-            req
+            workspaceId: portfolio.workspaceId,
+            auditContext: {
+                workspaceId: portfolio.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Project removed from portfolio" });

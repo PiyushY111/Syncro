@@ -1,6 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { hasWorkspacePermission, getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
-import { logAuditEvent } from '../../services/auditLogger.js';
+import { eventBus } from '../../services/eventBus.js';
 
 // Get all whiteboards for a project
 export const getProjectWhiteboards = async (req, res) => {
@@ -116,15 +116,15 @@ export const createWhiteboard = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/whiteboard.created', {
+            whiteboard,
             workspaceId,
-            userId: req.user.id,
-            action: "CREATE",
-            entityType: "WHITEBOARD",
-            entityId: whiteboard.id,
-            entityName: whiteboard.name,
-            newState: whiteboard,
-            req
+            auditContext: {
+                workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(201).json(whiteboard);
@@ -151,15 +151,17 @@ export const deleteWhiteboard = async (req, res) => {
             where: { id }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/whiteboard.deleted', {
+            whiteboardId: id,
+            whiteboardName: board.name,
             workspaceId: board.workspaceId,
-            userId: req.user.id,
-            action: "DELETE",
-            entityType: "WHITEBOARD",
-            entityId: id,
-            entityName: board.name,
             previousState,
-            req
+            auditContext: {
+                workspaceId: board.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: 'Whiteboard deleted successfully' });
@@ -180,16 +182,16 @@ export const starWhiteboard = async (req, res) => {
             data: { isStarred: !board.isStarred }
         });
 
-        await logAuditEvent({
-            workspaceId: board.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "WHITEBOARD",
-            entityId: id,
-            entityName: board.name,
+        await eventBus.publish('app/whiteboard.updated', {
+            whiteboard: updated,
             previousState: board,
-            newState: updated,
-            req
+            workspaceId: board.workspaceId,
+            auditContext: {
+                workspaceId: board.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json(updated);

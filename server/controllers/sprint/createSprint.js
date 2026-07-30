@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 const canManageSprints = async (userId, workspaceId) => {
@@ -39,15 +39,15 @@ export const createSprint = async (req, res) => {
             }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/sprint.created', {
+            sprint,
             workspaceId: project.workspaceId,
-            userId: req.user.id,
-            action: "CREATE",
-            entityType: "PROJECT",
-            entityId: sprint.id,
-            entityName: sprint.name,
-            newState: sprint,
-            req
+            auditContext: {
+                workspaceId: project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(201).json({

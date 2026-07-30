@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { logAuditEvent } from "../../services/auditLogger.js";
+import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
 const canManageSprints = async (userId, workspaceId) => {
@@ -33,15 +33,16 @@ export const updateSprint = async (req, res) => {
             data: updateData
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/sprint.updated', {
+            sprint: updatedSprint,
+            previousState: sprint,
             workspaceId: sprint.project.workspaceId,
-            userId: req.user.id,
-            action: "UPDATE",
-            entityType: "PROJECT",
-            entityId: sprint.id,
-            entityName: sprint.name,
-            newState: updatedSprint,
-            req
+            auditContext: {
+                workspaceId: sprint.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Sprint updated successfully", sprint: updatedSprint });
@@ -65,18 +66,23 @@ export const deleteSprint = async (req, res) => {
         const hasPermission = await canManageSprints(req.user.id, sprint.project.workspaceId);
         if (!hasPermission) return res.status(403).json({ message: "You do not have permission to delete sprints" });
 
+        const previousState = { ...sprint };
+
         await prisma.sprint.delete({
             where: { id: sprintId }
         });
 
-        await logAuditEvent({
+        await eventBus.publish('app/sprint.deleted', {
+            sprintId,
+            sprintName: sprint.name,
             workspaceId: sprint.project.workspaceId,
-            userId: req.user.id,
-            action: "DELETE",
-            entityType: "PROJECT",
-            entityId: sprint.id,
-            entityName: sprint.name,
-            req
+            previousState,
+            auditContext: {
+                workspaceId: sprint.project.workspaceId,
+                userId: req.user.id,
+                ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
+                userAgent: req.headers["user-agent"]
+            }
         });
 
         return res.status(200).json({ message: "Sprint deleted successfully" });
