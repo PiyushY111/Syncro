@@ -20,8 +20,8 @@ By isolating data boundaries between workspace organizations, using lightweight 
 ---
 
 ## 🌐 Live Demo & Screenshots
-* **Production URL**: [https://syncro-amber.vercel.app](https://syncro-amber.vercel.app)
-* **API Gateway Service**: [https://syncro-backend.onrender.com](https://syncro-backend.onrender.com)
+* **Production URL**: [https://syncro.piyushydv.com](https://syncro.piyushydv.com)
+* **API Gateway Service**: [https://api.syncro.piyushydv.com](https://api.syncro.piyushydv.com)
 * **Screenshots and Walkthroughs**: Visual guides, component layouts, and database state diagrams can be reviewed directly in [walkthrough.md](file:///Users/piyush./.gemini/antigravity/brain/3e562290-c25b-4084-96e3-c3016b55f8a4/walkthrough.md).
 
 ---
