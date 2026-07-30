@@ -262,35 +262,3 @@ cd server
 npx vitest run      # Unit/integration test suite
 npx playwright test # End-to-end browser test suite
 ```
-
----
-
-## 🚀 Production Deployment
-* **Client**: Static hosting via Vercel or Netlify.
-* **Server**: Deploy the Express node listener instance on Render, Fly.io, or AWS ECS.
-* **Database**: Runs on Neon Serverless PostgreSQL with connection pooling.
-
----
-
-## ⚡ Performance (10/10)
-
-Syncro achieves a **10/10 performance rating** using:
-* **Generational Caching**: Leverages Redis versioned caching for the inbox hub, allowing `O(1)` instant cache invalidation without scanning keys.
-* **Role Check Caching**: Speeds up REST authorization check middleware by caching permissions in Redis with a 15-second TTL.
-* **PWA Service Worker**: Intercepts assets and `/api/*` REST responses, caching them in the browser's Cache Storage for immediate read-only offline fallback support.
-* **Event-Driven Background Workers**: Heavy tasks (Google Calendar OAuth, Nodemailer email dispatches, and Audit event logs) are offloaded to Inngest background workers.
-* **Virtualization**: Renders only active DOM nodes in chat messaging history feeds.
-* **Lazy Loading**: Route-based code splitting reduces initial JS bundle sizes.
-* **Optimistic UI**: Real-time websocket broadcasts update UI states immediately.
-* **Pagination**: Cursor/limit pagination minimizes API query latency.
-
----
-
-## 🔮 Future Improvements
-* **Offline Write Queuing**: Queue user updates (like task status updates) while offline, and automatically synchronize them when the internet connection returns.
-* **Visual Regression Pipelines**: Add Playwright visual screenshot comparisons in the CI/CD pipeline to automatically catch layout shifts.
-
----
-
-## 📄 License
-This project is open-source software licensed under the [MIT License](LICENSE).
