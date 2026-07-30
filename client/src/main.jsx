@@ -17,7 +17,6 @@ toast.error = (message, options) => {
     return originalToastError(message, options);
 };
 
-
 createRoot(document.getElementById('root')).render(
     <BrowserRouter>
         <AuthProvider>
@@ -29,3 +28,12 @@ createRoot(document.getElementById('root')).render(
         </AuthProvider>
     </BrowserRouter>,
 )
+
+// Register Service Worker for offline capabilities
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+            .then((reg) => console.log('[ServiceWorker] Registered successfully on scope:', reg.scope))
+            .catch((err) => console.error('[ServiceWorker] Registration failed:', err));
+    });
+}
