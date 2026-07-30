@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { redisCache } from "../../config/redis.js";
 
 export const archiveNotification = async (req, res) => {
     try {
@@ -18,6 +19,10 @@ export const archiveNotification = async (req, res) => {
             where: { id },
             data: { isArchived: true }
         });
+
+        try {
+            await redisCache.incr(`inbox:version:${userId}`);
+        } catch {}
 
         return res.status(200).json({ notification: updated });
     } catch (error) {

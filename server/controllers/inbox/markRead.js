@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { redisCache } from "../../config/redis.js";
 
 export const markNotificationRead = async (req, res) => {
     try {
@@ -19,6 +20,10 @@ export const markNotificationRead = async (req, res) => {
             data: { isRead: !notification.isRead }
         });
 
+        try {
+            await redisCache.incr(`inbox:version:${userId}`);
+        } catch {}
+
         return res.status(200).json({ notification: updated });
     } catch (error) {
         console.error("Error marking notification read:", error);
@@ -34,6 +39,10 @@ export const markAllNotificationsRead = async (req, res) => {
             where: { userId, isRead: false },
             data: { isRead: true }
         });
+
+        try {
+            await redisCache.incr(`inbox:version:${userId}`);
+        } catch {}
 
         return res.status(200).json({ message: "All notifications marked as read" });
     } catch (error) {

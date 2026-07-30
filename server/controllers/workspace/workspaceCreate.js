@@ -1,15 +1,13 @@
 import { prisma } from '../../config/prisma.js';
 import { createWorkspaceSlug } from './workspaceHelpers.js';
 import { eventBus } from '../../services/eventBus.js';
+import { redisCache } from '../../config/redis.js';
 
 export const createWorkspace = async (req, res) => {
     try {
         const userId = req.user.id;
         const { name, description = '', image_url = '' } = req.body;
-
-        if (!name?.trim()) {
-            return res.status(400).json({ message: 'Workspace name is required' });
-        }
+        if (!name?.trim()) return res.status(400).json({ message: 'Workspace name is required' });
 
         const workspace = await prisma.workspace.create({
             data: {
@@ -18,12 +16,7 @@ export const createWorkspace = async (req, res) => {
                 description: description.trim() || null,
                 ownerId: userId,
                 image_url: image_url.trim(),
-                members: {
-                    create: {
-                        userId,
-                        role: 'OWNER',
-                    },
-                },
+                members: { create: { userId, role: 'OWNER' } },
             },
             include: {
                 owner: true,
@@ -32,11 +25,7 @@ export const createWorkspace = async (req, res) => {
                     include: {
                         tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
                         members: { include: { user: true } },
-                        sprints: {
-                            include: {
-                                capacities: { include: { user: true } }
-                            }
-                        },
+                        sprints: { include: { capacities: { include: { user: true } } } },
                         epics: true
                     },
                 },
@@ -54,6 +43,11 @@ export const createWorkspace = async (req, res) => {
             }
         });
 
+        // Invalidate workspaces list cache for the user
+        try {
+            await redisCache.del(`user:workspaces:${userId}`);
+        } catch {}
+
         return res.status(201).json({ workspace, message: 'Workspace created successfully' });
     } catch (err) {
         console.error(err);
@@ -64,10 +58,14 @@ export const createWorkspace = async (req, res) => {
 export const getUserWorkspaces = async (req, res) => {
     try {
         const userId = req.user.id;
+        const cacheKey = `user:workspaces:${userId}`;
+        try {
+            const cached = await redisCache.get(cacheKey);
+            if (cached) return res.json(JSON.parse(cached));
+        } catch {}
+
         const workspaceMemberships = await prisma.workspaceMember.findMany({
-            where: {
-                userId: userId,
-            },
+            where: { userId },
             include: {
                 workspace: {
                     include: {
@@ -76,11 +74,7 @@ export const getUserWorkspaces = async (req, res) => {
                             include: {
                                 tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
                                 members: { include: { user: true } },
-                                sprints: {
-                                    include: {
-                                        capacities: { include: { user: true } }
-                                    }
-                                },
+                                sprints: { include: { capacities: { include: { user: true } } } },
                                 epics: true
                             }
                         },
@@ -98,10 +92,7 @@ export const getUserWorkspaces = async (req, res) => {
 
             if (!isManagerOrOwner) {
                 const userSubTeams = await prisma.subTeam.findMany({
-                    where: {
-                        workspaceId: workspace.id,
-                        members: { some: { userId } }
-                    },
+                    where: { workspaceId: workspace.id, members: { some: { userId } } },
                     select: { projectId: true }
                 });
                 const allowedProjectIds = userSubTeams.map(s => s.projectId).filter(Boolean);
@@ -115,9 +106,14 @@ export const getUserWorkspaces = async (req, res) => {
             }
             workspaces.push(workspace);
         }
-        return res.json({ workspaces });
-    }
-    catch (err) {
+
+        const result = { workspaces };
+        try {
+            await redisCache.set(cacheKey, JSON.stringify(result), 10); // Cache for 10 seconds
+        } catch {}
+
+        return res.json(result);
+    } catch (err) {
         console.error(err);
         return res.status(500).json({ message: err.code || err.message });
     }

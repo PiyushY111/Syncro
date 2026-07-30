@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { redisCache } from "../../config/redis.js";
 
 export const defaultPermissions = {
     ADMIN: { 
@@ -28,30 +29,43 @@ export const defaultPermissions = {
 };
 
 export const getUserWorkspaceRole = async (userId, workspaceId) => {
+    const cacheKey = `workspace:role:${userId}:${workspaceId}`;
+    try {
+        const cached = await redisCache.get(cacheKey);
+        if (cached) return JSON.parse(cached);
+    } catch {}
+
     const member = await prisma.workspaceMember.findUnique({
         where: { userId_workspaceId: { userId, workspaceId } },
         include: { workspace: true }
     });
 
+    let result;
     if (member) {
         const workspace = member.workspace;
         const isOwner = workspace.ownerId === userId;
         const activeRole = member.customRole || member.role || "MEMBER";
-        return { role: isOwner ? "OWNER" : activeRole, isOwner, workspace, member };
+        result = { role: isOwner ? "OWNER" : activeRole, isOwner, workspace, member };
+    } else {
+        const workspace = await prisma.workspace.findUnique({
+            where: { id: workspaceId }
+        });
+
+        if (!workspace) {
+            result = { role: null, isOwner: false, workspace: null, member: null };
+        } else {
+            const isOwner = workspace.ownerId === userId;
+            result = isOwner 
+                ? { role: "OWNER", isOwner: true, workspace, member: null }
+                : { role: null, isOwner: false, workspace, member: null };
+        }
     }
 
-    const workspace = await prisma.workspace.findUnique({
-        where: { id: workspaceId }
-    });
+    try {
+        await redisCache.set(cacheKey, JSON.stringify(result), 15); // Cache for 15 seconds
+    } catch {}
 
-    if (!workspace) return { role: null, isOwner: false, workspace: null, member: null };
-
-    const isOwner = workspace.ownerId === userId;
-    if (isOwner) {
-        return { role: "OWNER", isOwner: true, workspace, member: null };
-    }
-
-    return { role: null, isOwner: false, workspace, member: null };
+    return result;
 };
 
 export const hasWorkspacePermission = async (userId, workspaceId, permissionKey) => {
@@ -65,4 +79,3 @@ export const hasWorkspacePermission = async (userId, workspaceId, permissionKey)
 
     return permissions[permissionKey] ?? false;
 };
-

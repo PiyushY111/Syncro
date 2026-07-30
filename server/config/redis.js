@@ -47,6 +47,14 @@ export const redisCache = {
             return 1;
         }
     },
+    incr: async (key) => {
+        try {
+            if (redisClient) return await redisClient.incr(key);
+        } catch {}
+        const val = Number(memoryStore.get(key) || 0) + 1;
+        memoryStore.set(key, val);
+        return val;
+    },
     publish: async (channel, message) => {
         try {
             if (redisClient) {

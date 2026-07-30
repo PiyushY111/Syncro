@@ -1,9 +1,24 @@
 import { prisma } from "../../config/prisma.js";
+import { redisCache } from "../../config/redis.js";
 
 export const getInbox = async (req, res) => {
     try {
         const userId = req.user.id;
         const { filter = "ALL", search = "", unreadOnly = "false" } = req.query;
+
+        // Get user inbox cache version (or initialize if not present)
+        const versionKey = `inbox:version:${userId}`;
+        let version = await redisCache.get(versionKey);
+        if (!version) {
+            version = "1";
+            await redisCache.set(versionKey, version, 86400 * 30); // 30 days version persistence
+        }
+
+        const cacheKey = `inbox:${userId}:${version}:${filter}:${search}:${unreadOnly}`;
+        try {
+            const cached = await redisCache.get(cacheKey);
+            if (cached) return res.status(200).json(JSON.parse(cached));
+        } catch {}
 
         const storedNotifications = await prisma.notification.findMany({
             where: {
@@ -17,10 +32,7 @@ export const getInbox = async (req, res) => {
 
         // Dynamic Task items assigned to user
         const userTasks = await prisma.task.findMany({
-            where: {
-                assigneeId: userId,
-                status: { not: "DONE" }
-            },
+            where: { assigneeId: userId, status: { not: "DONE" } },
             include: { project: { select: { id: true, name: true } } },
             take: 15
         });
@@ -80,11 +92,13 @@ export const getInbox = async (req, res) => {
         }
 
         const unreadCount = filtered.filter(n => !n.isRead).length;
+        const responsePayload = { notifications: filtered, unreadCount };
 
-        return res.status(200).json({
-            notifications: filtered,
-            unreadCount
-        });
+        try {
+            await redisCache.set(cacheKey, JSON.stringify(responsePayload), 10); // Cache for 10 seconds
+        } catch {}
+
+        return res.status(200).json(responsePayload);
     } catch (error) {
         console.error("Error fetching inbox:", error);
         return res.status(500).json({ message: "Internal server error" });
