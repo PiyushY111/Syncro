@@ -22,10 +22,10 @@ export default function AuthPage() {
     const [redirectMessage, setRedirectMessage] = useState('');
 
     useEffect(() => {
-        if (!loading && user && !redirectMessage) {
+        if (!loading && user && !redirectMessage && !verificationEmail) {
             navigate(nextPath, { replace: true });
         }
-    }, [loading, user, navigate, nextPath, redirectMessage]);
+    }, [loading, user, navigate, nextPath, redirectMessage, verificationEmail]);
 
     useEffect(() => {
         if (!redirectMessage) return undefined;

@@ -39,11 +39,11 @@ export const register = async (req, res) => {
 
         console.log(`[2FA Security Code Sent] User: ${user.email}${isTester ? ' (Bypassed with static code 123456)' : ''}`);
 
-        await eventBus.publish('app/auth.registered', {
+        eventBus.publish('app/auth.registered', {
             email: user.email,
             verificationCode,
             isTester
-        });
+        }).catch((err) => console.error('[register] Failed to publish register event:', err));
 
         return res.status(201).json({
             requiresVerification: true,

@@ -95,6 +95,15 @@ app.use('/api/retros', protect, retroRouter);
 
 app.get('/', (req, res) => res.json({ message: "Server is live", status: "OK" }));
 
+app.get(['/health', '/api/ping'], (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        message: "Server is healthy and active",
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+    });
+});
+
 // Global Express Error Middleware
 app.use((err, req, res, next) => {
     console.error('[EXPRESS ERROR]', err);
@@ -111,4 +120,20 @@ initSocketIO(httpServer);
 
 httpServer.listen(PORT, () => {
     console.log(`Server and Socket.IO engine running on http://localhost:${PORT}`);
+    
+    // Render & Cloud Free Tier Keep-Alive Self-Ping Service
+    const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_URL || process.env.BACKEND_URL;
+    if (keepAliveUrl) {
+        const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+        setInterval(async () => {
+            try {
+                const endpoint = `${keepAliveUrl.replace(/\/$/, '')}/health`;
+                await fetch(endpoint);
+                console.log(`[Keep-Alive Ping] Pinged ${endpoint} at ${new Date().toISOString()}`);
+            } catch (err) {
+                console.error(`[Keep-Alive Ping Error]`, err.message);
+            }
+        }, PING_INTERVAL);
+        console.log(`[Keep-Alive Service] Active. Self-pinging ${keepAliveUrl}/health every 10 minutes.`);
+    }
 });

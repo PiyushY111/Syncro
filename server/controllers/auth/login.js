@@ -37,11 +37,11 @@ export const login = async (req, res) => {
 
         console.log(`[2FA Security Code Sent] User: ${user.email}${isTester ? ' (Bypassed with static code 123456)' : ''}`);
 
-        await eventBus.publish('app/auth.login_code_requested', {
+        eventBus.publish('app/auth.login_code_requested', {
             email: user.email,
             verificationCode,
             isTester
-        });
+        }).catch((err) => console.error('[login] Failed to publish login code event:', err));
 
         return res.json({
             requiresVerification: true,

@@ -94,11 +94,11 @@ export const resendCode = async (req, res) => {
 
         console.log(`[2FA Security Code Sent] User: ${user.email}${isTester ? ' (Bypassed with static code 123456)' : ''}`);
 
-        await eventBus.publish('app/auth.login_code_requested', {
+        eventBus.publish('app/auth.login_code_requested', {
             email: user.email,
             verificationCode,
             isTester
-        });
+        }).catch((err) => console.error('[resendCode] Failed to publish resend event:', err));
 
         return res.json({ message: 'Verification code resent successfully' });
     } catch (error) {

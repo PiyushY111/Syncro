@@ -67,6 +67,9 @@ export const AuthProvider = ({ children }) => {
     const login = async (credentials) => {
         const { data } = await api.post('/api/auth/login', credentials);
         if (data.requiresVerification) {
+            clearSession();
+            setToken('');
+            setUser(null);
             return data;
         }
         syncSession(data.token, data.user);
@@ -82,6 +85,9 @@ export const AuthProvider = ({ children }) => {
     const register = async (payload) => {
         const { data } = await api.post('/api/auth/register', payload);
         if (data.requiresVerification) {
+            clearSession();
+            setToken('');
+            setUser(null);
             return data;
         }
         syncSession(data.token, data.user);
