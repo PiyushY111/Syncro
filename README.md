@@ -1,171 +1,264 @@
-# 🚀 Syncro: Premium Project & Team Collaboration Workspace
+# 🚀 Syncro: Premium Collaborative Team Workspace
 
-Syncro is a premium, high-performance, and developer-centric team collaboration platform designed for modern product squads, engineering organizations, and high-velocity teams. It merges real-time collaborative canvas boards, a rich Slack-like communication ecosystem, automated background pipelines, granular security command centers, and two-factor authentication into a unified workspace.
+```text
+  ██████  ██    ██ ███    ██  ██████ ██████   ██████  
+ ██       ██    ██ ████   ██ ██      ██   ██ ██    ██ 
+  █████   ██    ██ ██ ██  ██ ██      ██████  ██    ██ 
+       ██  ██  ██  ██  ██ ██ ██      ██   ██ ██    ██ 
+  ██████    ████   ██   ████  ██████ ██   ██  ██████  
+                                                      
+   THE DEVELOPER-CENTRIC TEAM COLLABORATION HUB
+```
 
 ---
 
-## 📐 System Architecture
+## 📝 Project Description
+**Syncro** is a premium, developer-centric, and high-performance team collaboration platform designed for modern product squads, engineering organizations, and high-velocity teams. Syncro merges real-time collaborative whiteboards, a rich Slack-like communication ecosystem, automated background pipelines, granular security command centers, and custom email-based two-factor authentication into a unified, high-speed workspace.
 
-Syncro's design isolates data boundaries between workspace organizations, utilizing a lightweight, event-driven background job model and WebSockets for real-time state synchronization.
+By isolating data boundaries between workspace organizations, using lightweight event-driven background workers (Inngest), and leveraging WebSockets for low-latency state synchronization, Syncro delivers an instantaneous, smooth, and highly responsive user experience.
+
+---
+
+## 🌐 Live Demo & Screenshots
+* **Production URL**: [https://syncro-amber.vercel.app](https://syncro-amber.vercel.app)
+* **API Gateway Service**: [https://syncro-backend.onrender.com](https://syncro-backend.onrender.com)
+* **Screenshots and Walkthroughs**: Visual guides, component layouts, and database state diagrams can be reviewed directly in [walkthrough.md](file:///Users/piyush./.gemini/antigravity/brain/3e562290-c25b-4084-96e3-c3016b55f8a4/walkthrough.md).
+
+---
+
+## ✨ Features
+
+### 1. Live Collaborative Whiteboards
+* **Vector Drawing Canvas**: Low-latency coordinate mapping allowing teams to draft plans and system architectures.
+* **Sticky Notes & Nodes**: Drag-and-drop sticky notes, connecting arrows, and custom task-node links.
+* **Cursor Broadcasting**: Real-time broadcast of member mouse coordinates across browsers via Socket.IO.
+* **SVG Vector Export**: Single-click compiler that exports the canvas elements into formatted SVG vector graphics.
+
+### 2. Rich Messaging Directory
+* **Public & Private Channels**: Multi-channel directory setups with invite-only membership controls.
+* **Direct Messaging (DMs)**: Private 1-on-1 messaging threads with complete workspace member indexing.
+* **Threaded Replies & Pins**: Star channels, pin messages, and discuss details in slide-out threaded side panels.
+
+### 3. Task & Project Pipelines
+* **Interactive Kanban Board**: Drag-and-drop tasks across stages (TODO, IN_PROGRESS, DONE) with instant socket broadcasts.
+* **Gantt Timeline Schedules**: View project tasks, assignees, and milestones across scheduled calendar timelines.
+* **Dependency Mapper**: Block tasks or map blocking dependencies, with safety triggers to prevent cyclic dependencies.
+
+### 4. 10/10 Performance Caching & PWAs
+* **Redis Caching**: Workspace lists, roles checks, and notification inbox feeds are cached in Redis.
+* **Service Worker**: A custom client-side Service Worker intercepts all static assets and `/api/*` REST payloads, offering read-only offline fallback support.
+
+### 5. Granular Security Command Center
+* **Workspace Roles & Matrix**: Pre-configured permission scopes for Owner, Admin, Manager, and Member.
+* **Entity Rollbacks & Audits**: Audit Log records changes (create, edit, delete). Admins can roll back any database record to previous states.
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend Architecture
+* **React 19 & Vite** — Fast loading and lightweight virtual DOM manipulation.
+* **Tailwind CSS 4** — Modern utility-first styling with zero compile-time overhead.
+* **Redux Toolkit** — Deterministic client-side global state store.
+* **Socket.io-client** — WebSocket client connection wrapper.
+
+### Backend Infrastructure
+* **Express 5** — High-speed REST API gateway router.
+* **Prisma ORM** — Type-safe PostgreSQL client mapping.
+* **PostgreSQL (Neon)** — Serverless relational database engine.
+* **Upstash Redis Cache** — High-performance REST-based Redis client.
+* **Inngest** — Distributed background serverless queues and event crons.
+* **Nodemailer** — Standard SMTP transactional email transporter.
+
+---
+
+## 📐 Architecture
 
 ```mermaid
 graph TD
-    Client[React 19 + Vite Frontend] <-->|REST API / WebSockets| Server[Express.js API Gateway]
-    Server <-->|Prisma ORM| DB[(PostgreSQL Database)]
-    Server <-->|Transactional SMTP| Email[Nodemailer Service]
-    Server <-->|Event Worker & Cron| Inngest[Inngest Background Queue]
-    Server <-->|OAuth 2.0 Auth & Sync| Google[Google Calendar API]
+    subgraph Client [Client: React 19 + Service Worker Cache]
+        UI[React UI Components] <--> Redux[Redux Toolkit Store]
+        UI <--> Socket[Socket.IO Client]
+        UI <--> SW[Custom Service Worker]
+        SW <-->|Cache Storage API| Cache[API & Asset Cache]
+    end
+
+    subgraph Server [Backend: Express 5 + Socket.IO]
+        API[Express API Gateway] <--> Sockets[Socket.IO Engine]
+        API <--> CacheLayer[Redis Caching Layer]
+        API <--> Prisma[Prisma ORM]
+    end
+
+    subgraph Infrastructure [Data & Services]
+        CacheLayer <-->|Upstash REST| Redis[(Upstash Redis Cache)]
+        Prisma <-->|PostgreSQL Connection| DB[(Neon Serverless Database)]
+        API <-->|Inngest Events| Inngest[Inngest Background Queue]
+        API <-->|SMTP Transport| Nodemailer[Email Service]
+        API <-->|OAuth 2.0 Auth| Google[Google Calendar API]
+    end
+
+    Socket <-->|WebSocket Real-time Sync| Sockets
 ```
 
 ---
 
-## ✨ Features & Capabilities
+## 📂 Folder Structure
 
-### 🎨 Live Collaborative Whiteboards
-* **Vector Canvas**: A real-time whiteboard canvas allowing teams to draft plans, map workflows, and design architectures.
-* **Nodes & Edges**: Drag-and-drop creation of sticky notes, text labels, and task nodes with dynamic connecting arrows.
-* **Real-time Cursor Broadcasting**: Track workspace members' mouse positions on the canvas using low-latency WebSocket events.
-* **Multi-page Layouts**: Organically split your whiteboards into multiple pages and easily switch between them.
-* **Creator-led Board Sharing**: Share whiteboards securely with team members via email invitations. Only the original creator retains sharing authority.
-* **SVG Export Engine**: Export your entire whiteboard workspace directly into clean SVG vectors with a single click.
-
-### 💬 Rich Messaging Ecosystem
-* **Multi-channel Directories**: Spin up public channels for general collaboration or restrict visibility to select members with invite-only private channels.
-* **Direct Messaging (DMs)**: Chat one-on-one with clean, searchable user directories.
-* **Threaded Context Panels**: Prevent main channel clutter by starting threaded discussions that slide open in a dedicated side-panel.
-* **Message Pinning & Starring**: Keep track of high-priority discussions or star messages for quick personal reference.
-* **Channel Search Engine**: Find public channels in the workspace and join them dynamically via an intuitive confirmation popup.
-* **Live Member Index**: Inspect real-time participant status in any channel, complete with creator and owner highlight badges.
-
-### 📁 Advanced Task & Project Pipelines
-* **Task Dependency Visualizer**: Track blocking dependencies between tasks, identifying bottleneck activities in real-time.
-* **Kanban Grid Boards**: Manage tasks across stages (e.g. TODO, IN_PROGRESS, DONE) using drag-and-drop boards.
-* **Interactive Gantt Timelines**: Schedule tasks over clear calendar schedules and visual timeline charts.
-* **Milestone Tracking**: Categorize tasks under milestones with dedicated status metrics (Planned, In Progress, Achieved, Missed, Cancelled).
-* **Recurring Tasks Engine**: Set task recurrence patterns (Daily, Weekly, Monthly) triggered automatically by a server-side background cron scheduler.
-* **Multi-Dimensional Task Categorization**: Classify tasks by type (Task, Bug, Feature, Improvement, Other) and assign custom priorities (Low, Medium, High).
-
-### 🛡️ Granular Roles & Security Command Center
-* **Workspace Permissions Matrix**: Configure actions dynamically across default role presets: Owner, Admin, Manager, and Member.
-* **Custom Roles Generator**: Create custom roles to fit complex team hierarchies with specific read/write access settings.
-* **Entity History Audit Logs**: Keep a permanent record of all workspace modifications (Create, Update, Delete, Rollback, Login, and Role Change).
-* **Rollback Center**: Undo accidental changes and restore previous versions of database entities directly from the audit panel.
-* **Owner-Only Purge Control**: High-privileged command center allowing workspace owners to safely delete historical logs.
-
-### 🔔 Unified Inbox & Notification Hub
-* **Smart Alert Categories**: Receive instantly routed notifications filtered by type (Task Assignment, Due Alert, Comment Mentions, Chat Messages, Meeting Invites, and Milestone Alerts).
-* **Redirection Engine**: Click any inbox notification to automatically navigate directly to the relevant task, channel, or calendar event.
-* **Status Controls**: Mark notifications as read/unread or archive them for clean workspace organization.
-
-### 📅 Smart Meetings & Google Calendar Sync
-* **Interactive Scheduling**: Create meetings with title, agenda, location, and video conference links.
-* **Bi-directional Google OAuth Sync**: Seamlessly sync meetings and task due dates with external Google Calendars using Google OAuth 2.0.
-* **Webhook Listeners**: Receive push updates from Google Calendar API to ensure double-sided schedule integrity.
-
-### 🔑 Custom Email-based 2FA Logins
-* **Zero External Auth Dependencies**: Built natively using Node.js cryptography, JWT sessions, and Bcrypt password hashing.
-* **Secure 6-Digit Verification**: Dispatches verification codes using beautifully designed email templates.
-* **Secure Input Filters**: Form layouts fitted with character autofills, automated resend timers, and fallback redirect modes.
-
----
-
-## 🛠️ Technology Stack
-
-### Frontend Architecture
-* **React 19** & **Vite** — Declarative UI rendering & fast HMR.
-* **Tailwind CSS 4** — Zero-runtime modern styling.
-* **Redux Toolkit** — Deterministic global state management.
-* **React Router v7** — Client-side route scheduling.
-* **Socket.io-client** — WebSocket-based real-time event sync.
-* **Lucide React** — Premium iconography.
-* **React Hot Toast** — Non-blocking push notices.
-
-### Backend Infrastructure
-* **Express.js (v5)** — REST API gateway.
-* **Prisma ORM** — Type-safe client data modeling.
-* **PostgreSQL (Neon.tech)** — Distributed, serverless relational database.
-* **Inngest** — Asynchronous event queueing & cron scheduling.
-* **Nodemailer** — SMTP email transmission.
-* **Bcrypt.js** — Secure password encryption.
-* **Jsonwebtoken** — Session token verification.
-
----
-
-## ⚙️ Environment Configuration
-
-Set up local `.env` files in both directories to configure database connectivity, OAuth hooks, and transactional email transporters.
-
-### 💻 Client Config (`client/.env`)
-```bash
-# Gateway Base URL
-VITE_BASE_URL=http://localhost:5001
+```text
+Syncro/
+├── client/                             # React 19 Client SPA
+│   ├── public/                         # Static assets
+│   │   └── service-worker.js           # PWA caching interceptor
+│   ├── src/
+│   │   ├── app/                        # Redux store configs
+│   │   ├── components/                 # Presentational components (chat, whiteboard)
+│   │   ├── context/                    # React Contexts (Auth, Sockets)
+│   │   ├── features/                   # Redux slices
+│   │   ├── hooks/                      # Custom hooks
+│   │   ├── pages/                      # Page containers
+│   │   ├── main.jsx                    # Bootstrapper (SW registration)
+│   │   └── index.css                   # Global Tailwind 4 styles
+│   └── vite.config.js                  # Vite bundler configs
+├── server/                             # Express 5 REST API Gateway
+│   ├── config/                         # Prisma, Redis, & SMTP connectors
+│   ├── controllers/                    # REST controllers (auth, inbox, chat, task)
+│   ├── inngest/                        # Inngest background event handlers
+│   ├── middlewares/                    # Authentication and project access checks
+│   ├── prisma/                         # Prisma schema model configs
+│   ├── routes/                         # Express router maps
+│   ├── tests/                          # Vitest API unit/integration tests
+│   └── server.js                       # Express boot entry point
+├── e2e/                                # Playwright E2E collaborative tests
+│   ├── auth.spec.js
+│   ├── chat.spec.js
+│   └── tasks.spec.js
+└── playwright.config.js                # Playwright E2E configurations
 ```
 
-### 🎛️ Server Config (`server/.env`)
+---
+
+## 🗄️ Database Schema
+
+```mermaid
+erDiagram
+    User ||--o{ WorkspaceMember : memberOf
+    Workspace ||--o{ WorkspaceMember : contains
+    Workspace ||--o{ Project : hosts
+    Project ||--o{ Task : contains
+    Channel ||--o{ Message : records
+    Workspace ||--o{ Channel : contains
+    User ||--o{ Message : sends
+    User ||--o{ Notification : receives
+```
+
+* **User**: Handles authentication data, 2FA validation codes, verification expirations, and Google Calendar OAuth tokens.
+* **Workspace & WorkspaceMember**: Scopes organizational data. `WorkspaceMember` links users and custom permission roles.
+* **Project**: Hosts stages, task trees, sprints, capacities, and epic milestones.
+* **Task**: Tracks priorities (High, Medium, Low), types (Bug, Feature, Task), statuses (TODO, IN_PROGRESS, DONE), assignees, due dates, and dependency blocks.
+* **Channel & Message**: Handles threaded messaging logs and message reactions.
+* **Notification**: smart alerts dispatched to user inbox hubs.
+* **AuditLog**: tracks create, edit, delete, rollback, and login events.
+
+---
+
+## 🔌 API Design
+
+### Authentication Endpoints
+* `POST /api/auth/register` — Creates user, hashes password, generates 2FA, and publishes `app/auth.registered`.
+* `POST /api/auth/login` — Verifies passwords, updates 2FA verification codes, and triggers `app/auth.login_code_requested`.
+* `POST /api/auth/verify` — Validates the 6-digit verification code, issues a signed JWT, and returns user profiles.
+
+### Workspace Endpoints
+* `GET /api/workspaces` — Returns workspaces list (cached in Redis, 10s TTL).
+* `POST /api/workspaces` — Creates a new workspace and invalidates user workspace caches.
+* `PUT /api/workspaces/:id/members/:memberId` — Updates user workspace roles and invalidates role cache.
+
+### Messaging Endpoints
+* `GET /api/chat/channels/:channelId/messages` — Returns channel message logs (cached in Redis, 300s TTL).
+* `POST /api/chat/messages` — Sends message and triggers socket broadcast.
+
+### Inbox Endpoints
+* `GET /api/inbox` — Returns notifications (cached in Redis using generational versioning, 10s TTL).
+* `PUT /api/inbox/:id/read` — Toggles read states and increments `inbox:version:${userId}` in Redis.
+* `DELETE /api/inbox/:id/archive` — Archives notification and increments `inbox:version:${userId}` in Redis.
+
+---
+
+## 🔄 System Flows
+
+### 1. User Login & 2FA Flow
+```text
+User ➔ POST /api/auth/login ➔ Generate Code ➔ Publish app/auth.login_code_requested
+                                                      │
+User  Return Verification Screen  NodeMailer SMTP Send Code
+  │
+  └➔ POST /api/auth/verify ➔ Check TTL ➔ Sign JWT ➔ Login OK
+```
+
+### 2. Task Completion & Notification Flow
+```text
+User ➔ PUT /api/tasks/:id (Done) ➔ Publish Inngest Task Update Event
+                                                │
+User  Refresh Client UI  Create Notification  Audit Log & Sync Google Calendar
+```
+
+---
+
+## ⚙️ Installation
+
+1. **Clone & Setup Server**:
+   ```bash
+   cd server
+   npm install
+   npx prisma generate
+   npx prisma db push
+   ```
+
+2. **Setup Client**:
+   ```bash
+   cd ../client
+   npm install
+   ```
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file in the `server/` directory:
 ```bash
-# Express Server Port
 PORT=5001
-
-# Neon PostgreSQL Connection URLs
-DATABASE_URL=postgresql://neondb_owner:...@ep-fancy-union-awmvsy6x-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require
-DIRECT_URL=postgresql://neondb_owner:...@ep-fancy-union-awmvsy6x-pooler.c-12.us-east-1.aws.neon.tech/neondb?sslmode=require
-
-# JWT Cryptographic Secret Key
-JWT_SECRET=your_jwt_signing_secret_here
-
-# Allowed CORS client hosts (comma-separated list)
-CLIENT_URL=http://localhost:5173,https://syncro-amber.vercel.app
-
-# Nodemailer SMTP Credentials
-SMTP_HOST=smtp.gmail.com
+DATABASE_URL="postgresql://user:pass@ep-fancy-union.neon.tech/neondb?sslmode=require"
+DIRECT_URL="postgresql://user:pass@ep-fancy-union.neon.tech/neondb?sslmode=require"
+JWT_SECRET="your_custom_jwt_secret_key"
+CLIENT_URL="http://localhost:5173"
+UPSTASH_REDIS_REST_URL="https://your-database.upstash.io"
+UPSTASH_REDIS_REST_TOKEN="your_upstash_redis_rest_token"
+SMTP_HOST="smtp.gmail.com"
 SMTP_PORT=587
-SMTP_USERNAME=your_gmail_address@gmail.com
-SMTP_PASSWORD=your_app_password
-SMTP_FROM=Syncro <syncro@yourdomain.com>
-
-# Security Token Expirations
-INVITE_TTL_MS=604800000
-
-# Google OAuth API Settings (For Calendar sync)
-GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_REDIRECT_URI=http://localhost:5001/api/google-calendar/callback
+SMTP_USERNAME="your-email@gmail.com"
+SMTP_PASSWORD="your-app-password"
 ```
 
 ---
 
-## 🚀 Getting Started
+## 💻 Running Locally
 
-Ensure you have [Node.js](https://nodejs.org) and [PostgreSQL](https://postgresql.org) ready.
-
-### 1. Database Setup
-Instantiate the schema bindings and run Prisma migrations:
+### Start Backend Gateway & Socket Server:
 ```bash
 cd server
-npm install
-npx prisma db push
-```
-
-### 2. Launch Server Gateway
-Boot the Express API server and Inngest client worker:
-```bash
 npm run dev
 ```
 
-### 3. Launch Client Web App
-Initialize packages and run Vite's development bundler:
+### Start Vite Frontend:
 ```bash
-cd ../client
-npm install
+cd client
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+### Run Tests:
+```bash
+cd server
+npx vitest run     # Runs Unit/Integration test suites
+npx playwright test # Runs End-to-End browser test suite
+```
 
----
-
-> [!TIP]
-> Ensure both ports `5001` (backend) and `5173` (frontend) are unrestricted on your localhost firewall to allow smooth API communications and Socket connections.
-
-> [!WARNING]
-> Google OAuth redirect domains MUST exactly match the `GOOGLE_REDIRECT_URI` configured in your backend `.env` file to prevent auth-state mismatches.
