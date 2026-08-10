@@ -44,11 +44,16 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Gantt Timeline Schedules** — view tasks, assignees, and milestones on a scheduled calendar timeline.
 * **Dependency Mapper** — block tasks or map blocking dependencies, with checks to prevent cyclic dependencies.
 
-### 4. Performance: Caching & PWA Support
+### 4. Agile Scrum & Team Workflows
+* **Sprint & Epic Planning** — manage sprint lifecycles, capacity tracking, epic milestones, and task allocations.
+* **Sprint Retrospectives** — real-time retro boards with item creation, category grouping (Went Well, To Improve, Action Items), and upvoting via Socket.IO.
+* **Sub-teams & Role Matrix** — assign workspace members to sub-teams and custom role permissions.
+
+### 5. Performance: Caching & PWA Support
 * **Redis Caching** — workspace lists, role checks, and notification inbox feeds are cached in Redis.
 * **Service Worker** — a custom client-side Service Worker intercepts static assets and `/api/*` REST payloads, offering read-only offline fallback support.
 
-### 5. Security & Permissions
+### 6. Security & Permissions
 * **Workspace Roles & Matrix** — pre-configured permission scopes for Owner, Admin, Manager, and Member.
 * **Entity Rollbacks & Audits** — an audit log records every create, edit, and delete action. Rollback to a previous record state is restricted to Owner and Admin roles, is itself logged as an audit event, and requires the acting user to have active membership in the target workspace at the time of the action.
 
@@ -60,15 +65,21 @@ The platform isolates data between workspace organizations, offloads async work 
 * **React 19 & Vite** — fast loading and lightweight virtual DOM manipulation.
 * **Tailwind CSS 4** — utility-first styling with zero compile-time overhead.
 * **Redux Toolkit** — deterministic client-side global state store.
-* **Socket.io-client** — WebSocket client connection wrapper.
+* **Socket.io-client** — WebSocket client connection wrapper for real-time canvas, presence, and chat.
 
-### Backend
+### Backend & Event Engine
 * **Express 5** — REST API gateway router.
+* **Socket.IO Real-Time Engine** — modular WebSocket event handlers for Chat, Whiteboards, Retrospectives, Member Presence, and Emoji Reactions.
+* **Internal EventBus** — decoupled EventEmitter service dispatching async actions to background workers.
 * **Prisma ORM** — type-safe PostgreSQL client mapping.
 * **PostgreSQL (Neon)** — serverless relational database engine.
-* **Upstash Redis** — REST-based Redis client.
-* **Inngest** — distributed background serverless queues and event crons.
+* **Upstash Redis** — REST-based Redis client for caching and rate limiting.
+* **Inngest** — distributed background serverless queues and event crons categorized by domain (Core, Tasks, Projects, Collab).
 * **Nodemailer** — SMTP transactional email transporter.
+
+### Testing
+* **Vitest** — API unit and integration test runner.
+* **Playwright** — End-to-end multi-browser user flow testing suite.
 
 ---
 
