@@ -12,19 +12,23 @@ The client is a React 19 application built with Vite, Tailwind CSS 4, and Redux 
 client/
 ├── src/
 │   ├── app/                   # Redux store configurations
-│   │   └── store.js           # Global Redux store definition
-│   ├── assets/                # Static assets (images, icons, vectors)
+│   │   └── store.js           # Global Redux store definition & slice reducer root
+│   ├── assets/                # Static assets (images, logos, vectors, dummy datasets)
 │   ├── components/            # Focused presentational components
-│   │   ├── audit/             # Audit Log Dashboard, Table, Timelines, and Metrics
+│   │   ├── audit/             # Audit Log Dashboard, Table, Diff Modal, Timeline, & Metrics
 │   │   ├── auth/              # LoginForm, MfaVerifyForm, RequireAuth wrapper
-│   │   ├── calendar/          # SmartCalendar view elements and timeline schedules
-│   │   ├── chat/              # Chat message lists, message boxes, and channel/member actions
+│   │   ├── calendar/          # SmartCalendar view elements, meeting dialogs, & timeline schedules
+│   │   ├── chat/              # Chat message stream, input, thread panel, & channel/DM sidebars
+│   │   │   ├── channelSettings/ # Channel archiving and preference dialogs
+│   │   │   ├── dialogs/       # Channel creation and member invite modals
+│   │   │   ├── panels/        # Sliding thread panels & channel detail sidebars
+│   │   │   └── stream/        # Infinite scroll message streams & reaction pickers
 │   │   ├── common/            # Shared cross-application components (GlobalConfirmModal)
-│   │   ├── dashboard/         # Activity feed, statistics grid, and workspace progress charts
-│   │   ├── inbox/             # Universal Inbox list, header, item cards, and actions
-│   │   ├── layout/            # Navigation bar, Sidebar, and overall layout shell
-│   │   ├── ownerAudit/        # Owner Security Command Center, Purge logs, rollback, exports
-│   │   ├── portfolio/         # Portfolio card index, project insertion modals
+│   │   ├── dashboard/         # Activity feed, statistics grid, scratchpad, & progress charts
+│   │   ├── inbox/             # Universal Inbox list, header, summary widget, & quick actions
+│   │   ├── layout/            # Navigation bar, Sidebar, & NoWorkspace fallbacks
+│   │   ├── ownerAudit/        # Owner Security Command Center, Purge logs, rollback, & exports
+│   │   ├── portfolio/         # Portfolio card index, project creation modals
 │   │   ├── project/           # Focused project dashboards and layouts
 │   │   │   ├── analytics/     # Metrics distribution charts
 │   │   │   ├── calendar/      # Timeline and scheduling calendars
@@ -33,14 +37,31 @@ client/
 │   │   │   ├── kanban/        # Drag-and-drop task boards
 │   │   │   ├── milestones/    # Project Milestones card, task association pickers
 │   │   │   ├── overview/      # Statistics, sidebars, and summary cards
+│   │   │   ├── scrum/         # Agile Sprint planning, Epic backlogs, & Retrospective boards
 │   │   │   ├── tasks/         # Filters and task listing tables
 │   │   │   ├── whiteboard/    # Canvas drawing components, toolbar, and task-to-node wrappers
 │   │   │   └── whiteboardView/# Share modals, page control bar, and layout container
 │   │   ├── roles/             # Permissions matrix table, members lists, custom role forms
 │   │   ├── settings/          # Profile details, password updates, delete workspace confirmation
-│   │   ├── task/              # Task editing details, comments, and task creation parameters
-│   │   └── workspace/         # Workspace invite list, active stats, and workspace settings
-│   ├── pages/                 # Page orchestrators (Max 6 files per folder)
+│   │   ├── task/              # Task details, comments, selectors, & task creation dialogs
+│   │   └── workspace/         # Workspace invite list, active stats, sub-teams tab, & settings
+│   ├── configs/               # Client API connection config
+│   │   └── api.js             # Axios client instance with auth headers interceptors
+│   ├── context/               # React Context providers
+│   │   ├── AuthContext.jsx    # User JWT credentials & profile state provider
+│   │   └── SocketContext.jsx  # Real-time WebSocket connection state provider
+│   ├── features/              # Redux Toolkit slices
+│   │   ├── themeSlice.js      # Dark/light mode configuration state
+│   │   ├── workspaceHelpers.js# Workspace permissions and switching helpers
+│   │   └── workspaceSlice.js  # Current active workspace and member state
+│   ├── hooks/                 # Custom React hooks
+│   │   ├── useChat.js         # Core chat state and socket orchestration
+│   │   ├── useChatChannels.js # Channel indexing and updates
+│   │   ├── useChatMessages.js # Threaded message lists and mutations
+│   │   ├── useProfileSettings.js # Profile state updates
+│   │   ├── useSettings.js     # Settings context fetchers
+│   │   └── useWorkspaceSettings.js # Workspace info update orchestrators
+│   ├── pages/                 # Page containers & routes
 │   │   ├── audit/             # AuditLogs page container
 │   │   ├── auth/              # Auth sign-in / registration container page
 │   │   ├── calendar/          # SmartCalendar container page
@@ -57,28 +78,14 @@ client/
 │   │   ├── settings/          # Settings page container
 │   │   ├── task/              # TaskDetails page container
 │   │   ├── whiteboard/        # Whiteboard canvas container page
-│   │   └── workspace/         # Workspace setup, onboarding, and accept-invite forms
-│   ├── features/              # Redux slices
-│   │   ├── themeSlice.js      # Dark/light mode configuration state
-│   │   ├── workspaceHelpers.js# Workspace permissions and switching helpers
-│   │   └── workspaceSlice.js  # Current active workspace and member state
-│   ├── hooks/                 # Custom React hooks
-│   │   ├── useChat.js         # Core chat state and socket orchestration
-│   │   ├── useChatChannels.js # Channel indexing and updates
-│   │   ├── useChatMessages.js # Threaded message lists and mutations
-│   │   ├── useProfileSettings.js # Profile state updates
-│   │   ├── useSettings.js     # Settings context fetchers
-│   │   └── useWorkspaceSettings.js # Workspace info update orchestrators
-│   ├── context/               # React Context providers
-│   │   ├── AuthContext.jsx    # User JWT credentials and profile state provider
-│   │   └── SocketContext.jsx  # Real-time WebSocket connection state provider
-│   ├── configs/               # Client api connection config
-│   │   └── api.js             # Axios client instance with auth headers interceptors
+│   │   └── workspace/         # Workspace setup, team management, and accept-invite forms
 │   ├── utils/                 # Utility files
 │   │   └── permissions.js     # Dynamic client-side roles and permissions checker
 │   ├── App.jsx                # Router route switch manager
-│   ├── main.jsx               # Main React bundle mounting entry point
+│   ├── main.jsx               # Main React bundle mounting entry point & SW registration
 │   └── index.css              # Styling configurations, colors, and fonts (Tailwind 4 base)
+├── public/                    # Static public assets & Service Worker
+│   └── service-worker.js      # Custom client-side PWA cache interceptor
 ├── jsconfig.json              # Client path alias resolution (`@/*`) configs
 └── vite.config.js             # Vite compiler plugin configurations
 ```
