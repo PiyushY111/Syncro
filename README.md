@@ -89,26 +89,36 @@ The platform isolates data between workspace organizations, offloads async work 
 graph TD
     subgraph Client [Client: React 19 + Service Worker Cache]
         UI[React UI Components] <--> Redux[Redux Toolkit Store]
-        UI <--> Socket[Socket.IO Client]
+        UI <--> SocketClient[Socket.IO Client]
         UI <--> SW[Custom Service Worker]
         SW <-->|Cache Storage API| Cache[API & Asset Cache]
     end
 
-    subgraph Server [Backend: Express 5 + Socket.IO]
-        API[Express API Gateway] <--> Sockets[Socket.IO Engine]
+    subgraph Server [Backend Gateway: Express 5 + Socket.IO Server]
+        API[Express 5 REST Gateway] <--> EventBus[Internal EventBus Service]
         API <--> CacheLayer[Redis Caching Layer]
         API <--> Prisma[Prisma ORM]
+        
+        Sockets[Socket.IO Engine] <--> Handlers[Socket Event Handlers]
+        Handlers --- MsgH[Message & Reaction Handlers]
+        Handlers --- WbH[Whiteboard Canvas Handler]
+        Handlers --- PresH[Presence Handler]
+        Handlers --- RetroH[Retro Board Handler]
     end
 
     subgraph Infrastructure [Data & Services]
         CacheLayer <-->|Upstash REST| Redis[(Upstash Redis Cache)]
         Prisma <-->|PostgreSQL Connection| DB[(Neon Serverless Database)]
-        API <-->|Inngest Events| Inngest[Inngest Background Queue]
+        EventBus <-->|Event Triggers| Inngest[Inngest Background Workers]
+        Inngest --- InngestCore[Core / Auth / Member Jobs]
+        Inngest --- InngestTasks[Task Lifecycle & Recurrence Jobs]
+        Inngest --- InngestProjects[Project / Sprint / Epic / Retro Jobs]
+        Inngest --- InngestCollab[Chat / Whiteboard / Meeting Jobs]
         API <-->|SMTP Transport| Nodemailer[Email Service]
         API <-->|OAuth 2.0 Auth| Google[Google Calendar API]
     end
 
-    Socket <-->|WebSocket Real-time Sync| Sockets
+    SocketClient <-->|WebSocket Real-time Sync| Sockets
 ```
 
 ---
