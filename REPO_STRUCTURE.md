@@ -94,10 +94,15 @@ client/
 
 ## 📂 Server Architecture (`server/`)
 
-The server is a Node.js Express 5 REST API utilizing Prisma ORM with PostgreSQL, alongside Inngest for distributed background event/cron processing.
+The server is a Node.js Express 5 REST API and real-time Socket.IO server utilizing Prisma ORM with PostgreSQL, Upstash Redis for caching, and Inngest for background workers.
 
 ```text
 server/
+├── config/                    # Database, Redis, & SMTP configurations
+│   ├── nodemailer.js          # SMTP transporter instance for 2FA & transactional emails
+│   ├── prisma.js              # Database client singleton instance
+│   ├── redis.js               # Upstash Redis REST client instance
+│   └── test-smtp.js           # Transporter connection validation utility
 ├── controllers/               # Route controllers (grouped by domain)
 │   ├── audit/                 # Audit controllers
 │   │   ├── auditController.js # Domain exporter barrel file
@@ -111,10 +116,18 @@ server/
 │   │   ├── register.js        # User account generation
 │   │   └── verify.js          # Resolves 6-digit email 2FA codes
 │   ├── chat/                  # Messaging controllers
-│   │   ├── archive.js         # Archives channels
-│   │   ├── channelsCrud.js    # Channel additions & edits
-│   │   ├── membership.js      # Channel subscriptions & index
-│   │   └── messageLogs.js     # Pinned, starred, and general messages fetchers
+│   │   ├── channelMembers.js  # Channel subscription & membership rosters
+│   │   ├── channelsCrud.js    # Channel creation & management
+│   │   ├── channelSettings.js # Channel parameters & privacy toggles
+│   │   ├── chatController.js  # Chat domain exporter barrel file
+│   │   ├── getMessages.js     # Message log fetchers with Redis caching
+│   │   ├── messagesCrud.js    # Message creation, pinning, & deleting
+│   │   ├── messagesDirect.js  # 1-on-1 direct message operations
+│   │   └── channels/          # Channel archive, query, and membership handlers
+│   ├── epic/                  # Epic roadmap management
+│   │   ├── createEpic.js      # Generates project epics
+│   │   ├── epicManage.js      # Modifies epic metadata & assignments
+│   │   └── getProjectEpics.js # Retrieves project epic listings
 │   ├── inbox/                 # Notification inbox operations
 │   │   ├── archiveItem.js     # Archives inbox notifications
 │   │   ├── getInbox.js        # Returns priority unread alerts list
@@ -136,11 +149,16 @@ server/
 │   │   ├── deletePortfolio.js # Deletes portfolio listings
 │   │   ├── getPortfolioDetails.js # Fetches linked portfolio project metrics
 │   │   ├── getPortfolios.js   # Lists portfolios inside workspace
-│   │   └── managePortfolioProjects.js # Associates projects to portfolios
+│   │   ├── managePortfolioProjects.js # Associates projects to portfolios
+│   │   └── updatePortfolio.js # Modifies portfolio attributes
 │   ├── project/               # Project pipeline managers
 │   │   ├── projectCreate.js   # Generates project pipelines
-│   │   ├── projectUpdate.js   # Updates statuses and leads
-│   │   └── stagesConfig.js    # Modifies stage configurations
+│   │   ├── projectDelete.js   # Soft deletes projects
+│   │   ├── projectMembers.js  # Manages project member assignments
+│   │   └── projectUpdate.js   # Updates statuses and leads
+│   ├── retro/                 # Sprint retrospective controllers
+│   │   ├── getSprintRetro.js  # Fetches retro columns & cards
+│   │   └── retroItemActions.js# Handles card creation, votes, and deletions
 │   ├── role/                  # Security matrix managers
 │   │   ├── checkPermissionHelper.js # Resolves permission keys dynamically
 │   │   ├── getRoleMatrix.js   # Returns workspace permission configurations
@@ -148,19 +166,26 @@ server/
 │   │   ├── roleController.js  # Role controller domain exporter
 │   │   ├── updateMemberRole.js# Reassigns user roles
 │   │   └── updateRoleMatrix.js# Reconfigures preset role permission matrixes
+│   ├── sprint/                # Agile sprint controllers
+│   │   ├── createSprint.js    # Creates project sprints
+│   │   ├── getProjectSprints.js # Fetches sprint backlogs & statuses
+│   │   ├── sprintCapacity.js  # Configures user story point capacities
+│   │   ├── sprintLifecycle.js # Starts, completes, or archives sprints
+│   │   └── sprintManage.js    # Edits sprint dates and goals
 │   ├── task/                  # Task updates & operations
-│   │   ├── taskCreate.js      # Creates tasks with dependencies
-│   │   ├── taskRecurrence.js  # Runs background cron executions for recurrences
-│   │   └── taskUpdate.js      # Updates priorities, assignee, dependencies
+│   │   ├── taskCreate.js      # Creates tasks with dependencies & recurrence
+│   │   ├── taskHelpers.js     # Internal task status validation helpers
+│   │   ├── taskRecurrence.js  # Cron execution handler for recurring tasks
+│   │   └── taskUpdate.js      # Updates priorities, assignees, and dependencies
 │   ├── whiteboard/            # Whiteboards canvas configurations
 │   │   ├── whiteboardController.js # Whiteboard exporter barrel file
 │   │   ├── whiteboardCrud.js  # Create, read, and delete board canvases
 │   │   └── whiteboardSave.js  # Saves viewport, drawings, and node pages
 │   ├── workspace/             # Workspace setups & onboarding flows
-│   │   ├── inviteLink.js      # Creates and verifies workspace invite hashes
+│   │   ├── invites/           # Invite links, emails, and verification
+│   │   ├── members/           # Workspace membership additions, role updates, and removal
 │   │   ├── workspaceCreate.js # Onboards personal or team workspaces
-│   │   ├── workspaceMembers.js# Lists, invites, or removes workspace participants
-│   │   ├── workspaceRole.js   # Dynamic workspace role reassignments
+│   │   ├── workspaceHelpers.js# Workspace permissions validation helpers
 │   │   └── workspaceUpdate.js # Updates workspace details and layouts
 │   ├── authController.js      # Auth orchestrator barrel file
 │   ├── chatController.js      # Chat orchestrator barrel file
@@ -172,35 +197,87 @@ server/
 │   ├── taskController.js      # Task orchestrator barrel file
 │   ├── whiteboardController.js # Whiteboard orchestrator barrel file
 │   └── workspaceController.js # Workspace orchestrator barrel file
-├── routes/                    # Express routing maps
+├── inngest/                   # Distributed background event processing worker
+│   ├── client.js              # Inngest client initialization
+│   ├── index.js               # Main worker exporter registering all background functions
+│   ├── collab/                # Real-time collaboration background workers
+│   │   ├── chatJobs.js        # Chat event processing & mentions
+│   │   ├── commentJobs.js     # Task comment notifications
+│   │   ├── meetingCreatedJob.js # Meeting invite email dispatches
+│   │   ├── meetingUpdateDeleteJobs.js # Meeting updates & calendar sync jobs
+│   │   └── whiteboardJobs.js  # Canvas save background snapshots
+│   ├── core/                  # System core background jobs
+│   │   ├── authJobs.js        # Email 2FA delivery & account events
+│   │   ├── subTeamJobs.js     # Sub-team membership sync
+│   │   └── workspaceMemberJobs.js # Workspace onboarding & member role alerts
+│   ├── projects/              # Project management background jobs
+│   │   ├── milestoneJobs.js   # Milestone deadline alert triggers
+│   │   ├── portfolioJobs.js   # Portfolio roll-up recalculations
+│   │   ├── projectJobs.js     # Project state change handlers
+│   │   ├── retroJobs.js       # Retrospective board summaries
+│   │   └── sprintEpicJobs.js  # Sprint rollover & epic progress tracking
+│   └── tasks/                 # Task background jobs
+│       ├── taskLifecycleJobs.js # Task assignment notifications & audit triggers
+│       ├── taskRecurrenceJobs.js # Scheduled recurring task generators
+│       └── taskUpdateJobs.js  # Task dependency check & status sync jobs
+├── middlewares/               # Express routing middlewares
+│   ├── authMiddleware.js      # JWT authentication resolver middleware
+│   └── projectAccessCheck.js  # Project membership confirmation middleware
+├── prisma/                    # Relational schema configuration
+│   └── schema.prisma          # Prisma PostgreSQL data models
+├── routes/                    # Express routing maps (18 domain routes)
 │   ├── auditRoutes.js         # /api/audit routes (logs, rollbacks, purge)
 │   ├── authRoutes.js          # /api/auth routes (registration, logins, verification)
 │   ├── chatRoutes.js          # /api/chat routes (channels, messages, memberships)
 │   ├── commentRoutes.js       # /api/comments routes (task commenting feed)
+│   ├── epicRoutes.js          # /api/epics routes (epic planning & roadmaps)
 │   ├── googleCalendarRoutes.js # /api/google-calendar routes (OAuth sync actions)
 │   ├── inboxRoutes.js         # /api/inbox routes (alerts index, archive logs)
 │   ├── meetingRoutes.js       # /api/meetings routes (scheduling events)
 │   ├── milestoneRoutes.js     # /api/milestones routes (milestone parameters)
 │   ├── portfolioRoutes.js     # /api/portfolios routes (grouping portfolios)
 │   ├── projectRoutes.js       # /api/projects routes (project stage settings)
+│   ├── retroRoutes.js         # /api/retros routes (sprint retrospectives)
 │   ├── roleRoutes.js          # /api/roles routes (permissions matrix maps)
+│   ├── sprintRoutes.js        # /api/sprints routes (sprint lifecycles & capacities)
 │   ├── subTeamRoutes.js       # /api/subteams routes (managing subteam memberships)
 │   ├── taskRoutes.js          # /api/tasks routes (task card configurations)
 │   ├── whiteboardRoutes.js    # /api/whiteboards routes (creating, updating canvases)
 │   └── workspaceRoutes.js     # /api/workspaces routes (invitations, join controls)
-├── services/                  # Business logic services
+├── services/                  # Core application services
 │   ├── auditLogger.js         # Centralized database audit log recorder service
-│   └── googleCalendarService.js # Google OAuth and calendar calendar sync helper service
-├── middlewares/               # Express routing middlewares
-│   ├── authMiddleware.js      # JWT authentication resolver middleware
-│   └── projectAccessCheck.js  # Project membership confirmation middleware
-├── config/                    # Global database & SMTP configurations
-│   ├── nodemailer.js          # Nodemailer SMTP transporter transporter instance
-│   └── prisma.js              # Database client singleton instance
-├── inngest/                   # Inngest background event processing worker
-│   └── index.js               # Inngest client setups and cron schedules
-├── prisma/                    # Relational schema configuration
-│   └── schema.prisma          # Prisma PostgreSQL data models
-├── server.js                  # Express application listener boot entry point
+│   ├── eventBus.js            # Internal decoupled event emitter for background tasks
+│   └── googleCalendarService.js # Google OAuth and calendar sync helper service
+├── socket/                    # Socket.IO real-time event handlers
+│   ├── messageHandler.js      # Real-time chat messages, typing status, & pins
+│   ├── presenceHandler.js     # Real-time member online/offline status tracking
+│   ├── reactionHandler.js     # Real-time message emoji reaction broadcasts
+│   ├── retroHandler.js        # Real-time retrospective item creation & voting
+│   ├── socketAuthMiddleware.js# WebSocket JWT connection authentication
+│   ├── socketInit.js          # Socket.IO server setup & handler router
+│   └── whiteboardHandler.js   # Real-time vector whiteboard & cursor position broadcast
+├── tests/                     # API Unit & Integration tests (Vitest)
+│   ├── auth.test.js           # Authentication & 2FA endpoint tests
+│   ├── chat.test.js           # Messaging & channel endpoint tests
+│   ├── inbox.test.js          # Inbox notification tests
+│   ├── permissions.test.js    # Role matrix & permission enforcement tests
+│   ├── redis.test.js          # Redis caching & versioning tests
+│   └── workspace.test.js      # Workspace management & onboarding tests
+├── server.js                  # Express application listener & Socket.IO boot entry point
 └── vercel.json                # Serverless deployment configuration details
+```
+
+---
+
+## 📂 End-to-End Testing Architecture (`e2e/`)
+
+The end-to-end browser testing framework uses Playwright for multi-browser automated user journey verification.
+
+```text
+e2e/
+├── auth.spec.js               # E2E User registration, login, and 2FA verification flow
+├── chat.spec.js               # E2E Multi-user real-time channel chat & thread interactions
+├── tasks.spec.js              # E2E Kanban drag-and-drop task creation & status updating
+├── whiteboard.spec.js         # E2E Vector canvas drawing & collaborative cursor movements
+└── workspace.spec.js          # E2E Team member onboarding, invitations, & role management
 ```
