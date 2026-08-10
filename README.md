@@ -128,33 +128,39 @@ graph TD
 ```text
 Syncro/
 ├── client/                             # React 19 Client SPA
-│   ├── public/                         # Static assets
+│   ├── public/                         # Static assets & PWA service worker
 │   │   └── service-worker.js           # PWA caching interceptor
 │   ├── src/
-│   │   ├── app/                        # Redux store configs
-│   │   ├── components/                 # Presentational components (chat, whiteboard)
-│   │   ├── context/                    # React Contexts (Auth, Sockets)
-│   │   ├── features/                   # Redux slices
-│   │   ├── hooks/                      # Custom hooks
-│   │   ├── pages/                      # Page containers
-│   │   ├── main.jsx                    # Bootstrapper (SW registration)
-│   │   └── index.css                   # Global Tailwind 4 styles
-│   └── vite.config.js                  # Vite bundler configs
-├── server/                             # Express 5 REST API Gateway
-│   ├── config/                         # Prisma, Redis, & SMTP connectors
-│   ├── controllers/                    # REST controllers (auth, inbox, chat, task)
-│   ├── inngest/                        # Inngest background event handlers
-│   ├── middlewares/                    # Authentication and project access checks
-│   ├── prisma/                         # Prisma schema model configs
-│   ├── routes/                         # Express router maps
+│   │   ├── app/                        # Redux store configurations
+│   │   ├── components/                 # Presentational UI components (chat, whiteboard, scrum, audit)
+│   │   ├── configs/                    # Axios API configuration & interceptors
+│   │   ├── context/                    # React Contexts (AuthContext, SocketContext)
+│   │   ├── features/                   # Redux Toolkit slices (workspace, theme)
+│   │   ├── hooks/                      # Custom React hooks (chat, settings, profile)
+│   │   ├── pages/                      # Page containers & layout shells
+│   │   ├── utils/                      # Permission checking & helper utilities
+│   │   ├── main.jsx                    # SPA entry point & service worker registration
+│   │   └── index.css                   # Global Tailwind CSS 4 styles
+│   └── vite.config.js                  # Vite bundler configuration
+├── server/                             # Express 5 REST API Gateway & Real-Time Engine
+│   ├── config/                         # Prisma, Redis, & Nodemailer SMTP connections
+│   ├── controllers/                    # Domain REST controllers (auth, chat, task, sprint, retro, etc.)
+│   ├── inngest/                        # Inngest background event handlers (collab, core, projects, tasks)
+│   ├── middlewares/                    # JWT Authentication & Project Access Control
+│   ├── prisma/                         # Prisma relational schema configuration
+│   ├── routes/                         # Express router maps (18 domain routes)
+│   ├── services/                       # AuditLogger, EventBus, & Google Calendar services
+│   ├── socket/                         # Socket.IO handlers (message, whiteboard, presence, retro, reaction)
 │   ├── tests/                          # Vitest API unit/integration tests
-│   └── server.js                       # Express boot entry point
-├── e2e/                                # Playwright E2E collaborative tests
+│   └── server.js                       # Express application & Socket.IO server boot script
+├── e2e/                                # Playwright E2E collaborative test suites
 │   ├── auth.spec.js
 │   ├── chat.spec.js
-│   └── tasks.spec.js
-├── docs/                               # Screenshots and walkthrough docs
-└── playwright.config.js                # Playwright E2E configurations
+│   ├── tasks.spec.js
+│   ├── whiteboard.spec.js
+│   └── workspace.spec.js
+├── docs/                               # Screenshots and walkthrough documentation
+└── playwright.config.js                # Playwright test suite setup
 ```
 
 ---
@@ -166,20 +172,31 @@ erDiagram
     User ||--o{ WorkspaceMember : memberOf
     Workspace ||--o{ WorkspaceMember : contains
     Workspace ||--o{ Project : hosts
+    Workspace ||--o{ SubTeam : organizes
     Project ||--o{ Task : contains
+    Project ||--o{ Sprint : schedules
+    Project ||--o{ Epic : categorizes
+    Sprint ||--o{ RetroColumn : includes
+    RetroColumn ||--o{ RetroItem : contains
     Channel ||--o{ Message : records
+    Message ||--o{ MessageReaction : receives
     Workspace ||--o{ Channel : contains
     User ||--o{ Message : sends
     User ||--o{ Notification : receives
 ```
 
-* **User** — authentication data, 2FA validation codes, verification expirations, and Google Calendar OAuth tokens.
-* **Workspace & WorkspaceMember** — scopes organizational data; `WorkspaceMember` links users and custom permission roles.
-* **Project** — hosts stages, task trees, sprints, capacities, and epic milestones.
-* **Task** — tracks priorities (High, Medium, Low), types (Bug, Feature, Task), statuses (TODO, IN_PROGRESS, DONE), assignees, due dates, and dependency blocks.
-* **Channel & Message** — handles threaded messaging logs and message reactions.
-* **Notification** — alerts dispatched to user inbox hubs.
-* **AuditLog** — tracks create, edit, delete, rollback, and login events.
+* **User** — authentication credentials, 2FA codes, verification timestamps, and Google Calendar OAuth tokens.
+* **Workspace & WorkspaceMember** — organization scoping; `WorkspaceMember` links users with custom role permissions.
+* **SubTeam & SubTeamMember** — granular sub-team groupings within projects and workspaces.
+* **Project & Stage** — hosts project metadata, custom status stages, task trees, and whiteboards.
+* **Sprint, Epic, & SprintCapacity** — Agile Scrum planning, capacity allocations, and epic groupings.
+* **RetroColumn & RetroItem** — sprint retrospective cards and real-time community upvotes.
+* **Task & Comment** — task cards with priority, type, due dates, blocking dependencies, recurrence rules, and comment threads.
+* **Channel, Message, & MessageReaction** — channel-based chat, direct messages, message threads, pinned posts, and emoji reactions.
+* **Meeting & MeetingInvite** — calendar event scheduling with status tracking and Google Calendar sync.
+* **Milestone & Portfolio** — project portfolios and deadline milestones.
+* **Notification** — user inbox alert feeds with versioned caching.
+* **AuditLog** — complete audit trail of workspace mutations and entity rollbacks.
 
 ---
 
