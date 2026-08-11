@@ -2,8 +2,7 @@ import { inngest, broadcastSocketEvent } from '../client.js';
 import { prisma } from '../../config/prisma.js';
 
 export const chatMessageSentJob = inngest.createFunction(
-    { id: 'chat-message-sent' },
-    { event: 'app/chat.message_sent' },
+    { id: 'chat-message-sent', event: 'app/chat.message_sent' },
     async ({ event, step }) => {
         const { message, channelId, recipientId, senderName } = event.data;
 
@@ -69,8 +68,7 @@ export const chatMessageSentJob = inngest.createFunction(
 );
 
 export const chatMessageDeletedJob = inngest.createFunction(
-    { id: 'chat-message-deleted' },
-    { event: 'app/chat.message_deleted' },
+    { id: 'chat-message-deleted', event: 'app/chat.message_deleted' },
     async ({ event, step }) => {
         const { messageId, channelId, recipientId } = event.data;
 

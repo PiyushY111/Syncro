@@ -3,8 +3,7 @@ import { prisma } from '../../config/prisma.js';
 import { updateMeetingInGoogleCalendar, deleteMeetingFromGoogleCalendar } from '../../services/googleCalendarService.js';
 
 export const meetingUpdatedJob = inngest.createFunction(
-    { id: 'meeting-updated' },
-    { event: 'app/meeting.updated' },
+    { id: 'meeting-updated', event: 'app/meeting.updated' },
     async ({ event, step }) => {
         const { meetingId, previousState, auditContext } = event.data;
 
@@ -48,8 +47,7 @@ export const meetingUpdatedJob = inngest.createFunction(
 );
 
 export const meetingDeletedJob = inngest.createFunction(
-    { id: 'meeting-deleted' },
-    { event: 'app/meeting.deleted' },
+    { id: 'meeting-deleted', event: 'app/meeting.deleted' },
     async ({ event, step }) => {
         const { meeting, auditContext } = event.data;
 

@@ -4,8 +4,7 @@ import { pushMeetingToGoogleCalendar } from '../../services/googleCalendarServic
 import sendEmail from '../../config/nodemailer.js';
 
 export const meetingCreatedJob = inngest.createFunction(
-    { id: 'meeting-created' },
-    { event: 'app/meeting.created' },
+    { id: 'meeting-created', event: 'app/meeting.created' },
     async ({ event, step }) => {
         const { meetingId, creatorId, inviteeIds, auditContext } = event.data;
 

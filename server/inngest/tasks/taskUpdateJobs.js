@@ -3,8 +3,7 @@ import { prisma } from '../../config/prisma.js';
 import sendEmail from '../../config/nodemailer.js';
 
 export const taskUpdatedJob = inngest.createFunction(
-    { id: 'task-updated' },
-    { event: 'app/task.updated' },
+    { id: 'task-updated', event: 'app/task.updated' },
     async ({ event, step }) => {
         const { task, previousTask, origin, auditContext } = event.data;
 

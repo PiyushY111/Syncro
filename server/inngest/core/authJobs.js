@@ -3,8 +3,7 @@ import sendEmail from '../../config/nodemailer.js';
 import { logAuditEvent } from '../../services/auditLogger.js';
 
 export const auditLogJob = inngest.createFunction(
-    { id: 'audit-logger' },
-    { event: 'app/audit.log' },
+    { id: 'audit-logger', event: 'app/audit.log' },
     async ({ event }) => {
         const {
             workspaceId,
@@ -37,8 +36,7 @@ export const auditLogJob = inngest.createFunction(
 );
 
 export const authRegisteredJob = inngest.createFunction(
-    { id: 'auth-registered' },
-    { event: 'app/auth.registered' },
+    { id: 'auth-registered', event: 'app/auth.registered' },
     async ({ event, step }) => {
         const { email, verificationCode, isTester } = event.data;
         if (isTester) return;
@@ -63,8 +61,7 @@ export const authRegisteredJob = inngest.createFunction(
 );
 
 export const authLoginCodeJob = inngest.createFunction(
-    { id: 'auth-login-code' },
-    { event: 'app/auth.login_code_requested' },
+    { id: 'auth-login-code', event: 'app/auth.login_code_requested' },
     async ({ event, step }) => {
         const { email, verificationCode, isTester } = event.data;
         if (isTester) return;

@@ -2,8 +2,7 @@ import { inngest, publishAuditLogStep, broadcastSocketEvent } from '../client.js
 import { prisma } from '../../config/prisma.js';
 
 export const commentCreatedJob = inngest.createFunction(
-    { id: 'comment-created' },
-    { event: 'app/comment.created' },
+    { id: 'comment-created', event: 'app/comment.created' },
     async ({ event, step }) => {
         const { comment, auditContext } = event.data;
 

@@ -1,8 +1,7 @@
 import { inngest, publishAuditLogStep } from '../client.js';
 
 export const subTeamCreatedJob = inngest.createFunction(
-    { id: 'subteam-created' },
-    { event: 'app/subteam.created' },
+    { id: 'subteam-created', event: 'app/subteam.created' },
     async ({ event, step }) => {
         const { subTeam, workspaceId, auditContext } = event.data;
 
@@ -21,8 +20,7 @@ export const subTeamCreatedJob = inngest.createFunction(
 );
 
 export const subTeamUpdatedJob = inngest.createFunction(
-    { id: 'subteam-updated' },
-    { event: 'app/subteam.updated' },
+    { id: 'subteam-updated', event: 'app/subteam.updated' },
     async ({ event, step }) => {
         const { subTeam, previousState, workspaceId, auditContext } = event.data;
 
@@ -42,8 +40,7 @@ export const subTeamUpdatedJob = inngest.createFunction(
 );
 
 export const subTeamDeletedJob = inngest.createFunction(
-    { id: 'subteam-deleted' },
-    { event: 'app/subteam.deleted' },
+    { id: 'subteam-deleted', event: 'app/subteam.deleted' },
     async ({ event, step }) => {
         const { subTeamId, subTeamName, workspaceId, previousState, auditContext } = event.data;
 
@@ -62,8 +59,7 @@ export const subTeamDeletedJob = inngest.createFunction(
 );
 
 export const subTeamMemberAddedJob = inngest.createFunction(
-    { id: 'subteam-member-added' },
-    { event: 'app/subteam.member_added' },
+    { id: 'subteam-member-added', event: 'app/subteam.member_added' },
     async ({ event, step }) => {
         const { subTeamId, subTeamName, workspaceId, membership, auditContext } = event.data;
 
@@ -82,8 +78,7 @@ export const subTeamMemberAddedJob = inngest.createFunction(
 );
 
 export const subTeamMemberRemovedJob = inngest.createFunction(
-    { id: 'subteam-member-removed' },
-    { event: 'app/subteam.member_removed' },
+    { id: 'subteam-member-removed', event: 'app/subteam.member_removed' },
     async ({ event, step }) => {
         const { subTeamId, subTeamName, workspaceId, targetUserId, targetUserName, auditContext } = event.data;
 

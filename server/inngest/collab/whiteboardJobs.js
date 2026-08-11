@@ -1,8 +1,7 @@
 import { inngest, publishAuditLogStep, broadcastSocketEvent } from '../client.js';
 
 export const whiteboardCreatedJob = inngest.createFunction(
-    { id: 'whiteboard-created' },
-    { event: 'app/whiteboard.created' },
+    { id: 'whiteboard-created', event: 'app/whiteboard.created' },
     async ({ event, step }) => {
         const { whiteboard, workspaceId, auditContext } = event.data;
 
@@ -21,8 +20,7 @@ export const whiteboardCreatedJob = inngest.createFunction(
 );
 
 export const whiteboardUpdatedJob = inngest.createFunction(
-    { id: 'whiteboard-updated' },
-    { event: 'app/whiteboard.updated' },
+    { id: 'whiteboard-updated', event: 'app/whiteboard.updated' },
     async ({ event, step }) => {
         const { whiteboard, previousState, workspaceId, auditContext } = event.data;
 
@@ -46,8 +44,7 @@ export const whiteboardUpdatedJob = inngest.createFunction(
 );
 
 export const whiteboardDeletedJob = inngest.createFunction(
-    { id: 'whiteboard-deleted' },
-    { event: 'app/whiteboard.deleted' },
+    { id: 'whiteboard-deleted', event: 'app/whiteboard.deleted' },
     async ({ event, step }) => {
         const { whiteboardId, whiteboardName, workspaceId, previousState, auditContext } = event.data;
 

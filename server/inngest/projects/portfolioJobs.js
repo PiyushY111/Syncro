@@ -1,8 +1,7 @@
 import { inngest, publishAuditLogStep } from '../client.js';
 
 export const portfolioCreatedJob = inngest.createFunction(
-    { id: 'portfolio-created' },
-    { event: 'app/portfolio.created' },
+    { id: 'portfolio-created', event: 'app/portfolio.created' },
     async ({ event, step }) => {
         const { portfolio, workspaceId, auditContext } = event.data;
 
@@ -21,8 +20,7 @@ export const portfolioCreatedJob = inngest.createFunction(
 );
 
 export const portfolioUpdatedJob = inngest.createFunction(
-    { id: 'portfolio-updated' },
-    { event: 'app/portfolio.updated' },
+    { id: 'portfolio-updated', event: 'app/portfolio.updated' },
     async ({ event, step }) => {
         const { portfolio, previousState, workspaceId, auditContext } = event.data;
 
@@ -42,8 +40,7 @@ export const portfolioUpdatedJob = inngest.createFunction(
 );
 
 export const portfolioDeletedJob = inngest.createFunction(
-    { id: 'portfolio-deleted' },
-    { event: 'app/portfolio.deleted' },
+    { id: 'portfolio-deleted', event: 'app/portfolio.deleted' },
     async ({ event, step }) => {
         const { portfolioId, portfolioName, workspaceId, previousState, auditContext } = event.data;
 

@@ -2,8 +2,7 @@ import { inngest, publishAuditLogStep, broadcastSocketEvent } from '../client.js
 import sendEmail from '../../config/nodemailer.js';
 
 export const workspaceMemberInvitedJob = inngest.createFunction(
-    { id: 'workspace-member-invited' },
-    { event: 'app/workspace.member_invited' },
+    { id: 'workspace-member-invited', event: 'app/workspace.member_invited' },
     async ({ event, step }) => {
         const { email, subject, text, html } = event.data;
 
@@ -14,8 +13,7 @@ export const workspaceMemberInvitedJob = inngest.createFunction(
 );
 
 export const workspaceMemberRoleChangedJob = inngest.createFunction(
-    { id: 'workspace-member-role-changed' },
-    { event: 'app/workspace.member_role_changed' },
+    { id: 'workspace-member-role-changed', event: 'app/workspace.member_role_changed' },
     async ({ event, step }) => {
         const { workspaceId, targetUserId, targetUserName, previousRole, newRole, auditContext } = event.data;
 

@@ -1,8 +1,7 @@
 import { inngest, broadcastSocketEvent } from '../client.js';
 
 export const retroItemAddedJob = inngest.createFunction(
-    { id: 'retro-item-added' },
-    { event: 'app/retro.item_added' },
+    { id: 'retro-item-added', event: 'app/retro.item_added' },
     async ({ event, step }) => {
         const { item, sprintId } = event.data;
 
@@ -13,8 +12,7 @@ export const retroItemAddedJob = inngest.createFunction(
 );
 
 export const retroItemVotedJob = inngest.createFunction(
-    { id: 'retro-item-voted' },
-    { event: 'app/retro.item_voted' },
+    { id: 'retro-item-voted', event: 'app/retro.item_voted' },
     async ({ event, step }) => {
         const { item, sprintId } = event.data;
 
@@ -25,8 +23,7 @@ export const retroItemVotedJob = inngest.createFunction(
 );
 
 export const retroItemDeletedJob = inngest.createFunction(
-    { id: 'retro-item-deleted' },
-    { event: 'app/retro.item_deleted' },
+    { id: 'retro-item-deleted', event: 'app/retro.item_deleted' },
     async ({ event, step }) => {
         const { itemId, sprintId } = event.data;
 

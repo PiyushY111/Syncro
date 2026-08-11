@@ -1,8 +1,7 @@
 import { inngest, publishAuditLogStep } from '../client.js';
 
 export const milestoneCreatedJob = inngest.createFunction(
-    { id: 'milestone-created' },
-    { event: 'app/milestone.created' },
+    { id: 'milestone-created', event: 'app/milestone.created' },
     async ({ event, step }) => {
         const { milestone, workspaceId, auditContext } = event.data;
 
@@ -21,8 +20,7 @@ export const milestoneCreatedJob = inngest.createFunction(
 );
 
 export const milestoneUpdatedJob = inngest.createFunction(
-    { id: 'milestone-updated' },
-    { event: 'app/milestone.updated' },
+    { id: 'milestone-updated', event: 'app/milestone.updated' },
     async ({ event, step }) => {
         const { milestone, previousState, workspaceId, auditContext } = event.data;
 
@@ -42,8 +40,7 @@ export const milestoneUpdatedJob = inngest.createFunction(
 );
 
 export const milestoneDeletedJob = inngest.createFunction(
-    { id: 'milestone-deleted' },
-    { event: 'app/milestone.deleted' },
+    { id: 'milestone-deleted', event: 'app/milestone.deleted' },
     async ({ event, step }) => {
         const { milestoneId, milestoneName, workspaceId, previousState, auditContext } = event.data;
 

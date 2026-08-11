@@ -1,8 +1,7 @@
 import { inngest, publishAuditLogStep } from '../client.js';
 
 export const sprintCreatedJob = inngest.createFunction(
-    { id: 'sprint-created' },
-    { event: 'app/sprint.created' },
+    { id: 'sprint-created', event: 'app/sprint.created' },
     async ({ event, step }) => {
         const { sprint, workspaceId, auditContext } = event.data;
 
@@ -21,8 +20,7 @@ export const sprintCreatedJob = inngest.createFunction(
 );
 
 export const sprintUpdatedJob = inngest.createFunction(
-    { id: 'sprint-updated' },
-    { event: 'app/sprint.updated' },
+    { id: 'sprint-updated', event: 'app/sprint.updated' },
     async ({ event, step }) => {
         const { sprint, previousState, workspaceId, auditContext } = event.data;
 
@@ -42,8 +40,7 @@ export const sprintUpdatedJob = inngest.createFunction(
 );
 
 export const sprintDeletedJob = inngest.createFunction(
-    { id: 'sprint-deleted' },
-    { event: 'app/sprint.deleted' },
+    { id: 'sprint-deleted', event: 'app/sprint.deleted' },
     async ({ event, step }) => {
         const { sprintId, sprintName, workspaceId, previousState, auditContext } = event.data;
 
@@ -62,8 +59,7 @@ export const sprintDeletedJob = inngest.createFunction(
 );
 
 export const epicCreatedJob = inngest.createFunction(
-    { id: 'epic-created' },
-    { event: 'app/epic.created' },
+    { id: 'epic-created', event: 'app/epic.created' },
     async ({ event, step }) => {
         const { epic, workspaceId, auditContext } = event.data;
 
@@ -82,8 +78,7 @@ export const epicCreatedJob = inngest.createFunction(
 );
 
 export const epicUpdatedJob = inngest.createFunction(
-    { id: 'epic-updated' },
-    { event: 'app/epic.updated' },
+    { id: 'epic-updated', event: 'app/epic.updated' },
     async ({ event, step }) => {
         const { epic, previousState, workspaceId, auditContext } = event.data;
 
@@ -103,8 +98,7 @@ export const epicUpdatedJob = inngest.createFunction(
 );
 
 export const epicDeletedJob = inngest.createFunction(
-    { id: 'epic-deleted' },
-    { event: 'app/epic.deleted' },
+    { id: 'epic-deleted', event: 'app/epic.deleted' },
     async ({ event, step }) => {
         const { epicId, epicName, workspaceId, previousState, auditContext } = event.data;
 

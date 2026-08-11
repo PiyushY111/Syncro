@@ -1,8 +1,7 @@
 import { inngest, publishAuditLogStep, broadcastSocketEvent } from '../client.js';
 
 export const projectCreatedJob = inngest.createFunction(
-    { id: 'project-created' },
-    { event: 'app/project.created' },
+    { id: 'project-created', event: 'app/project.created' },
     async ({ event, step }) => {
         const { project, workspaceId, auditContext } = event.data;
 
@@ -25,8 +24,7 @@ export const projectCreatedJob = inngest.createFunction(
 );
 
 export const projectUpdatedJob = inngest.createFunction(
-    { id: 'project-updated' },
-    { event: 'app/project.updated' },
+    { id: 'project-updated', event: 'app/project.updated' },
     async ({ event, step }) => {
         const { project, previousState, workspaceId, auditContext } = event.data;
 
@@ -50,8 +48,7 @@ export const projectUpdatedJob = inngest.createFunction(
 );
 
 export const projectDeletedJob = inngest.createFunction(
-    { id: 'project-deleted' },
-    { event: 'app/project.deleted' },
+    { id: 'project-deleted', event: 'app/project.deleted' },
     async ({ event, step }) => {
         const { projectId, projectName, workspaceId, previousState, auditContext } = event.data;
 
