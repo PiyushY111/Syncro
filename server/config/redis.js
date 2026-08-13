@@ -55,6 +55,23 @@ export const redisCache = {
         memoryStore.set(key, val);
         return val;
     },
+    incrWithTtl: async (key, exSeconds = 60) => {
+        try {
+            if (redisClient) {
+                const val = await redisClient.incr(key);
+                if (val === 1) {
+                    await redisClient.expire(key, exSeconds);
+                }
+                return val;
+            }
+        } catch (e) {
+            console.error("[REDIS INCR ERROR]", e.message);
+        }
+        const val = Number(memoryStore.get(key) || 0) + 1;
+        memoryStore.set(key, val);
+        setTimeout(() => memoryStore.delete(key), exSeconds * 1000);
+        return val;
+    },
     publish: async (channel, message) => {
         try {
             if (redisClient) {

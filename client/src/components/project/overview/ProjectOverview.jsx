@@ -1,26 +1,29 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Calendar, UsersIcon, FolderOpen } from 'lucide-react';
+import { ArrowRight, Calendar, Users, FolderOpen, ArrowUpRight, CheckCircle2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { useSelector } from 'react-redux';
 import CreateProjectDialog from '@/components/project/dialogs/CreateProjectDialog';
 import { useAuth } from '@/context/AuthContext';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
+const statusBadgeVariant = {
+    PLANNING: "outline",
+    ACTIVE: "default",
+    ON_HOLD: "warning",
+    COMPLETED: "success",
+    CANCELLED: "destructive",
+};
+
+const priorityVariant = {
+    HIGH: "destructive",
+    MEDIUM: "warning",
+    LOW: "secondary",
+};
 
 const ProjectOverview = ({ activeFilter, searchTerm }) => {
-    const statusColors = {
-        PLANNING: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800/60 dark:text-zinc-300",
-        ACTIVE: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400",
-        ON_HOLD: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400",
-        COMPLETED: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400",
-        CANCELLED: "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400"
-    };
-
-    const priorityGlow = {
-        LOW: "bg-zinc-400 shadow-[0_0_8px_rgba(161,161,170,0.5)]",
-        MEDIUM: "bg-amber-550 shadow-[0_0_8px_rgba(245,158,11,0.5)]",
-        HIGH: "bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.5)]"
-    };
-
     const currentWorkspace = useSelector((state) => state?.workspace?.currentWorkspace || null);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [projects, setProjects] = useState([]);
@@ -29,8 +32,8 @@ const ProjectOverview = ({ activeFilter, searchTerm }) => {
     useEffect(() => {
         let list = currentWorkspace?.projects || [];
         if (activeFilter === "completed") list = list.filter(p => p.status === "COMPLETED");
-        else if (activeFilter === "mytasks") list = list.filter(p => p.tasks.some(t => t.assigneeId === user?.id || t.assignee?.email === user?.email));
-        else if (activeFilter === "overdue") list = list.filter(p => p.tasks.some(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== "DONE"));
+        else if (activeFilter === "mytasks") list = list.filter(p => p.tasks?.some(t => t.assigneeId === user?.id || t.assignee?.email === user?.email));
+        else if (activeFilter === "overdue") list = list.filter(p => p.tasks?.some(t => t.due_date && new Date(t.due_date) < new Date() && t.status !== "DONE"));
 
         if (searchTerm?.trim()) {
             const term = searchTerm.toLowerCase().trim();
@@ -39,61 +42,104 @@ const ProjectOverview = ({ activeFilter, searchTerm }) => {
         setProjects(list);
     }, [currentWorkspace, activeFilter, searchTerm, user]);
 
-    return currentWorkspace && (
-        <div className="bg-white dark:bg-zinc-950 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-300 rounded-2xl overflow-hidden shadow-xs text-left">
-            <div className="border-b border-zinc-200 dark:border-zinc-800 p-5 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-zinc-900 dark:text-zinc-300 uppercase tracking-wider">Project Overview</h2>
-                <Link to={'/projects'} className="text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-450 flex items-center gap-1">
-                    View all <ArrowRight className="size-3.5" />
-                </Link>
-            </div>
+    if (!currentWorkspace) return null;
 
-            <div className="p-5">
+    return (
+        <Card className="border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/90 shadow-sm overflow-hidden text-left">
+            <CardHeader className="p-5 border-b border-slate-100 dark:border-zinc-800/60 flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="text-sm font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                        Project Initiatives
+                    </CardTitle>
+                    <p className="text-[11px] text-slate-500 dark:text-zinc-400 mt-0.5">
+                        Active projects and completion progress in {currentWorkspace.name}
+                    </p>
+                </div>
+                <Link to="/projects">
+                    <Button variant="ghost" size="sm" className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 gap-1.5 h-8">
+                        <span>View all</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                    </Button>
+                </Link>
+            </CardHeader>
+
+            <CardContent className="p-5">
                 {projects.length === 0 ? (
-                    <div className="py-12 text-center">
-                        <FolderOpen className="size-10 mx-auto text-zinc-400 mb-3" />
-                        <p className="text-sm text-zinc-500">No matching projects found</p>
-                        <button onClick={() => setIsDialogOpen(true)} className="mt-4 px-4 py-2 text-xs bg-blue-600 text-white rounded-lg hover:opacity-90 transition font-bold cursor-pointer">Create Project</button>
+                    <div className="py-12 text-center space-y-3">
+                        <div className="w-12 h-12 rounded-2xl bg-blue-50 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 flex items-center justify-center mx-auto">
+                            <FolderOpen className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h3 className="text-sm font-semibold text-slate-800 dark:text-zinc-200">No matching projects found</h3>
+                            <p className="text-xs text-slate-500 dark:text-zinc-400 mt-0.5">Try adjusting your active filter or create a new project.</p>
+                        </div>
+                        <Button onClick={() => setIsDialogOpen(true)} className="bg-blue-600 text-white size-sm gap-1.5 mt-2">
+                            Create Project
+                        </Button>
                         <CreateProjectDialog isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-stiff-pop">
-                        {projects.slice(0, 4).map((project) => (
-                            <Link key={project.id} to={`/projectsDetail?id=${project.id}&tab=tasks`} className="p-5 bg-zinc-50/40 dark:bg-zinc-900/10 border border-zinc-100 dark:border-zinc-850 hover:border-zinc-200 dark:hover:border-zinc-800 rounded-xl hover:scale-[1.01] hover:shadow-xs transition-all duration-300 flex flex-col justify-between min-h-[160px]">
-                                <div>
-                                    <div className="flex items-center justify-between gap-2 mb-2">
-                                        <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${statusColors[project.status]}`}>
-                                            {project.status.replace('_', ' ')}
-                                        </span>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[10px] text-zinc-400 font-bold uppercase">{project.priority}</span>
-                                            <div className={`w-1.5 h-1.5 rounded-full ${priorityGlow[project.priority]}`} />
-                                        </div>
-                                    </div>
-                                    <h3 className="font-bold text-zinc-900 dark:text-white text-sm line-clamp-1 mb-1">{project.name}</h3>
-                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2 leading-relaxed mb-4">{project.description || 'No description provided.'}</p>
-                                </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {projects.slice(0, 4).map((project) => {
+                            const progress = project.progress || 0;
 
-                                <div className="space-y-3">
-                                    <div className="flex items-center justify-between text-[11px] text-zinc-400 dark:text-zinc-500">
-                                        <div className="flex items-center gap-3">
-                                            <span className="flex items-center gap-1"><UsersIcon className="size-3" /> {project.members?.length || 0}</span>
-                                            {project.end_date && (
-                                                <span className="flex items-center gap-1"><Calendar className="size-3" /> {format(new Date(project.end_date), "MMM d")}</span>
-                                            )}
+                            return (
+                                <Link 
+                                    key={project.id} 
+                                    to={`/projectsDetail?id=${project.id}&tab=tasks`} 
+                                    className="block group"
+                                >
+                                    <div className="p-4 rounded-xl border border-slate-200/70 dark:border-zinc-800/70 bg-slate-50/40 dark:bg-zinc-900/40 hover:border-blue-500/50 dark:hover:border-blue-500/50 hover:bg-white dark:hover:bg-zinc-900 hover:shadow-md transition-all duration-200 flex flex-col justify-between h-full space-y-3">
+                                        <div>
+                                            <div className="flex items-center justify-between gap-2 mb-2">
+                                                <Badge variant={statusBadgeVariant[project.status] || "outline"} className="text-[10px] py-0.5 px-2 font-semibold">
+                                                    {project.status ? project.status.replace('_', ' ') : 'PLANNING'}
+                                                </Badge>
+                                                <div className="flex items-center gap-1.5">
+                                                    <Badge variant={priorityVariant[project.priority] || "outline"} className="text-[9px] py-0 px-1.5 font-medium uppercase">
+                                                        {project.priority ? project.priority.toLowerCase() : 'medium'}
+                                                    </Badge>
+                                                    <ArrowUpRight className="h-3.5 w-3.5 text-slate-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-semibold text-slate-900 dark:text-zinc-100 text-sm line-clamp-1 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                {project.name}
+                                            </h3>
+                                            <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 mt-1 leading-relaxed">
+                                                {project.description || 'No description provided.'}
+                                            </p>
                                         </div>
-                                        <span className="font-semibold text-zinc-700 dark:text-zinc-350">{project.progress || 0}%</span>
+
+                                        <div className="space-y-2 pt-2 border-t border-slate-100 dark:border-zinc-800/60">
+                                            <div className="flex items-center justify-between text-[11px] text-slate-500 dark:text-zinc-400">
+                                                <div className="flex items-center gap-3">
+                                                    <span className="flex items-center gap-1 font-medium">
+                                                        <Users className="h-3 w-3 text-slate-400" /> {project.members?.length || 0}
+                                                    </span>
+                                                    {project.end_date && (
+                                                        <span className="flex items-center gap-1 font-medium">
+                                                            <Calendar className="h-3 w-3 text-slate-400" /> {format(new Date(project.end_date), "MMM d")}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span className="font-semibold text-slate-800 dark:text-zinc-200">{progress}%</span>
+                                            </div>
+                                            <div className="w-full bg-slate-200 dark:bg-zinc-800 rounded-full h-1.5 overflow-hidden">
+                                                <div 
+                                                    className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full transition-all duration-500" 
+                                                    style={{ width: `${progress}%` }} 
+                                                />
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div className="w-full bg-zinc-200 dark:bg-zinc-800 rounded-full h-1">
-                                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${project.progress || 0}%` }} />
-                                    </div>
-                                </div>
-                            </Link>
-                        ))}
+                                </Link>
+                            );
+                        })}
                     </div>
                 )}
-            </div>
-        </div>
+            </CardContent>
+        </Card>
     );
 };
 

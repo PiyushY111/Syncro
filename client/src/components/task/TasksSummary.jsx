@@ -1,8 +1,17 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Clock, AlertTriangle, User } from 'lucide-react';
+import { ArrowRight, Clock, AlertTriangle, UserCheck } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import { useAuth } from '@/context/AuthContext';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+
+const priorityBadgeVariant = {
+    HIGH: "destructive",
+    MEDIUM: "warning",
+    LOW: "secondary",
+};
 
 export default function TasksSummary({ searchTerm }) {
     const navigate = useNavigate();
@@ -10,10 +19,9 @@ export default function TasksSummary({ searchTerm }) {
     const { user } = useAuth();
     const [tasks, setTasks] = useState([]);
 
-    // Get all tasks for all projects in current workspace
     useEffect(() => {
         if (currentWorkspace) {
-            setTasks(currentWorkspace.projects.flatMap((project) => project.tasks));
+            setTasks((currentWorkspace.projects || []).flatMap((project) => project.tasks || []));
         }
     }, [currentWorkspace]);
 
@@ -32,71 +40,94 @@ export default function TasksSummary({ searchTerm }) {
 
     const summaryCards = [
         {
-            title: "My Tasks",
+            title: "My Assigned Tasks",
             count: myTasks.length,
-            icon: User,
-            color: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-400",
+            icon: UserCheck,
+            iconColor: "text-emerald-600 dark:text-emerald-400",
+            bgColor: "bg-emerald-50 dark:bg-emerald-950/40",
+            badgeVariant: "success",
             items: myTasks.slice(0, 3)
         },
         {
-            title: "Overdue",
+            title: "Overdue Tasks",
             count: overdueTasks.length,
             icon: AlertTriangle,
-            color: "bg-red-100 text-red-800 dark:bg-red-950 dark:text-red-400",
+            iconColor: "text-rose-600 dark:text-rose-400",
+            bgColor: "bg-rose-50 dark:bg-rose-950/40",
+            badgeVariant: overdueTasks.length > 0 ? "destructive" : "outline",
             items: overdueTasks.slice(0, 3)
         },
         {
             title: "In Progress",
             count: inProgressIssues.length,
             icon: Clock,
-            color: "bg-blue-100 text-blue-800 dark:bg-blue-950 dark:text-blue-400",
+            iconColor: "text-blue-600 dark:text-blue-400",
+            bgColor: "bg-blue-50 dark:bg-blue-950/40",
+            badgeVariant: "default",
             items: inProgressIssues.slice(0, 3)
         }
     ];
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-4">
             {summaryCards.map((card) => (
-                <div key={card.title} className="bg-white dark:bg-zinc-950 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700 transition-all duration-200 rounded-lg overflow-hidden">
-                    <div className="border-b border-zinc-200 dark:border-zinc-800 p-4 pb-3">
+                <Card key={card.title} className="border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/90 shadow-sm overflow-hidden">
+                    <CardHeader className="p-4 border-b border-slate-100 dark:border-zinc-800/60 flex flex-row items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-zinc-50 dark:bg-zinc-800 rounded-lg">
-                                <card.icon className="w-4 h-4 text-gray-500 dark:text-zinc-400" />
+                            <div className={`p-2 rounded-lg ${card.bgColor}`}>
+                                <card.icon className={`h-4 w-4 ${card.iconColor}`} />
                             </div>
-                            <div className="flex items-center justify-between flex-1">
-                                <h3 className="text-sm font-medium text-gray-800 dark:text-white">{card.title}</h3>
-                                <span className={`inline-block mt-1 px-2 py-1 rounded text-xs font-semibold ${card.color}`}>
-                                    {card.count}
-                                </span>
-                            </div>
+                            <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
+                                {card.title}
+                            </CardTitle>
                         </div>
-                    </div>
-                    <div className="p-4">
+                        <Badge variant={card.badgeVariant} className="text-[11px] font-bold py-0.5 px-2">
+                            {card.count}
+                        </Badge>
+                    </CardHeader>
+
+                    <CardContent className="p-3">
                         {card.items.length === 0 ? (
-                            <p className="text-sm text-gray-500 dark:text-zinc-400 text-center py-4">
-                                No {card.title.toLowerCase()}
+                            <p className="text-xs text-slate-400 dark:text-zinc-500 text-center py-4">
+                                No {card.title.toLowerCase()} found
                             </p>
                         ) : (
-                            <div className="space-y-3">
+                            <div className="space-y-2">
                                 {card.items.map((issue) => (
-                                    <div key={issue.id} onClick={() => navigate(`/taskDetails?projectId=${issue.projectId}&taskId=${issue.id}`)} className="p-3 rounded-lg bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer">
-                                        <h4 className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                                            {issue.title}
-                                        </h4>
-                                        <p className="text-xs text-gray-600 dark:text-zinc-400 capitalize mt-1">
-                                            {issue.type} • {issue.priority} priority
-                                        </p>
+                                    <div 
+                                        key={issue.id} 
+                                        onClick={() => navigate(`/taskDetails?projectId=${issue.projectId}&taskId=${issue.id}`)} 
+                                        className="p-3 rounded-lg bg-slate-50/60 dark:bg-zinc-800/40 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors cursor-pointer border border-slate-100 dark:border-zinc-800/60 flex items-center justify-between gap-3"
+                                    >
+                                        <div className="min-w-0 flex-1">
+                                            <h4 className="text-xs font-semibold text-slate-800 dark:text-zinc-200 truncate">
+                                                {issue.title}
+                                            </h4>
+                                            <p className="text-[10px] text-slate-500 dark:text-zinc-400 capitalize mt-0.5">
+                                                {issue.type ? issue.type.toLowerCase() : 'task'}
+                                            </p>
+                                        </div>
+                                        <Badge variant={priorityBadgeVariant[issue.priority] || "outline"} className="text-[9px] py-0 px-1.5 font-medium shrink-0">
+                                            {issue.priority ? issue.priority.toLowerCase() : 'normal'}
+                                        </Badge>
                                     </div>
                                 ))}
+
                                 {card.count > 3 && (
-                                    <button onClick={() => navigate(`/projectsDetail?id=${card.items[0]?.projectId}&tab=tasks`)} className="flex items-center justify-center w-full text-sm text-gray-500 dark:text-zinc-400 hover:text-gray-800 dark:hover:text-white mt-2 cursor-pointer">
-                                        View {card.count - 3} more <ArrowRight className="w-3 h-3 ml-2" />
-                                    </button>
+                                    <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => navigate(`/projectsDetail?id=${card.items[0]?.projectId}&tab=tasks`)} 
+                                        className="w-full text-xs text-slate-500 hover:text-blue-600 dark:text-zinc-400 dark:hover:text-blue-400 mt-1 h-8"
+                                    >
+                                        <span>View {card.count - 3} more</span>
+                                        <ArrowRight className="h-3 w-3 ml-1.5" />
+                                    </Button>
                                 )}
                             </div>
                         )}
-                    </div>
-                </div>
+                    </CardContent>
+                </Card>
             ))}
         </div>
     );

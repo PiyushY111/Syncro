@@ -7,6 +7,7 @@ const authRouter = express.Router();
 authRouter.post('/register', register);
 authRouter.post('/login', login);
 authRouter.post('/verify-login', verifyLogin);
+authRouter.post('/verify', verifyLogin);
 authRouter.post('/resend-code', resendCode);
 authRouter.get('/me', protect, me);
 authRouter.put('/profile', protect, updateProfile);

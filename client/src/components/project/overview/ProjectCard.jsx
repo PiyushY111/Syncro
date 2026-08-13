@@ -1,49 +1,72 @@
 import { Link } from 'react-router-dom';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { ArrowUpRight, FolderKanban } from 'lucide-react';
 
-const statusColors = {
-    PLANNING: "bg-gray-200 dark:bg-zinc-600 text-gray-900 dark:text-zinc-200",
-    ACTIVE: "bg-emerald-200 dark:bg-emerald-500 text-emerald-900 dark:text-emerald-900",
-    ON_HOLD: "bg-amber-200 dark:bg-amber-500 text-amber-900 dark:text-amber-900",
-    COMPLETED: "bg-blue-200 dark:bg-blue-500 text-blue-900 dark:text-blue-900",
-    CANCELLED: "bg-red-200 dark:bg-red-500 text-red-900 dark:text-red-900",
+const statusBadgeVariant = {
+    PLANNING: "outline",
+    ACTIVE: "default",
+    ON_HOLD: "warning",
+    COMPLETED: "success",
+    CANCELLED: "destructive",
+};
+
+const priorityVariant = {
+    HIGH: "destructive",
+    MEDIUM: "warning",
+    LOW: "secondary",
 };
 
 const ProjectCard = ({ project }) => {
+    const progress = project.progress || 0;
+
     return (
-        <Link to={`/projectsDetail?id=${project.id}&tab=tasks`} className="bg-white dark:bg-zinc-950 dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-gray-200 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700 rounded-lg p-5 transition-all duration-200 group">
-            {/* Header */}
-            <div className="flex items-start justify-between mb-3">
-                <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-gray-900 dark:text-zinc-200 mb-1 truncate group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors">
-                        {project.name}
-                    </h3>
-                    <p className="text-gray-500 dark:text-zinc-400 text-sm line-clamp-2 mb-3">
-                        {project.description || "No description"}
-                    </p>
-                </div>
-            </div>
+        <Link to={`/projectsDetail?id=${project.id}&tab=tasks`} className="block group">
+            <Card className="h-full border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/90 hover:shadow-lg hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer overflow-hidden relative">
+                <CardHeader className="p-5 pb-3 space-y-2">
+                    <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <div className="p-2 rounded-lg bg-blue-50 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shrink-0">
+                                <FolderKanban className="h-4 w-4" />
+                            </div>
+                            <CardTitle className="text-base font-semibold text-slate-900 dark:text-zinc-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                {project.name}
+                            </CardTitle>
+                        </div>
+                        <ArrowUpRight className="h-4 w-4 text-slate-400 dark:text-zinc-500 opacity-0 group-hover:opacity-100 transition-opacity shrink-0" />
+                    </div>
 
-            <div className="flex items-center justify-between mb-4">
-                <span className={`px-2 py-0.5 rounded text-xs ${statusColors[project.status]}`} >
-                    {project.status.replace("_", " ")}
-                </span>
-                <span className="text-xs text-gray-500 dark:text-zinc-500 capitalize">
-                    {project.priority} priority
-                </span>
-            </div>
+                    <CardDescription className="line-clamp-2 text-xs text-slate-500 dark:text-zinc-400 h-9">
+                        {project.description || "No description provided."}
+                    </CardDescription>
+                </CardHeader>
 
-            {/* Progress */}
-            <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs">
-                    <span className="text-gray-500 dark:text-zinc-500">Progress</span>
-                    <span className="text-gray-400 dark:text-zinc-400">{project.progress || 0}%</span>
-                </div>
-                <div className="w-full bg-gray-200 dark:bg-zinc-800 h-1.5 rounded">
-                    <div className="h-1.5 rounded bg-blue-500" style={{ width: `${project.progress || 0}%` }} />
-                </div>
-            </div>
+                <CardContent className="p-5 pt-0 space-y-4">
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800/60">
+                        <Badge variant={statusBadgeVariant[project.status] || "outline"} className="text-[10px] font-semibold py-0.5 px-2">
+                            {project.status ? project.status.replace("_", " ") : "PLANNING"}
+                        </Badge>
+                        <span className="text-[11px] text-slate-500 dark:text-zinc-400 font-medium capitalize">
+                            {project.priority ? `${project.priority.toLowerCase()} priority` : "Normal priority"}
+                        </span>
+                    </div>
 
-            </Link>
+                    {/* Progress Indicator */}
+                    <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-[11px] font-medium">
+                            <span className="text-slate-500 dark:text-zinc-400">Completion</span>
+                            <span className="text-slate-700 dark:text-zinc-300 font-semibold">{progress}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                            <div 
+                                className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500" 
+                                style={{ width: `${progress}%` }} 
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
     );
 };
 

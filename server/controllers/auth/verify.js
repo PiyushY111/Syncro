@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { prisma } from '../../config/prisma.js';
 import { eventBus } from '../../services/eventBus.js';
+import { redisCache } from '../../config/redis.js';
 
 const sanitizeUser = (user) => ({
     id: user.id,
@@ -29,10 +30,23 @@ export const verifyLogin = async (req, res) => {
         }
 
         const normalizedEmail = email.toLowerCase().trim();
+        const lockKey = `2fa:fails:${normalizedEmail}`;
+
+        // Check if user is locked out (>= 3 failed attempts within the 60-second window)
+        const failedAttempts = Number((await redisCache.get(lockKey)) || 0);
+
+        if (failedAttempts >= 3) {
+            return res.status(429).json({
+                message: 'Too many failed 2FA verification attempts. Account locked for 1 minute. Please try again later.',
+                locked: true,
+                retryAfterSeconds: 60
+            });
+        }
+
         const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return res.status(400).json({ message: 'Invalid credentials or code.' });
         }
 
         if (!user.twoFactorCode || !user.twoFactorExpires) {
@@ -40,12 +54,28 @@ export const verifyLogin = async (req, res) => {
         }
 
         if (user.twoFactorCode !== code.trim()) {
-            return res.status(400).json({ message: 'Invalid verification code' });
+            const newFails = await redisCache.incrWithTtl(lockKey, 60);
+
+            if (newFails >= 3) {
+                return res.status(429).json({
+                    message: 'Too many failed 2FA verification attempts. Account locked for 1 minute. Please try again later.',
+                    locked: true,
+                    retryAfterSeconds: 60
+                });
+            }
+
+            return res.status(400).json({
+                message: `Invalid verification code. ${3 - newFails} attempt(s) remaining before 1-minute lockout.`,
+                attemptsRemaining: 3 - newFails
+            });
         }
 
         if (new Date() > new Date(user.twoFactorExpires)) {
             return res.status(400).json({ message: 'Verification code has expired. Please request a new code.' });
         }
+
+        // Clear failed attempts counter on successful verification
+        await redisCache.del(lockKey);
 
         const updatedUser = await prisma.user.update({
             where: { id: user.id },

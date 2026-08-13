@@ -1,99 +1,111 @@
-import { useState, useRef, useEffect } from 'react';
-import { ChevronDown, Check, Plus } from 'lucide-react';
+import { ChevronDown, Check, Plus, Building2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import { setCurrentWorkspace } from '@/features/workspaceSlice';
 import { useNavigate } from 'react-router-dom';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 function WorkspaceDropdown({ onCreateWorkspace }) {
     const { workspaces } = useSelector((state) => state.workspace);
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef(null);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const onSelectWorkspace = (workspaceId) => {
-        dispatch(setCurrentWorkspace(workspaceId))
-        setIsOpen(false);
-        navigate('/dashboard')
-    }
+        dispatch(setCurrentWorkspace(workspaceId));
+        navigate('/dashboard');
+    };
 
-    // Close dropdown on outside click
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    const currentInitials = currentWorkspace?.name
+        ? currentWorkspace.name.substring(0, 2).toUpperCase()
+        : 'W';
 
     return (
-        <div className="relative m-4" ref={dropdownRef}>
-            <button onClick={() => setIsOpen(prev => !prev)} className="w-full flex items-center justify-between p-3 h-auto text-left rounded hover:bg-gray-100 dark:hover:bg-zinc-800" >
-                <div className="flex items-center gap-3">
-                    {currentWorkspace?.image_url ? (
-                        <img src={currentWorkspace.image_url} alt={currentWorkspace.name} className="w-8 h-8 rounded shadow object-cover flex-shrink-0" />
-                    ) : (
-                        <div className="w-8 h-8 rounded shadow bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-sm uppercase flex-shrink-0">
-                            {currentWorkspace?.name ? currentWorkspace.name.charAt(0) : "W"}
-                        </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                        <p className="font-semibold text-gray-800 dark:text-white text-sm truncate">
-                            {currentWorkspace?.name || "Select Workspace"}
-                        </p>
-                        <p className="text-xs text-gray-500 dark:text-zinc-400 truncate">
-                            {workspaces.length} workspace{workspaces.length !== 1 ? "s" : ""}
-                        </p>
-                    </div>
-                </div>
-                <ChevronDown className="w-4 h-4 text-gray-500 dark:text-zinc-400 flex-shrink-0" />
-            </button>
-
-            {isOpen && (
-                <div className="absolute z-50 w-64 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded shadow-lg top-full left-0">
-                    <div className="p-2">
-                        <p className="text-xs text-gray-500 dark:text-zinc-400 uppercase tracking-wider mb-2 px-2">
-                            Workspaces
-                        </p>
-                        {workspaces.map((workspace) => (
-                            <div key={workspace.id} onClick={() => onSelectWorkspace(workspace.id)} className="flex items-center gap-3 p-2 cursor-pointer rounded hover:bg-gray-100 dark:hover:bg-zinc-800" >
-                                {workspace.image_url ? (
-                                    <img src={workspace.image_url} alt={workspace.name} className="w-6 h-6 rounded object-cover flex-shrink-0" />
-                                ) : (
-                                    <div className="w-6 h-6 rounded bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-semibold text-xs uppercase flex-shrink-0">
-                                        {workspace.name ? workspace.name.charAt(0) : "W"}
-                                    </div>
-                                )}
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-gray-800 dark:text-white truncate">
-                                        {workspace.name}
-                                    </p>
-                                    <p className="text-xs text-gray-500 dark:text-zinc-400 truncate">
-                                        {workspace.members?.length || 0} members
-                                    </p>
-                                </div>
-                                {currentWorkspace?.id === workspace.id && (
-                                    <Check className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                                )}
+        <div className="p-3">
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <button className="w-full flex items-center justify-between p-2.5 rounded-xl border border-slate-200/80 dark:border-zinc-800/80 bg-slate-50/50 dark:bg-zinc-900/60 hover:bg-slate-100/80 dark:hover:bg-zinc-800/80 transition-all outline-none group cursor-pointer">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                            <Avatar className="h-8 w-8 rounded-lg">
+                                <AvatarImage src={currentWorkspace?.image_url} alt={currentWorkspace?.name} />
+                                <AvatarFallback className="rounded-lg bg-gradient-to-br from-blue-600 to-indigo-600 text-white text-xs font-bold">
+                                    {currentInitials}
+                                </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0 flex-1 text-left">
+                                <p className="font-semibold text-slate-800 dark:text-zinc-100 text-sm truncate leading-tight">
+                                    {currentWorkspace?.name || "Select Workspace"}
+                                </p>
+                                <p className="text-[11px] text-slate-500 dark:text-zinc-400 truncate mt-0.5">
+                                    {workspaces.length} workspace{workspaces.length !== 1 ? "s" : ""}
+                                </p>
                             </div>
-                        ))}
+                        </div>
+                        <ChevronDown className="h-4 w-4 text-slate-400 dark:text-zinc-500 group-hover:text-slate-600 dark:group-hover:text-zinc-300 transition-transform duration-200 shrink-0" />
+                    </button>
+                </DropdownMenuTrigger>
+
+                <DropdownMenuContent align="start" className="w-64 p-1.5 mt-1">
+                    <DropdownMenuLabel className="text-[11px] font-semibold tracking-wider text-slate-400 uppercase">
+                        Workspaces
+                    </DropdownMenuLabel>
+                    
+                    <div className="max-h-60 overflow-y-auto space-y-1 py-1 no-scrollbar">
+                        {workspaces.map((workspace) => {
+                            const initials = workspace.name ? workspace.name.substring(0, 2).toUpperCase() : 'W';
+                            const isSelected = currentWorkspace?.id === workspace.id;
+
+                            return (
+                                <DropdownMenuItem
+                                    key={workspace.id}
+                                    onClick={() => onSelectWorkspace(workspace.id)}
+                                    className={`flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors ${
+                                        isSelected 
+                                            ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 font-medium' 
+                                            : 'hover:bg-slate-100 dark:hover:bg-zinc-800'
+                                    }`}
+                                >
+                                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                                        <Avatar className="h-6 w-6 rounded">
+                                            <AvatarImage src={workspace.image_url} alt={workspace.name} />
+                                            <AvatarFallback className="rounded bg-slate-200 dark:bg-zinc-800 text-slate-700 dark:text-zinc-300 text-[10px] font-bold">
+                                                {initials}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-medium truncate">{workspace.name}</p>
+                                            <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
+                                                {workspace.members?.length || 0} member{(workspace.members?.length || 0) !== 1 ? 's' : ''}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    {isSelected && (
+                                        <Check className="h-4 w-4 text-blue-600 dark:text-blue-400 shrink-0" />
+                                    )}
+                                </DropdownMenuItem>
+                            );
+                        })}
                     </div>
 
-                    <hr className="border-gray-200 dark:border-zinc-700" />
+                    <DropdownMenuSeparator className="my-1" />
 
-                    <div
-                        onClick={() => { setIsOpen(false); onCreateWorkspace(); }}
-                        className="p-2 cursor-pointer rounded group hover:bg-gray-100 dark:hover:bg-zinc-800" >
-                        <p className="flex items-center text-xs gap-2 my-1 w-full text-blue-600 dark:text-blue-400 group-hover:text-blue-500 dark:group-hover:text-blue-300">
-                            <Plus className="w-4 h-4" /> Create Workspace
-                        </p>
-                    </div>
-                </div>
-            )}
+                    <DropdownMenuItem
+                        onClick={onCreateWorkspace}
+                        className="flex items-center gap-2 text-xs font-semibold text-blue-600 dark:text-blue-400 focus:bg-blue-50 dark:focus:bg-blue-950/40 cursor-pointer rounded-lg p-2"
+                    >
+                        <Plus className="h-4 w-4" />
+                        <span>Create Workspace</span>
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
         </div>
     );
 }

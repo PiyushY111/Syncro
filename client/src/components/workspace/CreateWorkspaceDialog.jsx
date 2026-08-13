@@ -1,9 +1,20 @@
 import { useState } from 'react';
-import { Plus, XIcon } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import api from '@/configs/api';
 import { addWorkspace, setCurrentWorkspace } from '@/features/workspaceSlice';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 
 const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
     const dispatch = useDispatch();
@@ -29,65 +40,72 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
         }
     };
 
-    if (!isDialogOpen) return null;
-
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm px-4">
-            <div className="w-full max-w-lg rounded-3xl border border-white/10 bg-white p-6 text-slate-900 shadow-2xl shadow-slate-900/20 dark:bg-zinc-950 dark:text-white">
-                <div className="mb-6 flex items-start justify-between gap-4">
-                    <div>
-                        <p className="text-sm uppercase tracking-[0.2em] text-blue-600 dark:text-blue-400">New Workspace</p>
-                        <h2 className="mt-1 text-2xl font-semibold">Create a workspace</h2>
-                    </div>
-                    <button type="button" onClick={() => setIsDialogOpen(false)} className="rounded-full p-2 text-slate-500 transition hover:bg-slate-100 dark:text-zinc-400 dark:hover:bg-zinc-900">
-                        <XIcon className="size-5" />
-                    </button>
-                </div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                    <DialogTitle className="text-xl">Create Workspace</DialogTitle>
+                    <DialogDescription>
+                        Create a dedicated space to collaborate on projects, track issues, and manage team members.
+                    </DialogDescription>
+                </DialogHeader>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300">Workspace name</label>
-                        <input
+                <form onSubmit={handleSubmit} className="space-y-4 py-2">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                            Workspace Name <span className="text-rose-500">*</span>
+                        </label>
+                        <Input
                             value={formData.name}
                             onChange={(event) => setFormData({ ...formData, name: event.target.value })}
-                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-950"
-                            placeholder="Acme Product Team"
+                            placeholder="e.g. Acme Product Team"
                             required
                         />
                     </div>
 
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300">Workspace Avatar URL</label>
-                        <input
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                            Avatar URL <span className="text-slate-400 font-normal">(Optional)</span>
+                        </label>
+                        <Input
                             value={formData.image_url}
                             onChange={(event) => setFormData({ ...formData, image_url: event.target.value })}
-                            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-950"
-                            placeholder="https://example.com/workspace-avatar.png"
+                            placeholder="https://example.com/logo.png"
                         />
                     </div>
 
-                    <div>
-                        <label className="mb-2 block text-sm font-medium text-slate-700 dark:text-zinc-300">Description</label>
-                        <textarea
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                            Description <span className="text-slate-400 font-normal">(Optional)</span>
+                        </label>
+                        <Textarea
                             value={formData.description}
                             onChange={(event) => setFormData({ ...formData, description: event.target.value })}
-                            className="min-h-28 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-blue-500 focus:bg-white dark:border-zinc-800 dark:bg-zinc-900 dark:focus:bg-zinc-950"
-                            placeholder="What is this workspace for?"
+                            placeholder="What is this workspace dedicated to?"
+                            rows={3}
                         />
                     </div>
 
-                    <div className="flex justify-end gap-3 pt-2">
-                        <button type="button" onClick={() => setIsDialogOpen(false)} className="rounded-2xl border border-slate-200 px-5 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50 dark:border-zinc-800 dark:text-zinc-300 dark:hover:bg-zinc-900">
+                    <DialogFooter className="pt-3">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                        >
                             Cancel
-                        </button>
-                        <button type="submit" disabled={isSubmitting} className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-2.5 text-sm font-medium text-white transition hover:from-blue-500 hover:to-indigo-500 disabled:cursor-not-allowed disabled:opacity-60">
-                            <Plus className="size-4" />
+                        </Button>
+                        <Button
+                            type="submit"
+                            disabled={isSubmitting}
+                            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                        >
+                            <Plus className="h-4 w-4" />
                             {isSubmitting ? 'Creating...' : 'Create Workspace'}
-                        </button>
-                    </div>
+                        </Button>
+                    </DialogFooter>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 
