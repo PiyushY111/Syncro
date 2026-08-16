@@ -46,14 +46,14 @@ client/
 │   │   ├── task/              # Task details, comments, selectors, & task creation dialogs
 │   │   └── workspace/         # Workspace invite list, active stats, sub-teams tab, & settings
 │   ├── configs/               # Client API connection config
-│   │   └── api.js             # Axios client instance with auth headers interceptors
+│   │   └── api.js             # Axios client instance with auth headers & confirmation interceptors
 │   ├── context/               # React Context providers
-│   │   ├── AuthContext.jsx    # User JWT credentials & profile state provider
+│   │   ├── AuthContext.jsx    # User JWT credentials & profile state provider with unwrapped payloads
 │   │   └── SocketContext.jsx  # Real-time WebSocket connection state provider
 │   ├── features/              # Redux Toolkit slices
 │   │   ├── themeSlice.js      # Dark/light mode configuration state
 │   │   ├── workspaceHelpers.js# Workspace permissions and switching helpers
-│   │   └── workspaceSlice.js  # Current active workspace and member state
+│   │   └── workspaceSlice.js  # Current active workspace and member state (ApiResponse unwrapped)
 │   ├── hooks/                 # Custom React hooks
 │   │   ├── useChat.js         # Core chat state and socket orchestration
 │   │   ├── useChatChannels.js # Channel indexing and updates
@@ -63,7 +63,7 @@ client/
 │   │   └── useWorkspaceSettings.js # Workspace info update orchestrators
 │   ├── pages/                 # Page containers & routes
 │   │   ├── audit/             # AuditLogs page container
-│   │   ├── auth/              # Auth sign-in / registration container page
+│   │   ├── auth/              # Auth sign-in / registration container page (with auto-reset 2FA state)
 │   │   ├── calendar/          # SmartCalendar container page
 │   │   ├── chat/              # Chat system shell container page
 │   │   ├── dashboard/         # User/Workspace Dashboard page
@@ -85,7 +85,8 @@ client/
 │   ├── main.jsx               # Main React bundle mounting entry point & SW registration
 │   └── index.css              # Styling configurations, colors, and fonts (Tailwind 4 base)
 ├── public/                    # Static public assets & Service Worker
-│   └── service-worker.js      # Custom client-side PWA cache interceptor
+│   └── service-worker.js      # Custom client-side PWA cache interceptor (filters non-GET requests)
+├── .env.example              # Client environment variables blueprint
 ├── jsconfig.json              # Client path alias resolution (`@/*`) configs
 └── vite.config.js             # Vite compiler plugin configurations
 ```
@@ -100,8 +101,8 @@ The server is a Node.js Express 5 REST API and real-time Socket.IO server utiliz
 server/
 ├── config/                    # Database, Redis, & SMTP configurations
 │   ├── nodemailer.js          # SMTP transporter instance for 2FA & transactional emails
-│   ├── prisma.js              # Database client singleton instance
-│   ├── redis.js               # Upstash Redis REST client instance
+│   ├── prisma.js              # Database client singleton with $extends soft-delete findUnique delegates
+│   ├── redis.js               # Upstash Redis REST client instance with memory fallback
 │   └── test-smtp.js           # Transporter connection validation utility
 ├── controllers/               # Route controllers (grouped by domain)
 │   ├── audit/                 # Audit controllers
@@ -111,10 +112,10 @@ server/
 │   │   ├── getEntityHistory.js# Fetches rollback history for specific entities
 │   │   └── rollbackEntity.js  # Restores database entity to an audited state
 │   ├── auth/                  # User authentication handlers
-│   │   ├── login.js           # Password validation & 2FA code dispatcher
+│   │   ├── login.js           # Password validation & 2FA code dispatcher (with dev log)
 │   │   ├── profile.js         # Profile updates & 2FA toggles
 │   │   ├── register.js        # User account generation
-│   │   └── verify.js          # Resolves 6-digit email 2FA codes
+│   │   └── verify.js          # Resolves 6-digit email 2FA codes (supports dev code 123456)
 │   ├── chat/                  # Messaging controllers
 │   │   ├── channelMembers.js  # Channel subscription & membership rosters
 │   │   ├── channelsCrud.js    # Channel creation & management
@@ -184,7 +185,7 @@ server/
 │   ├── workspace/             # Workspace setups & onboarding flows
 │   │   ├── invites/           # Invite links, emails, and verification
 │   │   ├── members/           # Workspace membership additions, role updates, and removal
-│   │   ├── workspaceCreate.js # Onboards personal or team workspaces
+│   │   ├── workspaceCreate.js # Onboards personal or team workspaces (optimized query performance)
 │   │   ├── workspaceHelpers.js# Workspace permissions validation helpers
 │   │   └── workspaceUpdate.js # Updates workspace details and layouts
 │   ├── authController.js      # Auth orchestrator barrel file
@@ -224,7 +225,10 @@ server/
 │   ├── authMiddleware.js      # JWT authentication resolver middleware
 │   ├── errorMiddleware.js     # Centralized global Express error handler middleware
 │   ├── projectAccessCheck.js  # Project membership confirmation middleware
+│   ├── rateLimiter.js         # Environment-aware rate limiter middleware (authLimiter, apiLimiter)
 │   ├── requestIdMiddleware.js # Request correlation ID (x-request-id) tracing middleware
+│   ├── sanitize.js            # Input sanitization middleware
+│   ├── securityHeaders.js     # Security headers (Helmet/CSP) middleware
 │   └── validate.js            # Generic DTO request payload validation middleware
 ├── prisma/                    # Relational schema & database seed configuration
 │   ├── schema.prisma          # Prisma PostgreSQL multi-column composite indexed data models

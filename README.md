@@ -50,11 +50,13 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Sub-teams & Role Matrix** — assign workspace members to sub-teams and custom role permissions.
 
 ### 5. Performance: Caching & PWA Support
-* **Redis Caching** — workspace lists, role checks, and notification inbox feeds are cached in Redis.
-* **Service Worker** — a custom client-side Service Worker intercepts static assets and `/api/*` REST payloads, offering read-only offline fallback support.
+* **Optimized Database Queries** — selective database projections and sub-query indexing deliver millisecond workspace retrieval.
+* **Redis Caching** — workspace lists, role checks, and notification inbox feeds are cached in Redis with L2 read-through fallback.
+* **Service Worker** — a custom client-side Service Worker intercepts static assets and `GET /api/*` REST payloads, offering read-only offline fallback support while avoiding non-GET mutation cache errors.
 
-### 6. Security & Permissions
+### 6. Security & Authentication
 * **Workspace Roles & Matrix** — pre-configured permission scopes for Owner, Admin, Manager, and Member.
+* **2FA Security & Dev Mode Helpers** — email-based 6-digit verification code pipeline with dev-mode console output and `123456` bypass for automated testing.
 * **Entity Rollbacks & Audits** — an audit log records every create, edit, and delete action. Rollback to a previous record state is restricted to Owner and Admin roles, is itself logged as an audit event, and requires the acting user to have active membership in the target workspace at the time of the action.
 
 ---
@@ -64,18 +66,18 @@ The platform isolates data between workspace organizations, offloads async work 
 ### Frontend
 * **React 19 & Vite** — fast loading and lightweight virtual DOM manipulation.
 * **Tailwind CSS 4** — utility-first styling with zero compile-time overhead.
-* **Redux Toolkit** — deterministic client-side global state store.
+* **Redux Toolkit** — deterministic client-side global state store with unified `ApiResponse` payload unwrapping (`data.data || data`).
 * **Socket.io-client** — WebSocket client connection wrapper for real-time canvas, presence, and chat.
 
 ### Backend, Event Engine & Enterprise Infrastructure
 * **Express 5** — REST API gateway router.
 * **Socket.IO Real-Time Engine** — modular WebSocket event handlers for Chat, Whiteboards, Retrospectives, Member Presence, and Emoji Reactions.
 * **Clean Hexagonal Architecture** — strict layer separation with `AppError` Operational Error hierarchy (`BadRequestError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `ValidationError`), `asyncHandler` controller isolation, and unified `ApiResponse` schema (`{ success, data, message }` / `{ success, error }`).
-* **Prisma ORM ($extends)** — type-safe PostgreSQL ORM configured with client extensions (`$extends`) for transparent soft-delete query interceptors (`deletedAt: null`), query telemetry tracking, and slow query alerts (>150ms).
+* **Prisma ORM ($extends)** — type-safe PostgreSQL ORM configured with client extensions (`$extends`) supporting transparent soft-delete query interceptors (`deletedAt: null`), `findUnique`/`findUniqueOrThrow` delegation to `findFirst` for soft-delete models, query telemetry tracking, and slow query alerts (>150ms).
 * **Enterprise DB Service (`dbService.js`)** — transaction engine with exponential backoff retries for transient deadlocks (`40001`/`40P01`), low-overhead database health diagnostic probe (`SELECT 1`), and L2 Redis read-through caching.
 * **Request Correlation & Structured Logger** — `x-request-id` header tracking for distributed transaction tracing paired with a high-performance structured JSON telemetry logger.
 * **PostgreSQL (Neon)** — serverless relational database engine with composite multi-column indexing.
-* **Upstash Redis** — REST-based Redis client for caching and rate limiting.
+* **Upstash Redis** — REST-based Redis client for caching and environment-aware rate limiting (`authLimiter`, `apiLimiter`).
 * **Inngest** — distributed background serverless queues and event crons categorized by domain (Core, Tasks, Projects, Collab).
 * **Nodemailer** — SMTP transactional email transporter.
 
@@ -83,7 +85,7 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Enterprise Architecture Test Suite (`tests/architecture.test.js`)** — automated test suite validating AppError hierarchy, ApiResponse schemas, asyncHandler, and DTO validators (15 passed tests).
 * **Database Infrastructure Test Suite (`tests/database.test.js`)** — automated test suite verifying DB connection health probes, transaction retries, soft-delete rules, and L2 cache logic (7 passed tests).
 * **Vitest** — API unit and integration test runner.
-* **Playwright** — End-to-end multi-browser user flow testing suite.
+* **Playwright** — End-to-end multi-browser user flow testing suite (`auth.spec.js`, `chat.spec.js`, `tasks.spec.js`, `whiteboard.spec.js`, `workspace.spec.js`).
 
 ---
 
@@ -95,13 +97,13 @@ graph TD
         UI[React UI Components] <--> Redux[Redux Toolkit Store]
         UI <--> SocketClient[Socket.IO Client]
         UI <--> SW[Custom Service Worker]
-        SW <-->|Cache Storage API| Cache[API & Asset Cache]
+        SW <-->|Cache Storage API (GET Only)| Cache[API & Asset Cache]
     end
 
     subgraph Server [Backend Gateway: Express 5 + Socket.IO Server]
         API[Express 5 REST Gateway] <--> EventBus[Internal EventBus Service]
         API <--> CacheLayer[Redis Caching Layer]
-        API <--> Prisma[Prisma ORM]
+        API <--> Prisma[Prisma ORM ($extends)]
         
         Sockets[Socket.IO Engine] <--> Handlers[Socket Event Handlers]
         Handlers --- MsgH[Message & Reaction Handlers]
@@ -133,7 +135,7 @@ graph TD
 Syncro/
 ├── client/                             # React 19 Client SPA
 │   ├── public/                         # Static assets & PWA service worker
-│   │   └── service-worker.js           # PWA caching interceptor
+│   │   └── service-worker.js           # PWA caching interceptor (GET API requests)
 │   ├── src/
 │   │   ├── app/                        # Redux store configurations
 │   │   ├── components/                 # Presentational UI components (chat, whiteboard, scrum, audit)
@@ -145,17 +147,18 @@ Syncro/
 │   │   ├── utils/                      # Permission checking & helper utilities
 │   │   ├── main.jsx                    # SPA entry point & service worker registration
 │   │   └── index.css                   # Global Tailwind CSS 4 styles
+│   ├── .env.example                    # Client environment template
 │   └── vite.config.js                  # Vite bundler configuration
 ├── server/                             # Express 5 REST API Gateway & Real-Time Engine
 │   ├── config/                         # Prisma, Redis, & Nodemailer SMTP connections
 │   ├── controllers/                    # Domain REST controllers (auth, chat, task, sprint, retro, etc.)
 │   ├── inngest/                        # Inngest background event handlers (collab, core, projects, tasks)
-│   ├── middlewares/                    # JWT Authentication & Project Access Control
+│   ├── middlewares/                    # JWT Auth, Rate Limiter, & Security Headers
 │   ├── prisma/                         # Prisma relational schema configuration
 │   ├── routes/                         # Express router maps (18 domain routes)
 │   ├── services/                       # AuditLogger, EventBus, & Google Calendar services
 │   ├── socket/                         # Socket.IO handlers (message, whiteboard, presence, retro, reaction)
-│   ├── tests/                          # Vitest API unit/integration tests
+│   ├── tests/                          # Vitest & automated database test suites
 │   └── server.js                       # Express application & Socket.IO server boot script
 ├── e2e/                                # Playwright E2E collaborative test suites
 │   ├── auth.spec.js
@@ -209,10 +212,10 @@ erDiagram
 ### Authentication Endpoints
 * `POST /api/auth/register` — creates user, hashes password, generates 2FA, and publishes `app/auth.registered`.
 * `POST /api/auth/login` — verifies password, updates 2FA verification code, and triggers `app/auth.login_code_requested`.
-* `POST /api/auth/verify` — validates the 6-digit verification code, issues a signed JWT, and returns the user profile.
+* `POST /api/auth/verify-login` — validates the 6-digit verification code, issues a signed JWT, and returns the user profile.
 
 ### Workspace Endpoints
-* `GET /api/workspaces` — returns workspace list (cached in Redis, 10s TTL).
+* `GET /api/workspaces` — returns workspace list (cached in Redis, 10s TTL, optimized task attributes).
 * `POST /api/workspaces` — creates a workspace and invalidates user workspace caches.
 * `PUT /api/workspaces/:id/members/:memberId` — updates a member's role and invalidates the role cache.
 
@@ -233,9 +236,9 @@ erDiagram
 ```text
 User → POST /api/auth/login → Generate Code → Publish app/auth.login_code_requested
                                                       │
-User ← Return Verification Screen ← Nodemailer SMTP Send Code
+User ← Return Verification Screen ← Nodemailer SMTP Send Code (or dev code 123456)
   │
-  └→ POST /api/auth/verify → Check TTL → Sign JWT → Login OK
+  └→ POST /api/auth/verify-login → Check TTL → Sign JWT → Login OK → Clear Auth State & Redirect
 ```
 
 ### 2. Task Completion & Notification Flow
@@ -267,7 +270,14 @@ User ← Refresh Client UI ← Create Notification ← Audit Log & Sync Google C
 
 ## 🔑 Environment Variables
 
-Create a `.env` file in the `server/` directory:
+### Client `.env` (`client/.env`):
+```bash
+VITE_BASE_URL=http://localhost:5001
+VITE_SERVER_URL=http://localhost:5001
+VITE_API_URL=http://localhost:5001
+```
+
+### Server `.env` (`server/.env`):
 ```bash
 PORT=5001
 DATABASE_URL="postgresql://user:pass@ep-fancy-union.neon.tech/neondb?sslmode=require"
@@ -289,7 +299,7 @@ SMTP_PASSWORD="your-app-password"
 ### Start Backend Gateway & Socket Server:
 ```bash
 cd server
-npm run dev
+npm start        # or npm run server (nodemon)
 ```
 
 ### Start Vite Frontend:
@@ -301,6 +311,7 @@ npm run dev
 ### Run Tests:
 ```bash
 cd server
+npm run db:test     # Automated database & health test suite
 npx vitest run      # Unit/integration test suite
 npx playwright test # End-to-end browser test suite
 ```

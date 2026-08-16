@@ -18,7 +18,7 @@ Welcome to the comprehensive technical architecture specification for **Syncro**
    - [3.8 Enterprise Multi-Tenant Seed Pipeline](#38-enterprise-multi-tenant-seed-pipeline)
 4. [Enterprise Cross-Cutting Concerns](#-enterprise-cross-cutting-concerns)
    - [4.1 AppError Hierarchy](#41-apperror-hierarchy)
-   - [4.2 Unified API Response Contract](#42-unified-api-response-contract)
+   - [4.2 Unified API Response Contract & Client Unwrapping](#42-unified-api-response-contract--client-unwrapping)
    - [4.3 Async Exception Isolation](#43-async-exception-isolation)
    - [4.4 Request Correlation Tracing & JSON Telemetry](#44-request-correlation-tracing--json-telemetry)
    - [4.5 DTO Request Validation Pipeline](#45-dto-request-validation-pipeline)
@@ -36,7 +36,7 @@ graph TD
     subgraph ClientLayer [Client Presentation Layer]
         ReactSPA[React 19 SPA Client] <--> ReduxStore[Redux Toolkit State Store]
         ReactSPA <--> SocketClient[Socket.IO Client Engine]
-        ReactSPA <--> ServiceWorker[Client Service Worker Cache]
+        ReactSPA <--> ServiceWorker[Client Service Worker Cache (GET Requests)]
     end
 
     subgraph RESTGateway [API Gateway & Server Pipeline]
@@ -82,7 +82,7 @@ The codebase adheres strictly to **Clean Hexagonal Architecture** and **Domain-D
 ```text
 server/
 ├── config/                 # Environment & Infrastructure configuration
-│   ├── prisma.js           # Prisma Client with $extends middleware
+│   ├── prisma.js           # Prisma Client with $extends middleware & findUnique soft-delete delegates
 │   ├── redis.js            # Upstash Redis & in-memory fallback client
 │   └── nodemailer.js       # SMTP Transporter instance
 ├── utils/                  # Cross-Cutting Infrastructure Utilities
@@ -96,6 +96,7 @@ server/
 ├── middlewares/            # Request Interceptor Middleware Pipeline
 │   ├── authMiddleware.js   # JWT authentication resolver
 │   ├── errorMiddleware.js  # Centralized global Express error handler
+│   ├── rateLimiter.js      # Environment-aware rate limiter middleware
 │   ├── requestIdMiddleware.js # Request correlation ID (x-request-id) tracing
 │   └── validate.js         # DTO request payload validation interceptor
 ├── validators/             # Domain DTO Validation Schemas
@@ -107,8 +108,8 @@ server/
 │   ├── eventBus.js         # Decoupled internal event emitter
 │   └── googleCalendarService.js # Google OAuth and calendar sync service
 ├── controllers/            # HTTP Presentation Controllers (Domain grouped)
-│   ├── auth/               # User registration, login, 2FA, profile
-│   ├── workspace/          # Workspace onboarding, memberships, invites
+│   ├── auth/               # User registration, login, 2FA, profile (with dev mode helpers)
+│   ├── workspace/          # Workspace onboarding, memberships, invites (optimized queries)
 │   ├── project/            # Project lifecycle, stages, members
 │   ├── task/               # Task management, dependencies, recurrence
 │   ├── chat/               # Channels, messages, direct messaging
@@ -192,8 +193,10 @@ model WorkspaceMember {
 In `server/config/prisma.js`, the base `PrismaClient` is enhanced with a transparent Prisma Client Extension layer (`$extends`):
 
 1. **Automated Soft-Delete Interceptor**:
-   Automatically intercepts `findMany`, `findFirst`, `findUnique`, `count`, `aggregate`, and `groupBy` operations on soft-deletable models (`User`, `Workspace`, `Project`, `Task`). Injects `where.deletedAt = null` by default unless explicitly overridden in the query.
-2. **Query Performance & Telemetry Diagnostics**:
+   Automatically intercepts `findMany`, `findFirst`, `findFirstOrThrow`, `count`, `aggregate`, and `groupBy` operations on soft-deletable models (`User`, `Workspace`, `Project`, `Task`). Injects `where.deletedAt = null` by default unless explicitly overridden in the query.
+2. **`findUnique` & `findUniqueOrThrow` Soft-Delete Delegate**:
+   Prisma Client strictly validates `where` input on `findUnique` queries and rejects non-unique filter keys such as `deletedAt`. The extension delegates `findUnique` and `findUniqueOrThrow` calls on soft-deletable models to `findFirst` / `findFirstOrThrow` with `deletedAt: null`, preserving transparent soft-delete filtering without triggering `PrismaClientValidationError`.
+3. **Query Performance & Telemetry Diagnostics**:
    Measures query execution duration using `performance.now()`. Automatically logs structured slow query warnings whenever an operation exceeds `150ms`.
 
 ```javascript
@@ -206,9 +209,26 @@ export const prisma = basePrisma.$extends({
 
         // 1. Soft-delete filter interceptor
         if (model && SOFT_DELETE_MODELS.has(model)) {
-          if (['findMany', 'findFirst', 'findUnique', 'count', 'aggregate', 'groupBy'].includes(operation)) {
-            args = args || {};
-            args.where = args.where || {};
+          args = args || {};
+          args.where = args.where || {};
+
+          if (operation === 'findUnique' || operation === 'findUniqueOrThrow') {
+            const modelName = model.charAt(0).toLowerCase() + model.slice(1);
+            const targetMethod = operation === 'findUnique' ? 'findFirst' : 'findFirstOrThrow';
+            const where = { ...args.where };
+            if (where.deletedAt === undefined) {
+              where.deletedAt = null;
+            }
+            const result = await basePrisma[modelName][targetMethod]({ ...args, where });
+            const duration = performance.now() - start;
+            if (duration >= SLOW_QUERY_THRESHOLD_MS) {
+              console.warn(`[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`);
+            }
+            return result;
+          }
+
+          const readOps = ['findMany', 'findFirst', 'findFirstOrThrow', 'count', 'aggregate', 'groupBy'];
+          if (readOps.includes(operation)) {
             if (args.where.deletedAt === undefined) {
               args.where.deletedAt = null;
             }
@@ -406,7 +426,7 @@ Operational exceptions extend the `AppError` base class (`server/utils/errors/ap
 
 ---
 
-### 4.2 Unified API Response Contract
+### 4.2 Unified API Response Contract & Client Unwrapping
 All HTTP controller endpoints emit a uniform JSON payload (`server/utils/response/apiResponse.js`):
 
 **Success Schema (200 / 201)**:
@@ -437,6 +457,8 @@ All HTTP controller endpoints emit a uniform JSON payload (`server/utils/respons
 }
 ```
 
+Client Redux slices and React Contexts unwrap responses safely (`const payload = data?.data || data`) to handle both wrapped and direct payloads seamlessly.
+
 ---
 
 ### 4.3 Async Exception Isolation
@@ -466,7 +488,7 @@ Syncro uses a dual event-processing system:
 
 The codebase includes two dedicated automated test suites:
 
-### 1. Clean Architecture Test Suite ([`server/tests/architecture.test.js`](file:///Users/piyush./Desktop/ProjectManagement-main/server/tests/architecture.test.js))
+### 1. Clean Architecture Test Suite ([`server/tests/architecture.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/architecture.test.js))
 Run Command: `node tests/architecture.test.js`
 Validates:
 - `AppError` inheritance and HTTP status code mappings.
@@ -477,11 +499,11 @@ Validates:
 
 **Result**: `15 Passed | 0 Failed`
 
-### 2. Database Infrastructure Test Suite ([`server/tests/database.test.js`](file:///Users/piyush./Desktop/ProjectManagement-main/server/tests/database.test.js))
+### 2. Database Infrastructure Test Suite ([`server/tests/database.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/database.test.js))
 Run Command: `npm run db:test`
 Validates:
 - Real-time `checkDatabaseHealth()` diagnostic ping (`SELECT 1`).
-- Soft-delete query interceptor filtering.
+- Soft-delete query interceptor filtering and `findUnique` delegate support.
 - Transaction engine rollback and error propagation.
 - L2 Redis read-through caching hits and misses.
 
