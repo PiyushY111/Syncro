@@ -1,5 +1,9 @@
-import { prisma } from "../config/prisma.js";
+import crypto from "crypto";
+import { basePrisma } from "../config/prisma.js";
 
+/**
+ * Creates a tamper-evident, append-only audit log record chained via SHA-256 hashes.
+ */
 export const logAuditEvent = async ({
     workspaceId,
     userId,
@@ -31,7 +35,25 @@ export const logAuditEvent = async ({
         const ip = ipAddress || req?.headers?.["x-forwarded-for"] || req?.socket?.remoteAddress || "127.0.0.1";
         const ua = userAgent || req?.headers?.["user-agent"] || "System";
 
-        const logEntry = await prisma.auditLog.create({
+        const details = {
+            previousState: previousState || {},
+            newState: newState || {},
+            ipAddress: ip,
+            userAgent: ua
+        };
+
+        // Fetch last audit log for this workspace to retrieve previous hash for cryptographic chaining
+        const lastLog = await basePrisma.auditLog.findFirst({
+            where: { workspaceId },
+            orderBy: { createdAt: "desc" },
+            select: { hash: true }
+        });
+
+        const prevHash = lastLog?.hash ?? "GENESIS";
+        const payloadString = `${prevHash}:${workspaceId}:${userId}:${action}:${entityType}:${entityId || ''}:${JSON.stringify(details)}`;
+        const hash = crypto.createHash("sha256").update(payloadString).digest("hex");
+
+        const logEntry = await basePrisma.auditLog.create({
             data: {
                 workspaceId,
                 userId,
@@ -40,12 +62,9 @@ export const logAuditEvent = async ({
                 entityType,
                 entityId,
                 entityName,
-                details: {
-                    previousState: previousState || {},
-                    newState: newState || {},
-                    ipAddress: ip,
-                    userAgent: ua
-                }
+                details,
+                prevHash,
+                hash
             }
         });
 

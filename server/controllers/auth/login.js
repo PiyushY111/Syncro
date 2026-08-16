@@ -1,55 +1,57 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../config/prisma.js';
 import { eventBus } from '../../services/eventBus.js';
+import { UnauthorizedError, BadRequestError } from '../../utils/errors/appError.js';
+import { ApiResponse } from '../../utils/response/apiResponse.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
+import { hashVerificationCode } from '../../utils/crypto.js';
 
-export const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  if (!email || !password) {
+    throw new BadRequestError('Email and password are required');
+  }
 
-        if (!email || !password) {
-            return res.status(400).json({ message: 'Email and password are required' });
-        }
+  const normalizedEmail = email.toLowerCase().trim();
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
-        const normalizedEmail = email.toLowerCase().trim();
-        const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+  if (!user || !user.passwordHash) {
+    throw new UnauthorizedError('Invalid email or password');
+  }
 
-        if (!user || !user.passwordHash) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
+  const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+  if (!isPasswordValid) {
+    throw new UnauthorizedError('Invalid email or password');
+  }
 
-        const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+  const isTester = normalizedEmail === 'google-tester@piyushydv.com';
+  const verificationCode = isTester ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
+  const hashedCode = hashVerificationCode(verificationCode);
+  const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid email or password' });
-        }
+  await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      twoFactorCode: hashedCode,
+      twoFactorExpires: expiresAt,
+    },
+  });
 
-        const isTester = normalizedEmail === 'google-tester@piyushydv.com';
-        const verificationCode = isTester ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
-        const expiresAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes expiration
+  eventBus
+    .publish('app/auth.login_code_requested', {
+      email: user.email,
+      verificationCode,
+      isTester,
+    })
+    .catch((err) => console.error('[login] Failed to publish login code event:', err));
 
-        await prisma.user.update({
-            where: { id: user.id },
-            data: {
-                twoFactorCode: verificationCode,
-                twoFactorExpires: expiresAt
-            }
-        });
+  return ApiResponse.success(res, {
+    data: {
+      requiresVerification: true,
+      email: user.email,
+    },
+    message: 'Verification code sent to your email',
+  });
+});
 
-        console.log(`[2FA Security Code Sent] User: ${user.email}${isTester ? ' (Bypassed with static code 123456)' : ''}`);
-
-        eventBus.publish('app/auth.login_code_requested', {
-            email: user.email,
-            verificationCode,
-            isTester
-        }).catch((err) => console.error('[login] Failed to publish login code event:', err));
-
-        return res.json({
-            requiresVerification: true,
-            email: user.email,
-            message: "Verification code sent to your email"
-        });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+export default login;

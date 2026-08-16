@@ -1,135 +1,123 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../config/prisma.js';
+import { NotFoundError, BadRequestError, UnauthorizedError } from '../../utils/errors/appError.js';
+import { ApiResponse } from '../../utils/response/apiResponse.js';
+import { asyncHandler } from '../../utils/asyncHandler.js';
 
-export const me = async (req, res) => {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: req.user.id },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                image: true,
-                googleCalendarSync: true,
-                googleCalendarEmail: true,
-                starredChannelIds: true,
-                createdAt: true,
-            },
-        });
+export const me = asyncHandler(async (req, res) => {
+  const user = await prisma.user.findUnique({
+    where: { id: req.user.id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      image: true,
+      googleCalendarSync: true,
+      googleCalendarEmail: true,
+      starredChannelIds: true,
+      createdAt: true,
+    },
+  });
 
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
 
-        return res.json({ user });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+  return ApiResponse.success(res, { data: { user } });
+});
 
-export const updateProfile = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { name, image } = req.body;
+export const updateProfile = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { name, image } = req.body;
 
-        if (!name?.trim()) {
-            return res.status(400).json({ message: 'Name is required' });
-        }
+  if (!name?.trim()) {
+    throw new BadRequestError('Name is required');
+  }
 
-        const user = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                name: name.trim(),
-                image: image ? image.trim() : "",
-            },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                image: true,
-                googleCalendarSync: true,
-                googleCalendarEmail: true,
-                starredChannelIds: true,
-                createdAt: true,
-            },
-        });
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: name.trim(),
+      image: image ? image.trim() : '',
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      image: true,
+      googleCalendarSync: true,
+      googleCalendarEmail: true,
+      starredChannelIds: true,
+      createdAt: true,
+    },
+  });
 
-        return res.json({ user, message: 'Profile updated successfully' });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+  return ApiResponse.success(res, {
+    data: { user },
+    message: 'Profile updated successfully',
+  });
+});
 
-export const updatePassword = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { currentPassword, newPassword } = req.body;
+export const updatePassword = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { currentPassword, newPassword } = req.body;
 
-        if (!currentPassword || !newPassword) {
-            return res.status(400).json({ message: 'Current and new passwords are required' });
-        }
+  if (!currentPassword || !newPassword) {
+    throw new BadRequestError('Current and new passwords are required');
+  }
 
-        if (newPassword.length < 6) {
-            return res.status(400).json({ message: 'New password must be at least 6 characters' });
-        }
+  if (newPassword.length < 6) {
+    throw new BadRequestError('New password must be at least 6 characters');
+  }
 
-        const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  if (!user || !user.passwordHash) {
+    throw new NotFoundError('User not found');
+  }
 
-        if (!user || !user.passwordHash) {
-            return res.status(404).json({ message: 'User not found' });
-        }
+  const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!isPasswordValid) {
+    throw new UnauthorizedError('Invalid current password');
+  }
 
-        const isPasswordValid = await bcrypt.compare(currentPassword, user.passwordHash);
+  const passwordHash = await bcrypt.hash(newPassword, 10);
+  await prisma.user.update({
+    where: { id: userId },
+    data: { passwordHash },
+  });
 
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid current password' });
-        }
+  return ApiResponse.success(res, { message: 'Password updated successfully' });
+});
 
-        const passwordHash = await bcrypt.hash(newPassword, 10);
+export const updateGoogleSync = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { googleCalendarSync, googleCalendarEmail, googleAccessToken, googleRefreshToken } = req.body;
 
-        await prisma.user.update({
-            where: { id: userId },
-            data: { passwordHash },
-        });
+  const user = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      googleCalendarSync: !!googleCalendarSync,
+      googleCalendarEmail: googleCalendarEmail !== undefined ? googleCalendarEmail?.trim() || null : undefined,
+      googleAccessToken: googleAccessToken !== undefined ? googleAccessToken || null : undefined,
+      googleRefreshToken: googleRefreshToken !== undefined ? googleRefreshToken || null : undefined,
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      image: true,
+      googleCalendarSync: true,
+      googleCalendarEmail: true,
+      googleAccessToken: true,
+      googleRefreshToken: true,
+      createdAt: true,
+    },
+  });
 
-        return res.json({ message: 'Password updated successfully' });
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+  return ApiResponse.success(res, {
+    data: { user },
+    message: 'Google Calendar sync updated successfully',
+  });
+});
 
-export const updateGoogleSync = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { googleCalendarSync, googleCalendarEmail, googleAccessToken, googleRefreshToken } = req.body;
-
-        const user = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                googleCalendarSync: !!googleCalendarSync,
-                googleCalendarEmail: googleCalendarEmail !== undefined ? (googleCalendarEmail?.trim() || null) : undefined,
-                googleAccessToken: googleAccessToken !== undefined ? (googleAccessToken || null) : undefined,
-                googleRefreshToken: googleRefreshToken !== undefined ? (googleRefreshToken || null) : undefined,
-            },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                image: true,
-                googleCalendarSync: true,
-                googleCalendarEmail: true,
-                googleAccessToken: true,
-                googleRefreshToken: true,
-                createdAt: true,
-            },
-        });
-
-        return res.json({ user, message: 'Google Calendar sync updated successfully' });
-    } catch (error) {
-        console.error('Error in updateGoogleSync:', error);
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+export default { me, updateProfile, updatePassword, updateGoogleSync };
