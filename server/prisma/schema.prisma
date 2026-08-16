@@ -1,6 +1,5 @@
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["driverAdapters"]
+    provider = "prisma-client-js"
 }
 
 datasource db {
@@ -41,7 +40,7 @@ enum Priority {
 model User {
     id           String   @id @default(uuid())
     name         String
-    email        String   @unique
+    email        String
     image        String   @default("")
     /// @encrypted
     passwordHash String?
@@ -80,12 +79,14 @@ model User {
     reactions          MessageReaction[]
     sprintCapacities   SprintCapacity[]
     retroItems         RetroItem[]
+
+    @@index([email])
 }
 
 model Workspace {
     id          String   @id @default(uuid())
     name        String
-    slug        String   @unique
+    slug        String
     description String?
     /// Workspace-specific settings stored as a JSON blob. Refer to validation schema in server codebase.
     settings    Json     @default("{}")
@@ -106,6 +107,7 @@ model Workspace {
     whiteboards Whiteboard[]
 
     @@index([ownerId])
+    @@index([slug])
 }
 
 model WorkspaceMember {
@@ -119,7 +121,7 @@ model WorkspaceMember {
     workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
     @@unique([userId, workspaceId])
-    @@index([workspaceId, userId])
+    @@index([workspaceId, userId, role])
     @@index([userId])
 }
 
@@ -153,8 +155,8 @@ model Project {
     sprints     Sprint[]
     epics       Epic[]
 
-    @@index([workspaceId])
-    @@index([team_lead])
+    @@index([workspaceId, status, deletedAt])
+    @@index([team_lead, deletedAt])
 }
 
 model ProjectMember {
@@ -254,13 +256,14 @@ model Task {
     epic           Epic?      @relation(fields: [epicId], references: [id], onDelete: SetNull)
 
     storyPoints    Int?
+    version        Int        @default(0)
 
-    @@index([projectId, status])
-    @@index([assigneeId, due_date])
+    @@index([projectId, deletedAt, status, priority])
+    @@index([assigneeId, deletedAt, due_date])
+    @@index([sprintId, deletedAt])
+    @@index([epicId, deletedAt])
     @@index([milestoneId])
     @@index([stageId])
-    @@index([sprintId])
-    @@index([epicId])
 }
 
 model Comment {
@@ -324,8 +327,8 @@ model Message {
     updatedAt   DateTime  @updatedAt
     reactions   MessageReaction[]
 
-    @@index([channelId, createdAt])
-    @@index([recipientId])
+    @@index([channelId, createdAt(sort: Desc), id])
+    @@index([recipientId, userId, createdAt(sort: Desc)])
     @@index([userId])
     @@index([parentId])
 }
@@ -436,7 +439,7 @@ model PortfolioProject {
     project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
     @@unique([portfolioId, projectId])
-    @@index([portfolioId, projectId])
+    @@index([portfolioId, order])
     @@index([projectId])
 }
 
@@ -467,7 +470,7 @@ model Notification {
 
     user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@index([userId, isRead])
+    @@index([userId, isRead, createdAt(sort: Desc)])
 }
 
 enum AuditAction {
@@ -508,12 +511,15 @@ model AuditLog {
     entityName  String?
     /// Audit log payload stored as a JSON blob. Refer to audit schema in server codebase.
     details     Json          @default("{}")
+    prevHash    String?
+    hash        String        @default("GENESIS")
     createdAt   DateTime      @default(now())
 
     workspace   Workspace     @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
     user        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-    @@index([workspaceId, createdAt])
+    @@index([workspaceId, createdAt(sort: Desc)])
+    @@index([entityType, entityId])
     @@index([userId])
 }
 
@@ -628,4 +634,27 @@ model RetroItem {
     voters   String[]    @default([])
 
     @@index([columnId])
+}
+
+model OutboxEvent {
+    id          String    @id @default(uuid())
+    eventType   String
+    payload     Json
+    status      String    @default("PENDING")
+    createdAt   DateTime  @default(now())
+    publishedAt DateTime?
+
+    @@index([status, createdAt])
+}
+
+model FailedJob {
+    id         String   @id @default(uuid())
+    jobId      String
+    eventName  String
+    payload    Json
+    error      String
+    failedAt   DateTime @default(now())
+    isResolved Boolean  @default(false)
+
+    @@index([isResolved, failedAt])
 }
