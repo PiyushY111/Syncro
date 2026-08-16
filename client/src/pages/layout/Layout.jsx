@@ -30,8 +30,12 @@ export default function Layout() {
                 name: workspaceName,
                 description: 'Default workspace for personal projects and tasks.',
             });
-            dispatch(addWorkspace(data.workspace));
-            dispatch(setCurrentWorkspace(data.workspace.id));
+            const payload = data?.data || data;
+            const newWorkspace = payload.workspace;
+            if (newWorkspace) {
+                dispatch(addWorkspace(newWorkspace));
+                dispatch(setCurrentWorkspace(newWorkspace.id));
+            }
             toast.success('Welcome! Your personal workspace is ready.');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to initialize workspace');

@@ -18,7 +18,8 @@ import {
 export const fetchWorkspaces = createAsyncThunk('workspace/fetchWorkspaces', async () => {
     try {
         const { data } = await api.get('/api/workspaces');
-        return data.workspaces || [];
+        const payload = data?.data || data;
+        return payload.workspaces || [];
     } catch (error) {
         console.log(error?.response?.data?.message || error.message);
         return [];
@@ -36,14 +37,19 @@ const workspaceSlice = createSlice({
     initialState,
     reducers: {
         setWorkspaces: (state, action) => {
-            state.workspaces = action.payload;
+            state.workspaces = action.payload || [];
         },
         setCurrentWorkspace: (state, action) => {
+            if (!action.payload) return;
             localStorage.setItem("currentWorkspaceId", action.payload);
-            state.currentWorkspace = state.workspaces.find((w) => w.id === action.payload);
+            state.currentWorkspace = state.workspaces.find((w) => w.id === action.payload) || null;
         },
         addWorkspace: (state, action) => {
-            state.workspaces.push(action.payload);
+            if (!action.payload) return;
+            const exists = state.workspaces.some((w) => w?.id === action.payload.id);
+            if (!exists) {
+                state.workspaces.push(action.payload);
+            }
             if (state.currentWorkspace?.id !== action.payload.id) {
                 state.currentWorkspace = action.payload;
             }

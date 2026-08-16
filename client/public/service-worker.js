@@ -37,8 +37,11 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Caching API requests for offline fallback
+  // Caching API GET requests for offline fallback
   if (url.pathname.startsWith('/api/')) {
+    if (request.method !== 'GET') {
+      return;
+    }
     event.respondWith(
       fetch(request)
         .then((response) => {

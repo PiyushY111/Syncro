@@ -29,6 +29,10 @@ export const login = asyncHandler(async (req, res) => {
   const hashedCode = hashVerificationCode(verificationCode);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[DEV 2FA CODE] User: ${user.email} | Verification Code: ${verificationCode}`);
+  }
+
   await prisma.user.update({
     where: { id: user.id },
     data: {

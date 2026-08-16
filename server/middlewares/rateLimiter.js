@@ -44,14 +44,16 @@ export const createRateLimiter = (options = {}) => {
   };
 };
 
+const isDev = process.env.NODE_ENV !== 'production';
+
 export const authLimiter = createRateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  maxAttempts: 5,
+  maxAttempts: isDev ? 100 : 5,
   prefix: 'auth:limiter:strict:',
 });
 
 export const apiLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
-  maxAttempts: 100,
+  maxAttempts: isDev ? 1000 : 100,
   prefix: 'api:limiter:general:',
 });

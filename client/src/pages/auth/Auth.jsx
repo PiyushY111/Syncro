@@ -22,15 +22,19 @@ export default function AuthPage() {
     const [redirectMessage, setRedirectMessage] = useState('');
 
     useEffect(() => {
-        if (!loading && user && !redirectMessage && !verificationEmail) {
+        if (!loading && user && !redirectMessage) {
+            setVerificationEmail('');
             navigate(nextPath, { replace: true });
         }
-    }, [loading, user, navigate, nextPath, redirectMessage, verificationEmail]);
+    }, [loading, user, navigate, nextPath, redirectMessage]);
 
     useEffect(() => {
         if (!redirectMessage) return undefined;
 
-        const timer = window.setTimeout(() => navigate(nextPath, { replace: true }), 1400);
+        const timer = window.setTimeout(() => {
+            setVerificationEmail('');
+            navigate(nextPath, { replace: true });
+        }, 1400);
         return () => window.clearTimeout(timer);
     }, [redirectMessage, navigate, nextPath]);
 
@@ -73,6 +77,7 @@ export default function AuthPage() {
         setIsSubmitting(true);
         try {
             await verifyLoginCode(verificationEmail, verificationCode.trim());
+            setVerificationEmail('');
             showRedirectPopup('You’re verified! Taking you to your workspace.');
         } catch (error) {
             toast.error(error.response?.data?.message || error.message);

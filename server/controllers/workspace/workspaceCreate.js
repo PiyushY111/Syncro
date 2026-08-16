@@ -75,7 +75,19 @@ export const getUserWorkspaces = asyncHandler(async (req, res) => {
               members: { include: { user: true } },
               projects: {
                 include: {
-                  tasks: { include: { assignee: true, comments: { include: { user: true } }, dependencies: true, blockedTasks: true } },
+                  tasks: {
+                    select: {
+                      id: true,
+                      title: true,
+                      status: true,
+                      priority: true,
+                      type: true,
+                      due_date: true,
+                      assigneeId: true,
+                      assignee: true,
+                      projectId: true,
+                    },
+                  },
                   members: { include: { user: true } },
                   sprints: { include: { capacities: { include: { user: true } } } },
                   epics: true,

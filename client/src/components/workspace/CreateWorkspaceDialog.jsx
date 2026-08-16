@@ -28,8 +28,12 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
 
         try {
             const { data } = await api.post('/api/workspaces', formData);
-            dispatch(addWorkspace(data.workspace));
-            dispatch(setCurrentWorkspace(data.workspace.id));
+            const payload = data?.data || data;
+            const newWorkspace = payload.workspace;
+            if (newWorkspace) {
+                dispatch(addWorkspace(newWorkspace));
+                dispatch(setCurrentWorkspace(newWorkspace.id));
+            }
             toast.success('Workspace created successfully');
             setIsDialogOpen(false);
             setFormData({ name: '', description: '', image_url: '' });

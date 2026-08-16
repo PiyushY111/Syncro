@@ -44,8 +44,9 @@ export const AuthProvider = ({ children }) => {
 
             try {
                 const { data } = await api.get('/api/auth/me');
-                setUser(data.user);
-                persistSession(token, data.user);
+                const payload = data?.data || data;
+                setUser(payload.user);
+                persistSession(token, payload.user);
             } catch {
                 clearSession();
                 setToken('');
@@ -66,32 +67,35 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (credentials) => {
         const { data } = await api.post('/api/auth/login', credentials);
-        if (data.requiresVerification) {
+        const payload = data?.data || data;
+        if (payload?.requiresVerification) {
             clearSession();
             setToken('');
             setUser(null);
-            return data;
+            return payload;
         }
-        syncSession(data.token, data.user);
-        return data;
+        syncSession(payload.token, payload.user);
+        return payload;
     };
 
     const verifyLoginCode = async (email, code) => {
         const { data } = await api.post('/api/auth/verify-login', { email, code });
-        syncSession(data.token, data.user);
-        return data.user;
+        const payload = data?.data || data;
+        syncSession(payload.token, payload.user);
+        return payload.user;
     };
 
-    const register = async (payload) => {
-        const { data } = await api.post('/api/auth/register', payload);
-        if (data.requiresVerification) {
+    const register = async (payloadData) => {
+        const { data } = await api.post('/api/auth/register', payloadData);
+        const payload = data?.data || data;
+        if (payload?.requiresVerification) {
             clearSession();
             setToken('');
             setUser(null);
-            return data;
+            return payload;
         }
-        syncSession(data.token, data.user);
-        return data;
+        syncSession(payload.token, payload.user);
+        return payload;
     };
 
     const logout = () => {
