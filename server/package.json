@@ -6,7 +6,17 @@
   "scripts": {
     "postinstall": "npx prisma generate",
     "start": "prisma generate && node server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "test": "node tests/runAllTests.js",
+    "test:security": "node tests/security.test.js",
+    "test:concurrency": "node tests/concurrency.test.js",
+    "db:seed": "node prisma/seed.js",
+    "db:push": "npx prisma db push",
+    "db:validate": "npx prisma validate",
+    "db:test": "node tests/database.test.js"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
   },
   "keywords": [],
   "author": "",

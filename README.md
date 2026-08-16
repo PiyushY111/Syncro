@@ -67,17 +67,21 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Redux Toolkit** — deterministic client-side global state store.
 * **Socket.io-client** — WebSocket client connection wrapper for real-time canvas, presence, and chat.
 
-### Backend & Event Engine
+### Backend, Event Engine & Enterprise Infrastructure
 * **Express 5** — REST API gateway router.
 * **Socket.IO Real-Time Engine** — modular WebSocket event handlers for Chat, Whiteboards, Retrospectives, Member Presence, and Emoji Reactions.
-* **Internal EventBus** — decoupled EventEmitter service dispatching async actions to background workers.
-* **Prisma ORM** — type-safe PostgreSQL client mapping.
-* **PostgreSQL (Neon)** — serverless relational database engine.
+* **Clean Hexagonal Architecture** — strict layer separation with `AppError` Operational Error hierarchy (`BadRequestError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `ValidationError`), `asyncHandler` controller isolation, and unified `ApiResponse` schema (`{ success, data, message }` / `{ success, error }`).
+* **Prisma ORM ($extends)** — type-safe PostgreSQL ORM configured with client extensions (`$extends`) for transparent soft-delete query interceptors (`deletedAt: null`), query telemetry tracking, and slow query alerts (>150ms).
+* **Enterprise DB Service (`dbService.js`)** — transaction engine with exponential backoff retries for transient deadlocks (`40001`/`40P01`), low-overhead database health diagnostic probe (`SELECT 1`), and L2 Redis read-through caching.
+* **Request Correlation & Structured Logger** — `x-request-id` header tracking for distributed transaction tracing paired with a high-performance structured JSON telemetry logger.
+* **PostgreSQL (Neon)** — serverless relational database engine with composite multi-column indexing.
 * **Upstash Redis** — REST-based Redis client for caching and rate limiting.
 * **Inngest** — distributed background serverless queues and event crons categorized by domain (Core, Tasks, Projects, Collab).
 * **Nodemailer** — SMTP transactional email transporter.
 
-### Testing
+### Testing & Verification
+* **Enterprise Architecture Test Suite (`tests/architecture.test.js`)** — automated test suite validating AppError hierarchy, ApiResponse schemas, asyncHandler, and DTO validators (15 passed tests).
+* **Database Infrastructure Test Suite (`tests/database.test.js`)** — automated test suite verifying DB connection health probes, transaction retries, soft-delete rules, and L2 cache logic (7 passed tests).
 * **Vitest** — API unit and integration test runner.
 * **Playwright** — End-to-end multi-browser user flow testing suite.
 

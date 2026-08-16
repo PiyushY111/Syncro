@@ -222,9 +222,13 @@ server/
 │       └── taskUpdateJobs.js  # Task dependency check & status sync jobs
 ├── middlewares/               # Express routing middlewares
 │   ├── authMiddleware.js      # JWT authentication resolver middleware
-│   └── projectAccessCheck.js  # Project membership confirmation middleware
-├── prisma/                    # Relational schema configuration
-│   └── schema.prisma          # Prisma PostgreSQL data models
+│   ├── errorMiddleware.js     # Centralized global Express error handler middleware
+│   ├── projectAccessCheck.js  # Project membership confirmation middleware
+│   ├── requestIdMiddleware.js # Request correlation ID (x-request-id) tracing middleware
+│   └── validate.js            # Generic DTO request payload validation middleware
+├── prisma/                    # Relational schema & database seed configuration
+│   ├── schema.prisma          # Prisma PostgreSQL multi-column composite indexed data models
+│   └── seed.js                # Enterprise multi-tenant database seed data generator
 ├── routes/                    # Express routing maps (18 domain routes)
 │   ├── auditRoutes.js         # /api/audit routes (logs, rollbacks, purge)
 │   ├── authRoutes.js          # /api/auth routes (registration, logins, verification)
@@ -244,8 +248,10 @@ server/
 │   ├── taskRoutes.js          # /api/tasks routes (task card configurations)
 │   ├── whiteboardRoutes.js    # /api/whiteboards routes (creating, updating canvases)
 │   └── workspaceRoutes.js     # /api/workspaces routes (invitations, join controls)
-├── services/                  # Core application services
+├── services/                  # Core application services & Database repositories
 │   ├── auditLogger.js         # Centralized database audit log recorder service
+│   ├── db/                    # Enterprise database service layer
+│   │   └── dbService.js       # Transaction engine, health probes, soft delete, L2 cache wrapper
 │   ├── eventBus.js            # Internal decoupled event emitter for background tasks
 │   └── googleCalendarService.js # Google OAuth and calendar sync helper service
 ├── socket/                    # Socket.IO real-time event handlers
@@ -256,13 +262,25 @@ server/
 │   ├── socketAuthMiddleware.js# WebSocket JWT connection authentication
 │   ├── socketInit.js          # Socket.IO server setup & handler router
 │   └── whiteboardHandler.js   # Real-time vector whiteboard & cursor position broadcast
-├── tests/                     # API Unit & Integration tests (Vitest)
+├── tests/                     # Automated Test Suites
+│   ├── architecture.test.js   # Enterprise AppError, ApiResponse, DTO validation tests
 │   ├── auth.test.js           # Authentication & 2FA endpoint tests
 │   ├── chat.test.js           # Messaging & channel endpoint tests
+│   ├── database.test.js       # DB connection health, transaction retries, soft delete tests
 │   ├── inbox.test.js          # Inbox notification tests
 │   ├── permissions.test.js    # Role matrix & permission enforcement tests
 │   ├── redis.test.js          # Redis caching & versioning tests
 │   └── workspace.test.js      # Workspace management & onboarding tests
+├── utils/                     # Enterprise cross-cutting utilities
+│   ├── errors/                # Operational Error Class Hierarchy
+│   │   └── appError.js        # AppError base class & status-code-specific subclasses
+│   ├── logger/                # Structured Telemetry Logger
+│   │   └── logger.js          # Production JSON logger with request correlation IDs
+│   ├── response/              # Unified API Response Formatter
+│   │   └── apiResponse.js     # Standardized ApiResponse success/error payload contract
+│   └── asyncHandler.js        # Async controller wrapper for exception isolation
+├── validators/                # Request DTO Validation Schemas
+│   └── authValidators.js      # Input validation functions for Auth requests
 ├── server.js                  # Express application listener & Socket.IO boot entry point
 └── vercel.json                # Serverless deployment configuration details
 ```
