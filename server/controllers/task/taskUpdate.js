@@ -77,10 +77,17 @@ export const updateTask = async (req, res) => {
             }
         }
 
+        const expectedVersion = req.body.expectedVersion !== undefined ? Number(req.body.expectedVersion) : undefined;
+        if (expectedVersion !== undefined && task.version !== expectedVersion) {
+            return res.status(409).json({ message: "Conflict: Task was modified by another user. Please refresh and try again." });
+        }
+
         const updateData = { ...req.body };
         delete updateData.dependenciesIds;
+        delete updateData.expectedVersion;
         if (updateData.due_date) updateData.due_date = new Date(updateData.due_date);
         if (updateData.start_date) updateData.start_date = new Date(updateData.start_date);
+        updateData.version = { increment: 1 };
 
         if (dependenciesIds) {
             updateData.dependencies = {

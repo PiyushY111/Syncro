@@ -34,7 +34,20 @@ import whiteboardRouter from './routes/whiteboardRoutes.js'
 import sprintRouter from './routes/sprintRoutes.js'
 import epicRouter from './routes/epicRoutes.js'
 import retroRouter from './routes/retroRoutes.js'
+import { checkDatabaseHealth } from './services/db/dbService.js'
+import { basePrisma } from './config/prisma.js'
+import cookieParser from 'cookie-parser'
+import { requestIdMiddleware } from './middlewares/requestIdMiddleware.js'
+import { errorMiddleware } from './middlewares/errorMiddleware.js'
+import { metricsMiddleware, getPrometheusMetrics } from './middlewares/metricsMiddleware.js'
+import { configureSecurityHeaders } from './middlewares/securityHeaders.js'
+import { sanitizeRequestBody } from './middlewares/sanitize.js'
+
 const app = express()
+
+// 1. Configure Helmet Security Headers (CSP, HSTS, X-Frame-Options, XSS Filter)
+app.use(configureSecurityHeaders())
+app.use(cookieParser())
 
 const allowedOrigins = [
   ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(url => url.trim().replace(/\/$/, '')) : []),
@@ -63,13 +76,19 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Workspace-ID'],
 };
 
 app.use(cors(corsOptions));
 app.options(/(.*)/, cors(corsOptions));
 
-app.use(express.json());
+// 2. Strict Payload Limits & Server-Side XSS Input Sanitization
+app.use(express.json({ limit: '100kb' }));
+app.use(sanitizeRequestBody);
+app.use(requestIdMiddleware);
+app.use(metricsMiddleware);
+
+app.get('/metrics', getPrometheusMetrics);
 
 app.use('/api/inngest', serve({ client: inngest, functions }));
 app.use('/api/auth', authRouter);
@@ -95,23 +114,29 @@ app.use('/api/retros', protect, retroRouter);
 
 app.get('/', (req, res) => res.json({ message: "Server is live", status: "OK" }));
 
-app.get(['/health', '/api/ping'], (req, res) => {
-    res.status(200).json({
-        status: "OK",
-        message: "Server is healthy and active",
+app.get(['/health', '/api/ping'], async (req, res) => {
+    const dbHealth = await checkDatabaseHealth();
+    const isHealthy = dbHealth.status === 'HEALTHY';
+
+    res.status(isHealthy ? 200 : 503).json({
+        status: isHealthy ? "OK" : "DEGRADED",
+        message: isHealthy ? "Server and Database operational" : "Database connectivity issue detected",
         timestamp: new Date().toISOString(),
-        uptime: process.uptime()
+        uptime: process.uptime(),
+        database: {
+            status: dbHealth.status,
+            latencyMs: dbHealth.latencyMs,
+        }
     });
 });
 
-// Global Express Error Middleware
-app.use((err, req, res, next) => {
-    console.error('[EXPRESS ERROR]', err);
-    res.status(err.status || 500).json({
-        message: err.message || 'Internal Server Error',
-        error: process.env.NODE_ENV === 'development' ? err : undefined
-    });
+app.get('/api/health/detailed', protect, async (req, res) => {
+    const dbHealth = await checkDatabaseHealth();
+    res.status(dbHealth.status === 'HEALTHY' ? 200 : 503).json(dbHealth);
 });
+
+// Global Centralized Express Error Middleware
+app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 5000;
 
@@ -137,3 +162,18 @@ httpServer.listen(PORT, () => {
         console.log(`[Keep-Alive Service] Active. Self-pinging ${keepAliveUrl}/health every 10 minutes.`);
     }
 });
+
+// Graceful Shutdown Handler for Zero-Downtime Connection Cleanup
+const gracefulShutdown = async (signal) => {
+    console.log(`[SERVER SHUTDOWN] Received ${signal}. Draining database connections cleanly...`);
+    try {
+        await basePrisma.$disconnect();
+        console.log('[SERVER SHUTDOWN] Database connections closed successfully.');
+    } catch (err) {
+        console.error('[SERVER SHUTDOWN ERROR]', err);
+    }
+    process.exit(0);
+};
+
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));

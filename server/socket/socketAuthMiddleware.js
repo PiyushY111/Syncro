@@ -14,6 +14,14 @@ export const socketAuthMiddleware = async (socket, next) => {
         const secret = process.env.JWT_SECRET || "change_this_to_a_long_random_secret";
         const decoded = jwt.verify(token, secret);
 
+        if (decoded.jti) {
+            const { redisCache } = await import("../config/redis.js");
+            const isRevoked = await redisCache.get(`revoked:${decoded.jti}`);
+            if (isRevoked) {
+                return next(new Error("Authentication error: Token has been revoked"));
+            }
+        }
+
         const user = await prisma.user.findUnique({
             where: { id: decoded.userId || decoded.id },
             select: { id: true, name: true, email: true, image: true }

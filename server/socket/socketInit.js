@@ -26,6 +26,9 @@ export const initSocketIO = (httpServer) => {
     ioInstance.on("connection", (socket) => {
         console.log(`[SOCKET CONNECTED] User: ${socket.user.name} (${socket.user.id})`);
 
+        // Join individual user room for cross-instance direct targeting
+        socket.join(`user:${socket.user.id}`);
+
         registerPresenceHandlers(ioInstance, socket);
         registerMessageHandlers(ioInstance, socket);
         registerReactionHandlers(ioInstance, socket);
