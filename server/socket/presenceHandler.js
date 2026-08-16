@@ -1,10 +1,36 @@
+import { prisma } from "../config/prisma.js";
 import { redisCache } from "../config/redis.js";
 
 export const registerPresenceHandlers = (io, socket) => {
     const userId = socket.user.id;
 
     redisCache.set(`presence:${userId}`, JSON.stringify({ status: "online", lastSeen: Date.now() }), 300);
-    io.emit("presence:update", { userId, status: "online" });
+
+    // Auto-join workspace rooms and emit presence updates scoped to shared workspace members
+    let userWorkspaceIds = [];
+    (async () => {
+        try {
+            const memberWorkspaces = await prisma.workspaceMember.findMany({
+                where: { userId },
+                select: { workspaceId: true }
+            });
+            const ownedWorkspaces = await prisma.workspace.findMany({
+                where: { ownerId: userId },
+                select: { id: true }
+            });
+            userWorkspaceIds = [...new Set([
+                ...memberWorkspaces.map(w => w.workspaceId),
+                ...ownedWorkspaces.map(w => w.id)
+            ])];
+
+            userWorkspaceIds.forEach(wsId => {
+                socket.join(`workspace:${wsId}`);
+                io.to(`workspace:${wsId}`).emit("presence:update", { userId, status: "online" });
+            });
+        } catch (err) {
+            console.error("Error auto-joining socket workspace rooms:", err);
+        }
+    })();
 
     socket.on("typing:start", ({ channelId, recipientId }) => {
         if (channelId) {
@@ -24,6 +50,8 @@ export const registerPresenceHandlers = (io, socket) => {
 
     socket.on("disconnect", () => {
         redisCache.del(`presence:${userId}`);
-        io.emit("presence:update", { userId, status: "offline" });
+        userWorkspaceIds.forEach(wsId => {
+            io.to(`workspace:${wsId}`).emit("presence:update", { userId, status: "offline" });
+        });
     });
 };

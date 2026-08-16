@@ -5,7 +5,8 @@ export const getAuditLogs = async (req, res) => {
     try {
         const userId = req.user.id;
         const { workspaceId } = req.params;
-        const { entityType, severity, search, page = 1, limit = 50 } = req.query;
+        const { entityType, severity, search, page, cursor, limit = 50 } = req.query;
+        const take = Math.min(parseInt(limit) || 50, 100);
 
         const { role, isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
         if (!workspace) return res.status(404).json({ message: "Workspace not found" });
@@ -25,24 +26,34 @@ export const getAuditLogs = async (req, res) => {
             ];
         }
 
-        const take = parseInt(limit);
-        const skip = (parseInt(page) - 1) * take;
+        const queryOptions = {
+            where: whereClause,
+            include: { user: { select: { id: true, name: true, email: true, image: true } } },
+            orderBy: { createdAt: "desc" },
+            take: take + 1
+        };
 
-        const [logs, total] = await Promise.all([
-            prisma.auditLog.findMany({
-                where: whereClause,
-                include: { user: { select: { id: true, name: true, email: true, image: true } } },
-                orderBy: { createdAt: "desc" },
-                skip,
-                take
-            }),
+        if (cursor) {
+            queryOptions.cursor = { id: cursor };
+            queryOptions.skip = 1;
+        } else if (page) {
+            queryOptions.skip = (parseInt(page) - 1) * take;
+        }
+
+        const [rawLogs, total] = await Promise.all([
+            prisma.auditLog.findMany(queryOptions),
             prisma.auditLog.count({ where: whereClause })
         ]);
+
+        const hasNextPage = rawLogs.length > take;
+        const logs = hasNextPage ? rawLogs.slice(0, take) : rawLogs;
+        const nextCursor = hasNextPage ? logs[logs.length - 1]?.id || null : null;
 
         return res.status(200).json({
             logs,
             total,
-            page: parseInt(page),
+            nextCursor,
+            page: page ? parseInt(page) : 1,
             totalPages: Math.ceil(total / take),
             isOwner,
             userRole: role

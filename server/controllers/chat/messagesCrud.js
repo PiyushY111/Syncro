@@ -3,6 +3,7 @@ import { prisma } from '../../config/prisma.js';
 import { eventBus } from '../../services/eventBus.js';
 import { redisCache } from '../../config/redis.js';
 import { getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
+import { invalidateChannelMessageCache } from './getMessages.js';
 
 export const sendMessage = async (req, res) => {
     try {
@@ -72,6 +73,10 @@ export const sendMessage = async (req, res) => {
             }
         });
 
+        if (channelId) {
+            await invalidateChannelMessageCache(channelId);
+        }
+
         await eventBus.publish('app/chat.message_sent', {
             message,
             channelId: channelId || null,
@@ -118,6 +123,10 @@ export const pinMessage = async (req, res) => {
             data: { isPinned: !message.isPinned, pinnedAt: !message.isPinned ? new Date() : null },
             include: { user: { select: { id: true, name: true, image: true } } }
         });
+
+        if (message.channelId) {
+            await invalidateChannelMessageCache(message.channelId);
+        }
 
         return res.json({ message: updated, isPinned: updated.isPinned });
     } catch (err) {
@@ -168,6 +177,10 @@ export const deleteMessage = async (req, res) => {
         if (message.userId !== userId) return res.status(403).json({ message: "Can only delete your own message" });
 
         await prisma.message.delete({ where: { id: messageId } });
+
+        if (message.channelId) {
+            await invalidateChannelMessageCache(message.channelId);
+        }
 
         await eventBus.publish('app/chat.message_deleted', {
             messageId,

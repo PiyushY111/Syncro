@@ -51,6 +51,13 @@ const COOKIE_OPTIONS = {
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
+const ACCESS_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'strict',
+  maxAge: 15 * 60 * 1000, // 15 minutes
+};
+
 export const verifyLogin = asyncHandler(async (req, res) => {
   const { email, code } = req.body;
   if (!email || !code) {
@@ -113,6 +120,7 @@ export const verifyLogin = asyncHandler(async (req, res) => {
   const { token: accessToken } = createAccessToken(updatedUser);
   const { refreshToken } = createRefreshToken(updatedUser);
 
+  res.cookie('syncro_access_token', accessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('syncro_refresh_token', refreshToken, COOKIE_OPTIONS);
 
   return ApiResponse.success(res, {
@@ -187,6 +195,7 @@ export const refreshSession = asyncHandler(async (req, res) => {
   const { token: newAccessToken } = createAccessToken(user);
   const { refreshToken: newRefreshToken } = createRefreshToken(user);
 
+  res.cookie('syncro_access_token', newAccessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('syncro_refresh_token', newRefreshToken, COOKIE_OPTIONS);
 
   return ApiResponse.success(res, {
@@ -209,6 +218,7 @@ export const logoutSession = asyncHandler(async (req, res) => {
     } catch {}
   }
 
+  res.clearCookie('syncro_access_token', ACCESS_COOKIE_OPTIONS);
   res.clearCookie('syncro_refresh_token', COOKIE_OPTIONS);
   return ApiResponse.success(res, { message: 'Logged out successfully' });
 });

@@ -1,6 +1,17 @@
 import { prisma } from "../../config/prisma.js";
 import { redisCache } from "../../config/redis.js";
 
+export const invalidateChannelMessageCache = async (channelId) => {
+    if (!channelId) return;
+    try {
+        await redisCache.del(`messages:${channelId}`);
+        const versionKey = `channel:${channelId}:version`;
+        await redisCache.incr(versionKey);
+    } catch (e) {
+        console.warn("[CHAT CACHE INVALIDATION ERROR]", e.message);
+    }
+};
+
 export const getChannelMessages = async (req, res) => {
     try {
         const userId = req.user.id;
@@ -27,8 +38,15 @@ export const getChannelMessages = async (req, res) => {
             return res.status(403).json({ message: "Access restricted" });
         }
 
-        // Cache check AFTER authorization
-        const cacheKey = `messages:${channelId}`;
+        // Version-based cache key lookup to prevent stale message cache
+        const versionKey = `channel:${channelId}:version`;
+        let version = await redisCache.get(versionKey);
+        if (!version) {
+            version = "1";
+            await redisCache.set(versionKey, version, 86400 * 30);
+        }
+
+        const cacheKey = `messages:${channelId}:v${version}`;
         const cachedMessages = await redisCache.get(cacheKey);
 
         if (cachedMessages) {

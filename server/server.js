@@ -165,14 +165,23 @@ httpServer.listen(PORT, () => {
 
 // Graceful Shutdown Handler for Zero-Downtime Connection Cleanup
 const gracefulShutdown = async (signal) => {
-    console.log(`[SERVER SHUTDOWN] Received ${signal}. Draining database connections cleanly...`);
-    try {
-        await basePrisma.$disconnect();
-        console.log('[SERVER SHUTDOWN] Database connections closed successfully.');
-    } catch (err) {
-        console.error('[SERVER SHUTDOWN ERROR]', err);
-    }
-    process.exit(0);
+    console.log(`[SERVER SHUTDOWN] Received ${signal}. Draining in-flight HTTP requests & database connections cleanly...`);
+    httpServer.close(async () => {
+        console.log('[SERVER SHUTDOWN] HTTP server stopped accepting new connections.');
+        try {
+            await basePrisma.$disconnect();
+            console.log('[SERVER SHUTDOWN] Database connections closed successfully.');
+        } catch (err) {
+            console.error('[SERVER SHUTDOWN ERROR]', err);
+        }
+        process.exit(0);
+    });
+
+    // Forceful exit fallback after 10 seconds timeout
+    setTimeout(() => {
+        console.error('[SERVER SHUTDOWN TIMEOUT] Forcefully terminating process after 10s.');
+        process.exit(1);
+    }, 10000);
 };
 
 process.on('SIGINT', () => gracefulShutdown('SIGINT'));

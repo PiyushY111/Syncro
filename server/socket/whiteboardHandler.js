@@ -1,3 +1,5 @@
+const lastCursorEmits = new Map();
+
 export const registerWhiteboardHandlers = (io, socket) => {
     // Join whiteboard room
     socket.on("whiteboard:join", (whiteboardId) => {
@@ -25,9 +27,14 @@ export const registerWhiteboardHandlers = (io, socket) => {
         }
     });
 
-    // Sync cursor positions
+    // Sync cursor positions with 30fps (~33ms cap) rate throttling per socket connection
     socket.on("whiteboard:cursor", ({ whiteboardId, x, y }) => {
         if (whiteboardId) {
+            const now = Date.now();
+            const lastEmit = lastCursorEmits.get(socket.id) || 0;
+            if (now - lastEmit < 33) return;
+            lastCursorEmits.set(socket.id, now);
+
             socket.to(`whiteboard:${whiteboardId}`).emit("whiteboard:cursor_moved", {
                 userId: socket.user.id,
                 userName: socket.user.name,
@@ -36,5 +43,9 @@ export const registerWhiteboardHandlers = (io, socket) => {
                 y
             });
         }
+    });
+
+    socket.on("disconnect", () => {
+        lastCursorEmits.delete(socket.id);
     });
 };

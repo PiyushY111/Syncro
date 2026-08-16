@@ -8,7 +8,9 @@ import { UnauthorizedError } from '../utils/errors/appError.js';
 export const protect = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization || '';
-    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    const headerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+    const cookieToken = req.cookies?.syncro_access_token;
+    const token = headerToken || cookieToken;
 
     if (!token) {
       throw new UnauthorizedError('Access token required');
