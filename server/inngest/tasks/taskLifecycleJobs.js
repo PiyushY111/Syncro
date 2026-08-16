@@ -3,7 +3,7 @@ import { prisma } from '../../config/prisma.js';
 import sendEmail from '../../config/nodemailer.js';
 
 export const taskCreatedJob = inngest.createFunction(
-    { id: 'task-created', event: 'app/task.created' },
+    { id: 'task-created', event: 'app/task.created', idempotency: 'event.data.task.id' },
     async ({ event, step }) => {
         const { task, origin, auditContext } = event.data;
 
@@ -88,7 +88,7 @@ export const taskCreatedJob = inngest.createFunction(
 );
 
 export const taskDeletedJob = inngest.createFunction(
-    { id: 'task-deleted', event: 'app/task.deleted' },
+    { id: 'task-deleted', event: 'app/task.deleted', idempotency: 'event.data.task.id' },
     async ({ event, step }) => {
         const { task, auditContext } = event.data;
 

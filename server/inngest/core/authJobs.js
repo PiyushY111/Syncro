@@ -36,7 +36,7 @@ export const auditLogJob = inngest.createFunction(
 );
 
 export const authRegisteredJob = inngest.createFunction(
-    { id: 'auth-registered', event: 'app/auth.registered' },
+    { id: 'auth-registered', event: 'app/auth.registered', idempotency: 'event.data.email + ":" + event.data.verificationCode' },
     async ({ event, step }) => {
         const { email, verificationCode, isTester } = event.data;
         if (isTester) return;
@@ -61,7 +61,7 @@ export const authRegisteredJob = inngest.createFunction(
 );
 
 export const authLoginCodeJob = inngest.createFunction(
-    { id: 'auth-login-code', event: 'app/auth.login_code_requested' },
+    { id: 'auth-login-code', event: 'app/auth.login_code_requested', idempotency: 'event.data.email + ":" + event.data.verificationCode' },
     async ({ event, step }) => {
         const { email, verificationCode, isTester } = event.data;
         if (isTester) return;

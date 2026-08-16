@@ -47,6 +47,31 @@ export const redisCache = {
             return 1;
         }
     },
+    setNx: async (key, value, exSeconds = 10) => {
+        try {
+            if (redisClient) {
+                const res = await redisClient.set(key, value, { nx: true, ex: exSeconds });
+                return res === "OK" || res === 1;
+            }
+            if (memoryStore.has(key)) return false;
+            memoryStore.set(key, value);
+            setTimeout(() => memoryStore.delete(key), exSeconds * 1000);
+            return true;
+        } catch (e) {
+            if (memoryStore.has(key)) return false;
+            memoryStore.set(key, value);
+            setTimeout(() => memoryStore.delete(key), exSeconds * 1000);
+            return true;
+        }
+    },
+    invalidateCache: async (key) => {
+        try {
+            await redisCache.del(key);
+            await redisCache.publish("cache:invalidate", { key });
+        } catch (e) {
+            console.warn("[CACHE INVALIDATION ERROR]", e.message);
+        }
+    },
     incr: async (key) => {
         try {
             if (redisClient) return await redisClient.incr(key);
