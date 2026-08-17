@@ -6,16 +6,16 @@ import { validate } from '../middlewares/validate.js';
 import { validateRegister } from '../validators/authValidators.js';
 
 async function runArchitectureTestSuite() {
-  console.log('🧪 Starting Enterprise Code Architecture Automated Test Suite...\n');
+  console.log('Starting Enterprise Code Architecture Automated Test Suite...\n');
   let passed = 0;
   let failed = 0;
 
   const assert = (condition, title) => {
     if (condition) {
-      console.log(`  ✅ PASS: ${title}`);
+      console.log(`  [PASS] ${title}`);
       passed++;
     } else {
-      console.error(`  ❌ FAIL: ${title}`);
+      console.error(`  [FAIL] ${title}`);
       failed++;
     }
   };
@@ -153,14 +153,14 @@ async function runArchitectureTestSuite() {
     console.log('');
 
     console.log('----------------------------------------------------');
-    console.log(`📊 ARCHITECTURE TEST SUITE SUMMARY: ${passed} Passed | ${failed} Failed`);
+    console.log(`ARCHITECTURE TEST SUITE SUMMARY: ${passed} Passed | ${failed} Failed`);
     console.log('----------------------------------------------------');
 
     if (failed > 0) {
       process.exit(1);
     }
   } catch (error) {
-    console.error('💥 Architecture test suite crashed:', error);
+    console.error('Architecture test suite error:', error);
     process.exit(1);
   }
 }

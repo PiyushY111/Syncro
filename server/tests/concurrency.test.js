@@ -2,16 +2,16 @@ import { getCachedOrFetch, executeTransaction } from '../services/db/dbService.j
 import { redisCache } from '../config/redis.js';
 
 async function runConcurrencyTestSuite() {
-  console.log('⚡ Starting Enterprise Concurrency & High-Parallelism Stress Test Suite...\n');
+  console.log('Starting Enterprise Concurrency & High-Parallelism Stress Test Suite...\n');
   let passed = 0;
   let failed = 0;
 
   const assert = (condition, title) => {
     if (condition) {
-      console.log(`  ✅ PASS: ${title}`);
+      console.log(`  [PASS] ${title}`);
       passed++;
     } else {
-      console.error(`  ❌ FAIL: ${title}`);
+      console.error(`  [FAIL] ${title}`);
       failed++;
     }
   };
@@ -88,14 +88,14 @@ async function runConcurrencyTestSuite() {
     console.log('');
 
     console.log('----------------------------------------------------');
-    console.log(`📊 CONCURRENCY & STRESS TEST SUMMARY: ${passed} Passed | ${failed} Failed`);
+    console.log(`CONCURRENCY & STRESS TEST SUMMARY: ${passed} Passed | ${failed} Failed`);
     console.log('----------------------------------------------------');
 
     if (failed > 0) {
       process.exit(1);
     }
   } catch (err) {
-    console.error('💥 Concurrency test suite crashed:', err);
+    console.error('Concurrency test suite error:', err);
     process.exit(1);
   }
 }

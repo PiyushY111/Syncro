@@ -4,14 +4,16 @@ import path from 'path';
 const testSuites = [
   { name: 'Architecture & CI Guard Suite', file: 'tests/architecture.test.js' },
   { name: 'Security & Cryptographic Suite', file: 'tests/security.test.js' },
+  { name: 'Advanced Security & Hash Chain Suite', file: 'tests/advancedSecurity.test.js' },
   { name: 'Transaction, Outbox & DLQ Suite', file: 'tests/transaction.test.js' },
   { name: 'Concurrency & Stampede Lock Suite', file: 'tests/concurrency.test.js' },
+  { name: '5,000 Concurrent User Load Benchmark', file: 'tests/stress5k.test.js' },
 ];
 
 async function runSuite(suite) {
   return new Promise((resolve) => {
     console.log(`\n====================================================`);
-    console.log(`🚀 Executing: ${suite.name} (${suite.file})`);
+    console.log(`Executing: ${suite.name} (${suite.file})`);
     console.log(`====================================================\n`);
 
     const startMs = Date.now();
@@ -35,13 +37,7 @@ async function runSuite(suite) {
 
 async function runEnterpriseTestingFramework() {
   console.log(`
-███████╗██╗██╗   ██╗██████╗██████╗  ██████╗ 
-██╔════╝██║██║   ██║██╔════╝██╔══██╗██╔═══██╗
-███████╗██║██║   ██║██║     ██████╔╝██║   ██║
-╚════██║██║██║   ██║██║     ██╔══██╗██║   ██║
-███████║██║╚██████╔╝╚██████╗██║  ██║╚██████╔╝
-╚══════╝╚═╝ ╚═════╝  ╚═════╝╚═╝  ╚═╝ ╚═════╝ 
-ENTERPRISE SYSTEM TEST SUITE ORCHESTRATOR
+  SYNCRO ENTERPRISE TEST SUITE ORCHESTRATOR
   `);
 
   const startTime = Date.now();
@@ -57,11 +53,11 @@ ENTERPRISE SYSTEM TEST SUITE ORCHESTRATOR
   const totalFailed = results.filter((r) => !r.passed).length;
 
   console.log(`\n====================================================`);
-  console.log(`📊 GRAND SUMMARY: ENTERPRISE TEST SUITE RESULTS`);
+  console.log(`GRAND SUMMARY: ENTERPRISE TEST SUITE RESULTS`);
   console.log(`====================================================`);
 
   results.forEach((r) => {
-    const status = r.passed ? '✅ PASSED' : '❌ FAILED';
+    const status = r.passed ? '[PASS]' : '[FAIL]';
     console.log(`  ${status} | ${r.name.padEnd(40)} | Duration: ${r.duration}`);
   });
 

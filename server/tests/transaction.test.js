@@ -3,16 +3,16 @@ import { logAuditEvent } from '../services/auditLogger.js';
 import { recordFailedJob, replayFailedJob } from '../services/deadLetterQueue.js';
 
 async function runTransactionTestSuite() {
-  console.log('📦 Starting Enterprise Transaction, Outbox & DLQ Test Suite...\n');
+  console.log('Starting Enterprise Transaction, Outbox & DLQ Test Suite...\n');
   let passed = 0;
   let failed = 0;
 
   const assert = (condition, title) => {
     if (condition) {
-      console.log(`  ✅ PASS: ${title}`);
+      console.log(`  [PASS] ${title}`);
       passed++;
     } else {
-      console.error(`  ❌ FAIL: ${title}`);
+      console.error(`  [FAIL] ${title}`);
       failed++;
     }
   };
@@ -79,14 +79,14 @@ async function runTransactionTestSuite() {
     console.log('');
 
     console.log('----------------------------------------------------');
-    console.log(`📊 TRANSACTION & OUTBOX TEST SUMMARY: ${passed} Passed | ${failed} Failed`);
+    console.log(`TRANSACTION & OUTBOX TEST SUMMARY: ${passed} Passed | ${failed} Failed`);
     console.log('----------------------------------------------------');
 
     if (failed > 0) {
       process.exit(1);
     }
   } catch (err) {
-    console.error('💥 Transaction test suite crashed:', err);
+    console.error('Transaction test suite error:', err);
     process.exit(1);
   }
 }

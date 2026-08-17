@@ -74,3 +74,41 @@ export const logAuditEvent = async ({
         return null;
     }
 };
+
+/**
+ * Cryptographically verifies the SHA-256 hash chain of audit logs for a workspace.
+ *
+ * @param {string} workspaceId
+ * @returns {Promise<{ isValid: boolean, corruptedLogId?: string, totalLogs: number }>}
+ */
+export const verifyAuditLogChain = async (workspaceId) => {
+    try {
+        const logs = await basePrisma.auditLog.findMany({
+            where: { workspaceId },
+            orderBy: { createdAt: "asc" }
+        });
+
+        let expectedPrevHash = "GENESIS";
+        for (const log of logs) {
+            if (log.prevHash !== expectedPrevHash) {
+                return { isValid: false, corruptedLogId: log.id, totalLogs: logs.length, reason: "Previous hash mismatch" };
+            }
+
+            const details = log.details || {};
+            const payloadString = `${log.prevHash}:${log.workspaceId}:${log.userId}:${log.action}:${log.entityType}:${log.entityId || ''}:${JSON.stringify(details)}`;
+            const computedHash = crypto.createHash("sha256").update(payloadString).digest("hex");
+
+            if (log.hash !== computedHash) {
+                return { isValid: false, corruptedLogId: log.id, totalLogs: logs.length, reason: "Payload hash tampered" };
+            }
+
+            expectedPrevHash = log.hash;
+        }
+
+        return { isValid: true, totalLogs: logs.length };
+    } catch (error) {
+        console.error("Error verifying audit log chain:", error);
+        return { isValid: false, totalLogs: 0, error: error.message };
+    }
+};
+

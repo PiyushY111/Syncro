@@ -85,9 +85,22 @@ export const hashVerificationCode = (code) => {
   return crypto.createHash('sha256').update(code.trim()).digest('hex');
 };
 
+/**
+ * Generates cryptographic SHA-256 hash for audit log chain integrity.
+ *
+ * @param {Object} params
+ * @returns {string} SHA-256 hex string
+ */
+export const generateAuditHash = ({ prevHash = 'GENESIS', workspaceId, userId, action, entityType, entityId = '', details = {} }) => {
+  const payloadString = `${prevHash}:${workspaceId}:${userId}:${action}:${entityType}:${entityId || ''}:${JSON.stringify(details)}`;
+  return crypto.createHash('sha256').update(payloadString).digest('hex');
+};
+
 export default {
   encryptField,
   decryptField,
   timingSafeCompare,
   hashVerificationCode,
+  generateAuditHash,
 };
+
