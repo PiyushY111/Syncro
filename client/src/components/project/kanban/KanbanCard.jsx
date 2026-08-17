@@ -46,7 +46,7 @@ export default function KanbanCard({ task, onTaskDragStart, navigate }) {
             <div className="flex items-center justify-between border-t border-gray-100 dark:border-zinc-800/80 pt-3 mt-1">
                 <div className="flex items-center gap-1 text-[11px] text-gray-500 dark:text-zinc-400">
                     <CalendarIcon className="size-3.5" />
-                    <span>{format(new Date(task.due_date), "dd MMM")}</span>
+                    <span>{task.due_date && !isNaN(new Date(task.due_date).getTime()) ? format(new Date(task.due_date), "dd MMM") : "No due date"}</span>
                 </div>
                 {task.assignee && (
                     <div className="flex items-center gap-1.5">

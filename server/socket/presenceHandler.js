@@ -10,14 +10,16 @@ export const registerPresenceHandlers = (io, socket) => {
     let userWorkspaceIds = [];
     (async () => {
         try {
-            const memberWorkspaces = await prisma.workspaceMember.findMany({
-                where: { userId },
-                select: { workspaceId: true }
-            });
-            const ownedWorkspaces = await prisma.workspace.findMany({
-                where: { ownerId: userId },
-                select: { id: true }
-            });
+            const [memberWorkspaces, ownedWorkspaces] = await Promise.all([
+                prisma.workspaceMember.findMany({
+                    where: { userId },
+                    select: { workspaceId: true }
+                }),
+                prisma.workspace.findMany({
+                    where: { ownerId: userId },
+                    select: { id: true }
+                })
+            ]);
             userWorkspaceIds = [...new Set([
                 ...memberWorkspaces.map(w => w.workspaceId),
                 ...ownedWorkspaces.map(w => w.id)

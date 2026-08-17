@@ -26,7 +26,7 @@ if (paramsToAdd.length > 0) {
   connectionString = `${connectionString}${separator}${paramsToAdd.join('&')}`
 }
 
-const SLOW_QUERY_THRESHOLD_MS = Number(process.env.SLOW_QUERY_THRESHOLD_MS) || 150
+const SLOW_QUERY_THRESHOLD_MS = Number(process.env.SLOW_QUERY_THRESHOLD_MS) || 1000
 
 // Base Prisma Client with logging configuration
 export const basePrisma = new PrismaClient({
@@ -71,30 +71,18 @@ export const prisma = basePrisma.$extends({
             return result
           }
 
-          if (operation === 'update' || operation === 'delete') {
+          if (operation === 'delete') {
             const modelName = model.charAt(0).toLowerCase() + model.slice(1)
-            const targetId = args.where?.id
-            if (targetId) {
-              const existing = await basePrisma[modelName].findFirst({
-                where: { id: targetId, deletedAt: null },
-                select: { id: true },
-              })
-              if (!existing) {
-                throw new Error(`Record (${model}) with ID ${targetId} not found or has been soft-deleted.`)
-              }
+            // Convert hard delete to soft-delete update
+            const result = await basePrisma[modelName].update({
+              where: args.where,
+              data: { deletedAt: new Date() },
+            })
+            const duration = performance.now() - start
+            if (duration >= SLOW_QUERY_THRESHOLD_MS) {
+              console.warn(`[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`)
             }
-            if (operation === 'delete') {
-              // Convert hard delete to soft-delete update
-              const result = await basePrisma[modelName].update({
-                where: args.where,
-                data: { deletedAt: new Date() },
-              })
-              const duration = performance.now() - start
-              if (duration >= SLOW_QUERY_THRESHOLD_MS) {
-                console.warn(`[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`)
-              }
-              return result
-            }
+            return result
           }
 
           const readOps = ['findMany', 'findFirst', 'findFirstOrThrow', 'count', 'aggregate', 'groupBy']

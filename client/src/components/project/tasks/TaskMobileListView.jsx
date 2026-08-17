@@ -61,7 +61,7 @@ export default function TaskMobileListView({ filteredTasks, selectedTasks, setSe
 
                             <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
                                 <CalendarIcon className="size-4" />
-                                {format(new Date(task.due_date), "dd MMMM")}
+                                {task.due_date && !isNaN(new Date(task.due_date).getTime()) ? format(new Date(task.due_date), "dd MMMM") : "-"}
                             </div>
                         </div>
                     );

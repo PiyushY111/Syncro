@@ -85,7 +85,9 @@ const RecentActivity = () => {
                                                 </div>
                                             )}
                                             <span className="text-[10px] text-slate-400 dark:text-zinc-500 ml-auto">
-                                                {format(new Date(task.updatedAt), "MMM d, h:mm a")}
+                                                {task.updatedAt && !isNaN(new Date(task.updatedAt).getTime())
+                                                    ? format(new Date(task.updatedAt), "MMM d, h:mm a")
+                                                    : "Recently"}
                                             </span>
                                         </div>
                                     </div>

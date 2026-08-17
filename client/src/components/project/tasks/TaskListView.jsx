@@ -82,7 +82,7 @@ export default function TaskListView({
                                             <td className="px-4 py-2">
                                                 <div className="flex items-center gap-1 text-zinc-600 dark:text-zinc-400">
                                                     <CalendarIcon className="size-4" />
-                                                    {format(new Date(task.due_date), "dd MMMM")}
+                                                    {task.due_date && !isNaN(new Date(task.due_date).getTime()) ? format(new Date(task.due_date), "dd MMMM") : "-"}
                                                 </div>
                                             </td>
                                         </tr>

@@ -81,6 +81,8 @@ model User {
     retroItems         RetroItem[]
 
     @@index([email])
+    @@index([email, deletedAt])
+    @@index([deletedAt])
 }
 
 model Workspace {
@@ -107,7 +109,9 @@ model Workspace {
     whiteboards Whiteboard[]
 
     @@index([ownerId])
+    @@index([ownerId, deletedAt])
     @@index([slug])
+    @@index([deletedAt])
 }
 
 model WorkspaceMember {
