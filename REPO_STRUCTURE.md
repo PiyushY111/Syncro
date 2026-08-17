@@ -267,13 +267,20 @@ server/
 │   ├── socketInit.js          # Socket.IO server setup & handler router
 │   └── whiteboardHandler.js   # Real-time vector whiteboard & cursor position broadcast
 ├── tests/                     # Automated Test Suites
-│   ├── architecture.test.js   # Enterprise AppError, ApiResponse, DTO validation tests
+│   ├── advancedSecurity.test.js# Cryptographic hash chains, security headers, & input sanitization tests
+│   ├── architecture.test.js   # Enterprise AppError, ApiResponse, DTO validation tests (16 passed)
 │   ├── auth.test.js           # Authentication & 2FA endpoint tests
 │   ├── chat.test.js           # Messaging & channel endpoint tests
-│   ├── database.test.js       # DB connection health, transaction retries, soft delete tests
+│   ├── concurrency.test.js    # Distributed stampede locking & transaction retry tests
+│   ├── database.test.js       # DB connection health, transaction retries, soft delete tests (7 passed)
 │   ├── inbox.test.js          # Inbox notification tests
 │   ├── permissions.test.js    # Role matrix & permission enforcement tests
+│   ├── rateLimit2FA.test.js   # 2FA rate limiting and security tests
 │   ├── redis.test.js          # Redis caching & versioning tests
+│   ├── runAllTests.js         # Enterprise test suite orchestrator
+│   ├── security.test.js       # AES-256-GCM encryption & constant-time comparison tests (13 passed)
+│   ├── stress5k.test.js       # 5,000 concurrent user load benchmark
+│   ├── transaction.test.js    # Outbox pattern & Dead-Letter Queue (DLQ) tests
 │   └── workspace.test.js      # Workspace management & onboarding tests
 ├── utils/                     # Enterprise cross-cutting utilities
 │   ├── errors/                # Operational Error Class Hierarchy

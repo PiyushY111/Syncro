@@ -33,44 +33,44 @@ Syncro is built as a highly available, event-driven, multi-tenant enterprise app
 
 ```mermaid
 graph TD
-    subgraph ClientLayer [Client Presentation Layer]
-        ReactSPA[React 19 SPA Client] <--> ReduxStore[Redux Toolkit State Store]
-        ReactSPA <--> SocketClient[Socket.IO Client Engine]
-        ReactSPA <--> ServiceWorker[Client Service Worker Cache (GET Requests)]
+    subgraph ClientLayer ["Client Presentation Layer"]
+        ReactSPA["React 19 SPA Client"] <--> ReduxStore["Redux Toolkit State Store"]
+        ReactSPA <--> SocketClient["Socket.IO Client Engine"]
+        ReactSPA <--> ServiceWorker["Client Service Worker Cache (GET Requests)"]
     end
 
-    subgraph RESTGateway [API Gateway & Server Pipeline]
-        Security[Cors & Express Security] --> RequestID[requestIdMiddleware (x-request-id)]
-        RequestID --> DTO[validate (DTO Request Validator)]
-        DTO --> Controller[Async Controllers (asyncHandler)]
-        Controller --> Services[Domain Services Layer]
+    subgraph RESTGateway ["API Gateway & Server Pipeline"]
+        Security["Cors & Express Security"] --> RequestID["requestIdMiddleware (x-request-id)"]
+        RequestID --> DTO["validate (DTO Request Validator)"]
+        DTO --> Controller["Async Controllers (asyncHandler)"]
+        Controller --> Services["Domain Services Layer"]
     end
 
-    subgraph CrossCutting [Cross-Cutting Enterprise Systems]
-        Controller --> ApiResponse[ApiResponse Contract Formatter]
-        Controller --> GlobalErr[errorMiddleware (Centralized Error Handler)]
-        GlobalErr --> AppError[AppError Class Hierarchy]
-        GlobalErr --> Logger[Structured JSON Telemetry Logger]
+    subgraph CrossCutting ["Cross-Cutting Enterprise Systems"]
+        Controller --> ApiResponse["ApiResponse Contract Formatter"]
+        Controller --> GlobalErr["errorMiddleware (Centralized Error Handler)"]
+        GlobalErr --> AppError["AppError Class Hierarchy"]
+        GlobalErr --> Logger["Structured JSON Telemetry Logger"]
     end
 
-    subgraph DataInfrastructure [Database & Caching Layer]
-        Services --> DBService[DB Service Layer & Transaction Engine]
-        DBService --> PrismaExt[Prisma Client Extensions Layer ($extends)]
-        PrismaExt --> L2Cache[(Upstash Redis L2 Cache)]
-        PrismaExt --> NeonPool[Neon Serverless DB Pool]
-        NeonPool --> Postgres[(PostgreSQL Relational DB)]
+    subgraph DataInfrastructure ["Database & Caching Layer"]
+        Services --> DBService["DB Service Layer & Transaction Engine"]
+        DBService --> PrismaExt["Prisma Client Extensions Layer ($extends)"]
+        PrismaExt --> L2Cache[("Upstash Redis L2 Cache")]
+        PrismaExt --> NeonPool["Neon Serverless DB Pool"]
+        NeonPool --> Postgres[("PostgreSQL Relational DB")]
     end
 
-    subgraph EventPipeline [Async Event & Background Workers]
-        Services --> EventBus[Decoupled Internal EventBus]
-        EventBus --> Inngest[Inngest Background Queue Workers]
-        Inngest --- JobsCore[Auth / Workspace / Member Jobs]
-        Inngest --- JobsTasks[Task Lifecycle & Recurrence Jobs]
-        Inngest --- JobsProjects[Project / Sprint / Epic / Retro Jobs]
-        Inngest --- JobsCollab[Chat / Whiteboard / Meeting Jobs]
+    subgraph EventPipeline ["Async Event & Background Workers"]
+        Services --> EventBus["Decoupled Internal EventBus"]
+        EventBus --> Inngest["Inngest Background Queue Workers"]
+        Inngest --- JobsCore["Auth / Workspace / Member Jobs"]
+        Inngest --- JobsTasks["Task Lifecycle & Recurrence Jobs"]
+        Inngest --- JobsProjects["Project / Sprint / Epic / Retro Jobs"]
+        Inngest --- JobsCollab["Chat / Whiteboard / Meeting Jobs"]
     end
 
-    SocketClient <-->|WebSocket Sync| SocketServer[Socket.IO Gateway Server]
+    SocketClient <-->|"WebSocket Sync"| SocketServer["Socket.IO Gateway Server"]
 ```
 
 ---
@@ -486,7 +486,7 @@ Syncro uses a dual event-processing system:
 
 ## 🧪 Automated Verification & Testing Architecture
 
-The codebase includes two dedicated automated test suites:
+The codebase includes an enterprise automated test framework orchestrated by `node tests/runAllTests.js`:
 
 ### 1. Clean Architecture Test Suite ([`server/tests/architecture.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/architecture.test.js))
 Run Command: `node tests/architecture.test.js`
@@ -495,9 +495,9 @@ Validates:
 - `ApiResponse` success and error JSON schemas.
 - `asyncHandler` promise catch forwarding to Express error middleware.
 - `requestIdMiddleware` correlation ID header generation (`x-request-id`).
-- DTO validation interceptor behavior.
+- DTO validation interceptor behavior and raw SQL soft-delete guard compliance.
 
-**Result**: `15 Passed | 0 Failed`
+**Result**: `16 Passed | 0 Failed`
 
 ### 2. Database Infrastructure Test Suite ([`server/tests/database.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/database.test.js))
 Run Command: `npm run db:test`
@@ -506,5 +506,33 @@ Validates:
 - Soft-delete query interceptor filtering and `findUnique` delegate support.
 - Transaction engine rollback and error propagation.
 - L2 Redis read-through caching hits and misses.
+
+**Result**: `7 Passed | 0 Failed`
+
+### 3. Security & Cryptographic Test Suite ([`server/tests/security.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/security.test.js))
+Run Command: `node tests/security.test.js`
+Validates:
+- AES-256-GCM field-level encryption and decryption.
+- Constant-time timing-safe comparisons for tokens and hashes.
+- Cryptographic SHA-256 2FA code hashing.
+- XSS input sanitization and password complexity rules.
+
+**Result**: `13 Passed | 0 Failed`
+
+### 4. Advanced Security & Audit Hash Chain Suite ([`server/tests/advancedSecurity.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/advancedSecurity.test.js))
+Run Command: `node tests/advancedSecurity.test.js`
+Validates:
+- SHA-256 audit log hash chain tamper verification.
+- Recursive nested JSON body sanitization.
+- Security headers (Helmet/CSP) enforcement.
+
+**Result**: `12 Passed | 0 Failed`
+
+### 5. Concurrency & Stampede Lock Suite ([`server/tests/concurrency.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/concurrency.test.js))
+Run Command: `node tests/concurrency.test.js`
+Validates:
+- Distributed Redis cache stampede single-flight locking under 50 parallel requests.
+- Optimistic concurrency locking & version conflict checks (`409 Conflict`).
+- Transaction exponential backoff retries on transient PostgreSQL deadlocks (`40001`/`40P01`).
 
 **Result**: `7 Passed | 0 Failed`

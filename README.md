@@ -82,9 +82,10 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Nodemailer** — SMTP transactional email transporter.
 
 ### Testing & Verification
-* **Enterprise Architecture Test Suite (`tests/architecture.test.js`)** — automated test suite validating AppError hierarchy, ApiResponse schemas, asyncHandler, and DTO validators (15 passed tests).
+* **Enterprise Architecture Test Suite (`tests/architecture.test.js`)** — automated test suite validating AppError hierarchy, ApiResponse schemas, asyncHandler, and DTO validators (16 passed tests).
 * **Database Infrastructure Test Suite (`tests/database.test.js`)** — automated test suite verifying DB connection health probes, transaction retries, soft-delete rules, and L2 cache logic (7 passed tests).
-* **Vitest** — API unit and integration test runner.
+* **Security & Cryptographic Test Suite (`tests/security.test.js`)** — AES-256-GCM field encryption, timing-safe comparison, 2FA code hashing, and XSS sanitization (13 passed tests).
+* **Advanced Security Test Suite (`tests/advancedSecurity.test.js`)** — SHA-256 audit log hash chain validation, recursive body sanitization, security headers (12 passed tests).
 * **Playwright** — End-to-end multi-browser user flow testing suite (`auth.spec.js`, `chat.spec.js`, `tasks.spec.js`, `whiteboard.spec.js`, `workspace.spec.js`).
 
 ---
@@ -93,38 +94,38 @@ The platform isolates data between workspace organizations, offloads async work 
 
 ```mermaid
 graph TD
-    subgraph Client [Client: React 19 + Service Worker Cache]
-        UI[React UI Components] <--> Redux[Redux Toolkit Store]
-        UI <--> SocketClient[Socket.IO Client]
-        UI <--> SW[Custom Service Worker]
-        SW <-->|Cache Storage API (GET Only)| Cache[API & Asset Cache]
+    subgraph Client ["Client: React 19 + Service Worker Cache"]
+        UI["React UI Components"] <--> Redux["Redux Toolkit Store"]
+        UI <--> SocketClient["Socket.IO Client Engine"]
+        UI <--> SW["Custom Service Worker"]
+        SW <-->|"Cache Storage API (GET Only)"| Cache["API & Asset Cache"]
     end
 
-    subgraph Server [Backend Gateway: Express 5 + Socket.IO Server]
-        API[Express 5 REST Gateway] <--> EventBus[Internal EventBus Service]
-        API <--> CacheLayer[Redis Caching Layer]
-        API <--> Prisma[Prisma ORM ($extends)]
+    subgraph Server ["Backend Gateway: Express 5 + Socket.IO Server"]
+        API["Express 5 REST Gateway"] <--> EventBus["Internal EventBus Service"]
+        API <--> CacheLayer["Redis Caching Layer"]
+        API <--> Prisma["Prisma ORM ($extends)"]
         
-        Sockets[Socket.IO Engine] <--> Handlers[Socket Event Handlers]
-        Handlers --- MsgH[Message & Reaction Handlers]
-        Handlers --- WbH[Whiteboard Canvas Handler]
-        Handlers --- PresH[Presence Handler]
-        Handlers --- RetroH[Retro Board Handler]
+        Sockets["Socket.IO Engine"] <--> Handlers["Socket Event Handlers"]
+        Handlers --- MsgH["Message & Reaction Handlers"]
+        Handlers --- WbH["Whiteboard Canvas Handler"]
+        Handlers --- PresH["Presence Handler"]
+        Handlers --- RetroH["Retro Board Handler"]
     end
 
-    subgraph Infrastructure [Data & Services]
-        CacheLayer <-->|Upstash REST| Redis[(Upstash Redis Cache)]
-        Prisma <-->|PostgreSQL Connection| DB[(Neon Serverless Database)]
-        EventBus <-->|Event Triggers| Inngest[Inngest Background Workers]
-        Inngest --- InngestCore[Core / Auth / Member Jobs]
-        Inngest --- InngestTasks[Task Lifecycle & Recurrence Jobs]
-        Inngest --- InngestProjects[Project / Sprint / Epic / Retro Jobs]
-        Inngest --- InngestCollab[Chat / Whiteboard / Meeting Jobs]
-        API <-->|SMTP Transport| Nodemailer[Email Service]
-        API <-->|OAuth 2.0 Auth| Google[Google Calendar API]
+    subgraph Infrastructure ["Data & Services"]
+        CacheLayer <-->|"Upstash REST"| Redis[("Upstash Redis Cache")]
+        Prisma <-->|"PostgreSQL Connection"| DB[("Neon Serverless Database")]
+        EventBus <-->|"Event Triggers"| Inngest["Inngest Background Workers"]
+        Inngest --- InngestCore["Core / Auth / Member Jobs"]
+        Inngest --- InngestTasks["Task Lifecycle & Recurrence Jobs"]
+        Inngest --- InngestProjects["Project / Sprint / Epic / Retro Jobs"]
+        Inngest --- InngestCollab["Chat / Whiteboard / Meeting Jobs"]
+        API <-->|"SMTP Transport"| Nodemailer["Email Service"]
+        API <-->|"OAuth 2.0 Auth"| Google["Google Calendar API"]
     end
 
-    SocketClient <-->|WebSocket Real-time Sync| Sockets
+    SocketClient <-->|"WebSocket Real-time Sync"| Sockets
 ```
 
 ---
