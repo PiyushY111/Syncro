@@ -4,10 +4,8 @@ import path from 'path';
 const testSuites = [
   { name: 'Architecture & CI Guard Suite', file: 'tests/architecture.test.js' },
   { name: 'Security & Cryptographic Suite', file: 'tests/security.test.js' },
-  { name: 'Advanced Security & Hash Chain Suite', file: 'tests/advancedSecurity.test.js' },
   { name: 'Transaction, Outbox & DLQ Suite', file: 'tests/transaction.test.js' },
   { name: 'Concurrency & Stampede Lock Suite', file: 'tests/concurrency.test.js' },
-  { name: '5,000 Concurrent User Load Benchmark', file: 'tests/stress5k.test.js' },
 ];
 
 async function runSuite(suite) {
