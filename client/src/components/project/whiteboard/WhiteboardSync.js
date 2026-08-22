@@ -61,7 +61,10 @@ export default function useWhiteboardSync(whiteboardId) {
                 const currentPages = pages.map(p => p.id === currentPageId ? { ...p, nodes, edges, drawings } : p);
                 await api.put(`/api/whiteboards/${whiteboardId}`, {
                     pages: currentPages, currentPageId, data: { viewport }
+                }, {
+                    headers: { skipConfirm: true }
                 });
+
             } catch (err) { console.error("Autosave failed", err); }
             setSaving(false);
         }, 1500);

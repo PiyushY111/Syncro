@@ -15,7 +15,8 @@ api.interceptors.request.use(async (config) => {
     const method = config.method?.toLowerCase();
     const url = config.url || '';
     const isMutative = ['post', 'put', 'patch', 'delete'].includes(method);
-    const isBypassed = url.includes('/login') || url.includes('/register') || url.includes('/logout') || url.includes('/chat/message') || url.includes('/verify') || url.includes('/auth') || url.includes('/message') || config.headers?.skipConfirm;
+    const isBypassed = url.includes('/login') || url.includes('/register') || url.includes('/logout') || url.includes('/chat/message') || url.includes('/verify') || url.includes('/auth') || url.includes('/message') || url.includes('/whiteboards') || config.headers?.skipConfirm;
+
 
     if (isMutative && !isBypassed && window.__triggerConfirmModal) {
         let action = 'create';
