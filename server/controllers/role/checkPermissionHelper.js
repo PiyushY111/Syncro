@@ -68,6 +68,14 @@ export const getUserWorkspaceRole = async (userId, workspaceId) => {
     return result;
 };
 
+export const invalidateUserWorkspaceRoleCache = async (userId, workspaceId) => {
+    if (!userId || !workspaceId) return;
+    const cacheKey = `workspace:role:${userId}:${workspaceId}`;
+    try {
+        await redisCache.del(cacheKey);
+    } catch {}
+};
+
 export const hasWorkspacePermission = async (userId, workspaceId, permissionKey) => {
     const { role, isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
     if (!workspace) return false;
@@ -75,7 +83,15 @@ export const hasWorkspacePermission = async (userId, workspaceId, permissionKey)
 
     const settings = typeof workspace.settings === "object" && workspace.settings ? workspace.settings : {};
     const rolePermissions = settings.rolePermissions || defaultPermissions;
-    const permissions = rolePermissions[role] || defaultPermissions[role] || defaultPermissions.MEMBER;
+    
+    const rolePerms = rolePermissions[role];
+    if (rolePerms && typeof rolePerms === 'object') {
+        if (rolePerms[permissionKey] !== undefined) {
+            return !!rolePerms[permissionKey];
+        }
+    }
 
-    return permissions[permissionKey] ?? false;
+    const fallbackPerms = defaultPermissions[role] || defaultPermissions.MEMBER;
+    return fallbackPerms[permissionKey] ?? false;
 };
+

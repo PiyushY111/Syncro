@@ -17,6 +17,7 @@ export default function RolePortalView() {
     const [customRoles, setCustomRoles] = useState([]);
     const [allowManagerPortalAccess, setAllowManagerPortalAccess] = useState(false);
     const [isOwner, setIsOwner] = useState(false);
+    const [canManagePortal, setCanManagePortal] = useState(false);
     const [members, setMembers] = useState([]);
     const [activeTab, setActiveTab] = useState('matrix');
     const [isSaving, setIsSaving] = useState(false);
@@ -30,6 +31,7 @@ export default function RolePortalView() {
             setCustomRoles(res.data.customRoles || []);
             setAllowManagerPortalAccess(res.data.allowManagerPortalAccess || false);
             setIsOwner(res.data.isOwner || false);
+            setCanManagePortal(res.data.canManagePortal || res.data.isOwner || false);
             setMembers(res.data.members || []);
         } catch (err) {
             console.error(err);
@@ -112,6 +114,7 @@ export default function RolePortalView() {
                 activeTab={activeTab}
                 setActiveTab={setActiveTab}
                 isOwner={isOwner}
+                canManagePortal={canManagePortal}
                 allowManagerPortalAccess={allowManagerPortalAccess}
                 onToggleManagerAccess={handleToggleManagerAccess}
                 isSaving={isSaving}
@@ -128,6 +131,7 @@ export default function RolePortalView() {
                     onToggleFeature={handleToggleFeature}
                     onDeleteCustomRole={handleDeleteCustomRole}
                     isOwner={isOwner}
+                    canManagePortal={canManagePortal}
                 />
             )}
 
@@ -137,8 +141,10 @@ export default function RolePortalView() {
                     customRoles={customRoles}
                     onUpdateMemberRole={handleUpdateMemberRole}
                     isOwner={isOwner}
+                    canManagePortal={canManagePortal}
                 />
             )}
+
 
             <CreateCustomRoleModal
                 isOpen={isCustomModalOpen}

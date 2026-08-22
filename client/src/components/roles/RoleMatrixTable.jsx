@@ -1,6 +1,6 @@
 import { Check, X, Trash2 } from 'lucide-react';
 
-export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggleFeature, onDeleteCustomRole, isOwner }) {
+export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggleFeature, onDeleteCustomRole, isOwner, canManagePortal }) {
     const featureLabels = [
         { key: 'createProject', label: 'Create Projects', category: 'Projects' },
         { key: 'editProject', label: 'Edit Project Settings', category: 'Projects' },
@@ -19,6 +19,7 @@ export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggle
 
     const standardRoles = ['ADMIN', 'MANAGER', 'MEMBER', 'VIEWER'];
     const allRoles = [...standardRoles, ...customRoles.map(c => c.key)];
+    const hasManageAccess = canManagePortal || isOwner;
 
     return (
         <div className="bg-white dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
@@ -32,7 +33,7 @@ export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggle
                                 <th key={r} className="p-3.5 font-semibold text-center min-w-[110px]">
                                     <div className="flex items-center justify-center gap-1">
                                         <span style={customObj ? { color: customObj.color } : {}}>{customObj ? customObj.label : r}</span>
-                                        {customObj && isOwner && (
+                                        {customObj && hasManageAccess && (
                                             <button onClick={() => onDeleteCustomRole(customObj.key)} className="text-zinc-400 hover:text-rose-500 transition cursor-pointer" title="Delete custom role">
                                                 <Trash2 className="size-3" />
                                             </button>
@@ -58,7 +59,7 @@ export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggle
                                     <td key={r} className="p-3.5 text-center">
                                         <button
                                             type="button"
-                                            disabled={!isOwner}
+                                            disabled={!hasManageAccess}
                                             onClick={() => onToggleFeature(r, f.key, !isAllowed)}
                                             className={`inline-flex items-center justify-center size-7 rounded-lg transition cursor-pointer ${isAllowed ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-500'}`}
                                         >
@@ -74,3 +75,4 @@ export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggle
         </div>
     );
 }
+

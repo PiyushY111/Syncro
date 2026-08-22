@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 
-export default function RoleMembersList({ members, customRoles = [], onUpdateMemberRole, isOwner }) {
+export default function RoleMembersList({ members, customRoles = [], onUpdateMemberRole, isOwner, canManagePortal }) {
     const [search, setSearch] = useState('');
 
     const standardRoles = ['ADMIN', 'MANAGER', 'MEMBER', 'VIEWER'];
     const customRoleKeys = customRoles.map(c => ({ key: c.key, label: c.label }));
+    const hasManageAccess = canManagePortal || isOwner;
 
     const filtered = members.filter((m) =>
         (m.user?.name || '').toLowerCase().includes(search.toLowerCase()) ||
@@ -43,10 +44,11 @@ export default function RoleMembersList({ members, customRoles = [], onUpdateMem
 
                         <select
                             value={m.role}
-                            disabled={!isOwner}
+                            disabled={!hasManageAccess}
                             onChange={(e) => onUpdateMemberRole(m.userId, e.target.value)}
                             className="px-3 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 font-medium cursor-pointer disabled:opacity-60"
                         >
+
                             <optgroup label="Standard Roles">
                                 {standardRoles.map((r) => (<option key={r} value={r}>{r}</option>))}
                             </optgroup>

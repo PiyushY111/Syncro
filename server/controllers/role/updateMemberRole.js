@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma.js";
-import { getUserWorkspaceRole } from "./checkPermissionHelper.js";
+import { getUserWorkspaceRole, invalidateUserWorkspaceRoleCache } from "./checkPermissionHelper.js";
 import { logAuditEvent } from "../../services/auditLogger.js";
+
 
 export const updateMemberRole = async (req, res) => {
     try {
@@ -70,6 +71,9 @@ export const updateMemberRole = async (req, res) => {
             data: updateData,
             include: { user: { select: { id: true, name: true, email: true, image: true } } }
         });
+
+        await invalidateUserWorkspaceRoleCache(targetUserId, workspaceId);
+
 
         await logAuditEvent({
             workspaceId,

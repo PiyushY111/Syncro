@@ -9,11 +9,15 @@ export const getUserWorkspaceRole = (workspace, userId) => {
 
 const checkPerm = (role, ws, key, def) => {
     if (role === 'OWNER') return true;
-    if (ws?.settings?.rolePermissions?.[role]) {
-        return ws.settings.rolePermissions[role][key] ?? false;
+
+    const rolePerms = ws?.settings?.rolePermissions?.[role];
+    if (rolePerms && typeof rolePerms === 'object' && rolePerms[key] !== undefined) {
+        return !!rolePerms[key];
     }
-    return def.includes(role);
+
+    return def.includes(role) || def.includes('MEMBER');
 };
+
 
 export const canManageWorkspace = (role) => ['OWNER', 'ADMIN'].includes(role);
 export const canDeleteWorkspace = (workspace, userId) => workspace?.ownerId === userId;

@@ -21,8 +21,21 @@ export const getRoleMatrix = async (req, res) => {
             return res.status(403).json({ message: "Role Portal is only accessible to Workspace Owner (or Manager if allowed)." });
         }
 
-        const roleMatrix = settings.rolePermissions || defaultPermissions;
+        const savedRoleMatrix = settings.rolePermissions || {};
         const customRoles = settings.customRoles || [];
+
+        // Hydrate complete matrix with default permissions for standard roles and populated custom roles
+        const roleMatrix = {
+            ...defaultPermissions,
+            ...savedRoleMatrix
+        };
+
+        // Ensure every custom role has a permission entry
+        customRoles.forEach(c => {
+            if (!roleMatrix[c.key]) {
+                roleMatrix[c.key] = { ...defaultPermissions.MEMBER };
+            }
+        });
 
         const members = await prisma.workspaceMember.findMany({
             where: { workspaceId },
@@ -41,8 +54,10 @@ export const getRoleMatrix = async (req, res) => {
             allowManagerPortalAccess,
             userRole: role,
             isOwner,
+            canManagePortal: canAccessPortal,
             members: formattedMembers
         });
+
     } catch (error) {
         console.error("Error fetching role matrix:", error);
         return res.status(500).json({ message: "Internal server error" });

@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { getUserWorkspaceRole } from "./checkPermissionHelper.js";
+import { getUserWorkspaceRole, invalidateUserWorkspaceRoleCache } from "./checkPermissionHelper.js";
 
 export const updateRoleMatrix = async (req, res) => {
     try {
@@ -7,21 +7,27 @@ export const updateRoleMatrix = async (req, res) => {
         const { workspaceId } = req.params;
         const { roleMatrix, allowManagerPortalAccess } = req.body;
 
-        const { isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
+        const { role, isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
 
         if (!workspace) {
             return res.status(404).json({ message: "Workspace not found" });
         }
 
-        if (!isOwner) {
-            return res.status(403).json({ message: "Only the Workspace Owner can modify role permissions." });
+        const currentSettings = typeof workspace.settings === "object" && workspace.settings ? workspace.settings : {};
+        const canAccessPortal = isOwner || (role === "MANAGER" && (currentSettings.allowManagerPortalAccess ?? false)) || role === "ADMIN";
+
+        if (!canAccessPortal) {
+            return res.status(403).json({ message: "You do not have permission to modify role permissions." });
         }
 
-        const currentSettings = typeof workspace.settings === "object" && workspace.settings ? workspace.settings : {};
+        const mergedRolePermissions = {
+            ...(currentSettings.rolePermissions || {}),
+            ...(roleMatrix || {})
+        };
 
         const updatedSettings = {
             ...currentSettings,
-            rolePermissions: roleMatrix || currentSettings.rolePermissions,
+            rolePermissions: mergedRolePermissions,
             allowManagerPortalAccess: allowManagerPortalAccess !== undefined ? allowManagerPortalAccess : (currentSettings.allowManagerPortalAccess ?? false)
         };
 
@@ -29,6 +35,8 @@ export const updateRoleMatrix = async (req, res) => {
             where: { id: workspaceId },
             data: { settings: updatedSettings }
         });
+
+        await invalidateUserWorkspaceRoleCache(userId, workspaceId);
 
         return res.status(200).json({
             message: "Role matrix updated successfully",
@@ -39,3 +47,4 @@ export const updateRoleMatrix = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+

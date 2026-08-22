@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { getUserWorkspaceRole, defaultPermissions } from "./checkPermissionHelper.js";
+import { getUserWorkspaceRole, defaultPermissions, invalidateUserWorkspaceRoleCache } from "./checkPermissionHelper.js";
 import { logAuditEvent } from "../../services/auditLogger.js";
 
 export const createCustomRole = async (req, res) => {
@@ -12,14 +12,19 @@ export const createCustomRole = async (req, res) => {
             return res.status(400).json({ message: "workspaceId and roleName are required" });
         }
 
-        const { isOwner, workspace } = await getUserWorkspaceRole(userId, targetWorkspaceId);
+        const { role, isOwner, workspace } = await getUserWorkspaceRole(userId, targetWorkspaceId);
 
         if (!workspace) return res.status(404).json({ message: "Workspace not found" });
-        if (!isOwner) return res.status(403).json({ message: "Only the Workspace Owner can create custom roles." });
+
+        const currentSettings = typeof workspace.settings === "object" && workspace.settings ? workspace.settings : {};
+        const canAccessPortal = isOwner || (role === "MANAGER" && (currentSettings.allowManagerPortalAccess ?? false)) || role === "ADMIN";
+
+        if (!canAccessPortal) {
+            return res.status(403).json({ message: "You do not have permission to create custom roles." });
+        }
 
         const roleKey = roleName.toUpperCase().replace(/\s+/g, "_");
 
-        const currentSettings = typeof workspace.settings === "object" && workspace.settings ? workspace.settings : {};
         const customRoles = currentSettings.customRoles || [];
         const rolePermissions = currentSettings.rolePermissions || { ...defaultPermissions };
 
@@ -34,12 +39,17 @@ export const createCustomRole = async (req, res) => {
             color: color || "#8B5CF6"
         };
 
+        const initialRolePerms = {
+            ...defaultPermissions.MEMBER,
+            ...(permissions || {})
+        };
+
         const updatedSettings = {
             ...currentSettings,
             customRoles: [...customRoles, newRoleObj],
             rolePermissions: {
                 ...rolePermissions,
-                [roleKey]: permissions || defaultPermissions.MEMBER
+                [roleKey]: initialRolePerms
             }
         };
 
@@ -47,6 +57,8 @@ export const createCustomRole = async (req, res) => {
             where: { id: targetWorkspaceId },
             data: { settings: updatedSettings }
         });
+
+        await invalidateUserWorkspaceRoleCache(userId, targetWorkspaceId);
 
         await logAuditEvent({
             workspaceId: targetWorkspaceId,
@@ -75,14 +87,24 @@ export const deleteCustomRole = async (req, res) => {
         const userId = req.user.id;
         const { workspaceId, roleKey } = req.params;
 
-        const { isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
+        const { role, isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
         if (!workspace) return res.status(404).json({ message: "Workspace not found" });
-        if (!isOwner) return res.status(403).json({ message: "Only Workspace Owner can delete custom roles." });
 
         const currentSettings = typeof workspace.settings === "object" && workspace.settings ? workspace.settings : {};
+        const canAccessPortal = isOwner || (role === "MANAGER" && (currentSettings.allowManagerPortalAccess ?? false)) || role === "ADMIN";
+
+        if (!canAccessPortal) {
+            return res.status(403).json({ message: "You do not have permission to delete custom roles." });
+        }
+
         const customRoles = (currentSettings.customRoles || []).filter(r => r.key !== roleKey);
         const rolePermissions = { ...(currentSettings.rolePermissions || {}) };
         delete rolePermissions[roleKey];
+
+        const affectedMembers = await prisma.workspaceMember.findMany({
+            where: { workspaceId, customRole: roleKey },
+            select: { userId: true }
+        });
 
         await prisma.workspaceMember.updateMany({
             where: { workspaceId, customRole: roleKey },
@@ -93,6 +115,11 @@ export const deleteCustomRole = async (req, res) => {
             where: { id: workspaceId },
             data: { settings: { ...currentSettings, customRoles, rolePermissions } }
         });
+
+        for (const m of affectedMembers) {
+            await invalidateUserWorkspaceRoleCache(m.userId, workspaceId);
+        }
+        await invalidateUserWorkspaceRoleCache(userId, workspaceId);
 
         await logAuditEvent({
             workspaceId,
@@ -112,3 +139,4 @@ export const deleteCustomRole = async (req, res) => {
         return res.status(500).json({ message: "Internal server error" });
     }
 };
+

@@ -1,10 +1,12 @@
 import { ShieldCheck, UserCheck, Lock, Plus, Sparkles } from 'lucide-react';
 
-export default function RoleHeader({ activeTab, setActiveTab, isOwner, allowManagerPortalAccess, onToggleManagerAccess, isSaving, onOpenCustomModal, onApplyPreset }) {
+export default function RoleHeader({ activeTab, setActiveTab, isOwner, canManagePortal, allowManagerPortalAccess, onToggleManagerAccess, isSaving, onOpenCustomModal, onApplyPreset }) {
     const presets = [
         { name: 'Strict Enterprise', matrix: { ADMIN: { createProject: true, editProject: true, deleteProject: true, createTasks: true, editTasks: true, deleteTasks: true, manageMilestones: true, managePortfolios: true, viewAnalytics: true, manageMembers: true }, MANAGER: { createProject: true, editProject: true, deleteProject: false, createTasks: true, editTasks: true, deleteTasks: true, manageMilestones: true, managePortfolios: true, viewAnalytics: true, manageMembers: false }, MEMBER: { createProject: false, editProject: false, deleteProject: false, createTasks: true, editTasks: true, deleteTasks: false, manageMilestones: false, managePortfolios: false, viewAnalytics: true, manageMembers: false }, VIEWER: { createProject: false, editProject: false, deleteProject: false, createTasks: false, editTasks: false, deleteTasks: false, manageMilestones: false, managePortfolios: false, viewAnalytics: true, manageMembers: false } } },
         { name: 'Open Team', matrix: { ADMIN: { createProject: true, editProject: true, deleteProject: true, createTasks: true, editTasks: true, deleteTasks: true, manageMilestones: true, managePortfolios: true, viewAnalytics: true, manageMembers: true }, MANAGER: { createProject: true, editProject: true, deleteProject: true, createTasks: true, editTasks: true, deleteTasks: true, manageMilestones: true, managePortfolios: true, viewAnalytics: true, manageMembers: true }, MEMBER: { createProject: true, editProject: true, deleteProject: false, createTasks: true, editTasks: true, deleteTasks: true, manageMilestones: true, managePortfolios: false, viewAnalytics: true, manageMembers: false }, VIEWER: { createProject: false, editProject: false, deleteProject: false, createTasks: false, editTasks: false, deleteTasks: false, manageMilestones: false, managePortfolios: false, viewAnalytics: true, manageMembers: false } } }
     ];
+
+    const hasManageAccess = canManagePortal || isOwner;
 
     return (
         <div className="flex flex-col gap-4 bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800">
@@ -19,7 +21,7 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, allowMana
                     </div>
                 </div>
 
-                {isOwner && (
+                {hasManageAccess && (
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onOpenCustomModal}
@@ -28,13 +30,15 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, allowMana
                             <Plus className="size-4" /> Custom Role
                         </button>
 
-                        <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/60 p-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs">
-                            <span className="font-medium text-zinc-700 dark:text-zinc-300">Manager Access</span>
-                            <label className="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" checked={allowManagerPortalAccess} onChange={(e) => onToggleManagerAccess(e.target.checked)} disabled={isSaving} className="sr-only peer" />
-                                <div className="w-8 h-4 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:after:border-zinc-600 peer-checked:bg-indigo-600"></div>
-                            </label>
-                        </div>
+                        {isOwner && (
+                            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/60 p-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs">
+                                <span className="font-medium text-zinc-700 dark:text-zinc-300">Manager Access</span>
+                                <label className="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" checked={allowManagerPortalAccess} onChange={(e) => onToggleManagerAccess(e.target.checked)} disabled={isSaving} className="sr-only peer" />
+                                    <div className="w-8 h-4 bg-zinc-300 peer-focus:outline-hidden rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all dark:after:border-zinc-600 peer-checked:bg-indigo-600"></div>
+                                </label>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
@@ -49,7 +53,7 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, allowMana
                     </button>
                 </div>
 
-                {isOwner && activeTab === 'matrix' && (
+                {hasManageAccess && activeTab === 'matrix' && (
                     <div className="flex items-center gap-1.5">
                         <Sparkles className="size-3.5 text-amber-500" />
                         <span className="text-zinc-400 text-[11px]">Presets:</span>
@@ -64,3 +68,4 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, allowMana
         </div>
     );
 }
+
