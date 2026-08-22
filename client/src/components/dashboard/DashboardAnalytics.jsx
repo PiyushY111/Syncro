@@ -47,9 +47,10 @@ export default function DashboardAnalytics() {
     if (projects.length === 0) return null;
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 my-6 text-left">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 text-left">
             <StatusDistributionChart statusData={statusData} />
             <ProjectProgressBarChart progressData={progressData} />
         </div>
     );
 }
+
