@@ -1,4 +1,8 @@
+/**
+ * Global Navigation Header Component with Live Workspace Search
+ */
 import { SearchIcon, PanelLeft, LogOut, MoonIcon, SunIcon, User, Settings, Bell, X, Command, FolderKanban, CheckSquare, LayoutDashboard, Inbox, Calendar, Edit3, ArrowRight } from 'lucide-react'
+
 import { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { toggleTheme } from '@/features/themeSlice'
