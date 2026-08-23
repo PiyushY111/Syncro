@@ -1,4 +1,8 @@
+/**
+ * Server RBAC Permission Evaluator & Cache Helper
+ */
 import { prisma } from "../../config/prisma.js";
+
 import { redisCache } from "../../config/redis.js";
 
 export const defaultPermissions = {
