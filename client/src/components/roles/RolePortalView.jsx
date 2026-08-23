@@ -1,4 +1,8 @@
+/**
+ * Role-Based Access Control (RBAC) Portal View Component
+ */
 import { useState, useEffect } from 'react';
+
 import { useSelector, useDispatch } from 'react-redux';
 import { updateWorkspace } from '@/features/workspaceSlice';
 import api from '@/configs/api';
