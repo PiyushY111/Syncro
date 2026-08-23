@@ -1,4 +1,8 @@
+/**
+ * Dashboard Metric Stats Grid Component
+ */
 import { FolderOpen, CheckCircle2, UserCheck, AlertTriangle } from 'lucide-react';
+
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAuth } from '@/context/AuthContext';
