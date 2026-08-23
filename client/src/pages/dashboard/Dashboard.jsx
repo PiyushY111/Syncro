@@ -1,4 +1,8 @@
+/**
+ * Dashboard View - Syncro Executive Workspace Overview
+ */
 import { Plus, Search, CalendarDays, FolderKanban, LayoutDashboard, BarChart3, Clock, X, Command } from 'lucide-react';
+
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import StatsGrid from '@/components/dashboard/StatsGrid';
