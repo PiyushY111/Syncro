@@ -51,6 +51,7 @@ app.use(cookieParser())
 
 const allowedOrigins = [
   ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(url => url.trim().replace(/\/$/, '')) : []),
+  'https://syncro.piyushydv.com',
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
@@ -67,12 +68,21 @@ process.on('unhandledRejection', (reason) => {
 
 const corsOptions = {
   origin: (origin, callback) => {
-    const normalizedOrigin = origin ? origin.replace(/\/$/, '') : '';
-    if (!origin || allowedOrigins.includes(normalizedOrigin)) {
+    if (!origin) {
       callback(null, true);
       return;
     }
-    callback(new Error('Not allowed by CORS'));
+    const normalizedOrigin = origin.replace(/\/$/, '');
+    const isAllowed =
+      allowedOrigins.includes(normalizedOrigin) ||
+      /\.piyushydv\.com$/.test(normalizedOrigin) ||
+      normalizedOrigin.endsWith('piyushydv.com');
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(null, false);
+    }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
