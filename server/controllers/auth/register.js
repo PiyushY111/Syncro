@@ -1,13 +1,16 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../config/prisma.js';
 import { eventBus } from '../../services/eventBus.js';
-import { ConflictError } from '../../utils/errors/appError.js';
+import { ConflictError, BadRequestError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode } from '../../utils/crypto.js';
 
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
+  if (!name || !email || !password) {
+    throw new BadRequestError('Name, email, and password are required');
+  }
   const normalizedEmail = email.toLowerCase().trim();
 
   const existingUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });

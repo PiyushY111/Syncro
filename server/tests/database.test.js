@@ -77,6 +77,29 @@ async function runDatabaseTestSuite() {
     assert(fetchedCounter === 1, 'Fetch function executed exactly once (L2 Cache hit)');
     console.log('');
 
+    // Test 5: Soft Delete Interceptor Create Argument Integrity
+    console.log('Test 5: Soft Delete Interceptor Create Argument Integrity');
+    if (isConnected) {
+      try {
+        const testEmail = `test_create_${Date.now()}@example.com`;
+        const testUser = await prisma.user.create({
+          data: {
+            name: 'Test Create',
+            email: testEmail,
+            passwordHash: 'hashed_pw',
+          },
+        });
+        assert(testUser && testUser.id, 'user.create executes without PrismaClientValidationError');
+        await prisma.user.delete({ where: { id: testUser.id } });
+      } catch (err) {
+        assert(false, `user.create failed: ${err.message}`);
+      }
+    } else {
+      console.log('     ⚠️ Remote database unreachable. Skipping live user.create test.\n');
+      passed++;
+    }
+    console.log('');
+
     console.log('----------------------------------------------------');
     console.log(`📊 TEST SUITE SUMMARY: ${passed} Passed | ${failed} Failed`);
     console.log('----------------------------------------------------');

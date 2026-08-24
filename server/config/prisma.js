@@ -51,13 +51,10 @@ export const prisma = basePrisma.$extends({
 
         // 1. Soft-delete automatic filter interceptor
         if (model && SOFT_DELETE_MODELS.has(model)) {
-          args = args || {}
-          args.where = args.where || {}
-
           if (operation === 'findUnique' || operation === 'findUniqueOrThrow') {
             const modelName = model.charAt(0).toLowerCase() + model.slice(1)
             const targetMethod = operation === 'findUnique' ? 'findFirst' : 'findFirstOrThrow'
-            const where = { ...args.where }
+            const where = { ...(args?.where || {}) }
             if (where.deletedAt === undefined) {
               where.deletedAt = null
             }
@@ -75,7 +72,7 @@ export const prisma = basePrisma.$extends({
             const modelName = model.charAt(0).toLowerCase() + model.slice(1)
             // Convert hard delete to soft-delete update
             const result = await basePrisma[modelName].update({
-              where: args.where,
+              where: args?.where || {},
               data: { deletedAt: new Date() },
             })
             const duration = performance.now() - start
@@ -89,8 +86,10 @@ export const prisma = basePrisma.$extends({
           const writeOps = ['updateMany', 'upsert', 'deleteMany']
 
           if (readOps.includes(operation) || writeOps.includes(operation)) {
+            args = args || {}
+            args.where = args.where || {}
             // Only add default deletedAt: null filter if deletedAt is not explicitly specified
-            if (args.where && args.where.deletedAt === undefined) {
+            if (args.where.deletedAt === undefined) {
               args.where.deletedAt = null
             }
           }
