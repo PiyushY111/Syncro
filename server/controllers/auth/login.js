@@ -5,6 +5,7 @@ import { UnauthorizedError, BadRequestError } from '../../utils/errors/appError.
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode } from '../../utils/crypto.js';
+import { createAccessToken, createRefreshToken, sanitizeUser, ACCESS_COOKIE_OPTIONS, COOKIE_OPTIONS } from './verify.js';
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -25,7 +26,24 @@ export const login = asyncHandler(async (req, res) => {
   }
 
   const isTester = normalizedEmail === 'google-tester@piyushydv.com';
-  const verificationCode = isTester ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
+  if (isTester) {
+    const { token: accessToken } = createAccessToken(user);
+    const { refreshToken } = createRefreshToken(user);
+
+    res.cookie('syncro_access_token', accessToken, ACCESS_COOKIE_OPTIONS);
+    res.cookie('syncro_refresh_token', refreshToken, COOKIE_OPTIONS);
+
+    return ApiResponse.success(res, {
+      data: {
+        requiresVerification: false,
+        token: accessToken,
+        user: sanitizeUser(user),
+      },
+      message: 'Logged in successfully',
+    });
+  }
+
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedCode = hashVerificationCode(verificationCode);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 

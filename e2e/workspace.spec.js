@@ -6,8 +6,6 @@ test.describe('Workspace Onboarding & Operations E2E', () => {
         await page.fill('input[type="email"]', 'google-tester@piyushydv.com');
         await page.fill('input[type="password"]', 'Password123!');
         await page.click('button[type="submit"]');
-        await page.fill('input[placeholder="Enter 2FA Code"]', '123456');
-        await page.click('button[type="submit"]');
     });
 
     test('should allow creating a new workspace successfully', async ({ page }) => {

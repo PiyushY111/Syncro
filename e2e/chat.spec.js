@@ -11,8 +11,6 @@ test.describe('Real-time Collaborative Chat Sync E2E', () => {
         await pageA.fill('input[type="email"]', 'google-tester@piyushydv.com');
         await pageA.fill('input[type="password"]', 'Password123!');
         await pageA.click('button[type="submit"]');
-        await pageA.fill('input[placeholder="Enter 2FA Code"]', '123456');
-        await pageA.click('button[type="submit"]');
 
         // Navigate to chat channel
         await pageA.click('[data-testid="channel-general"]');

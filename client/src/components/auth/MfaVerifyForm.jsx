@@ -20,16 +20,9 @@ export default function MfaVerifyForm({
                     <ShieldCheck className="size-5" />
                 </div>
             </div>
-            {verificationEmail === 'google-tester@piyushydv.com' ? (
-                <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-left text-xs leading-relaxed text-amber-800">
-                    <span className="font-semibold block text-sm mb-1">ℹ️ Google Reviewer Account</span>
-                    This is a pre-configured test environment. To complete authorization, please use the static security code: <strong className="font-extrabold text-sm text-amber-950 bg-amber-200/70 px-2 py-0.5 rounded font-mono ml-0.5">123456</strong>.
-                </div>
-            ) : (
-                <p className="text-sm text-slate-600 mb-6 leading-relaxed text-left">
-                    We sent a 6-digit login verification code to <span className="font-semibold text-slate-950">{verificationEmail}</span>. Enter the code below to complete your login:
-                </p>
-            )}
+            <p className="text-sm text-slate-600 mb-6 leading-relaxed text-left">
+                We sent a 6-digit login verification code to <span className="font-semibold text-slate-950">{verificationEmail}</span>. Enter the code below to complete your login:
+            </p>
             <form onSubmit={handleVerifyCode} className="space-y-6 text-left">
                 <div>
                     <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-slate-500">6-Digit Code</label>

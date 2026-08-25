@@ -22,9 +22,19 @@ test.describe('Authentication E2E Flow', () => {
         await expect(page.locator('text=invalid credentials')).toBeVisible();
     });
 
-    test('should successfully prompt for 2FA on correct credentials', async ({ page }) => {
+    test('should log in google-tester directly without 2FA prompt', async ({ page }) => {
         await page.goto('/login');
         await page.fill('input[type="email"]', 'google-tester@piyushydv.com');
+        await page.fill('input[type="password"]', 'Password123!');
+        await page.click('button[type="submit"]');
+
+        // Check that user is logged in directly and redirected to workspace/dashboard without 2FA
+        await expect(page.locator('input[placeholder="Enter 2FA Code"]')).not.toBeVisible();
+    });
+
+    test('should prompt for 2FA on correct credentials for standard users', async ({ page }) => {
+        await page.goto('/login');
+        await page.fill('input[type="email"]', 'standard-user@syncro.com');
         await page.fill('input[type="password"]', 'Password123!');
         await page.click('button[type="submit"]');
 

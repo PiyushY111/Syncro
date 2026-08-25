@@ -7,7 +7,7 @@ import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode, timingSafeCompare } from '../../utils/crypto.js';
 
-const sanitizeUser = (user) => ({
+export const sanitizeUser = (user) => ({
   id: user.id,
   email: user.email,
   name: user.name,
@@ -44,14 +44,14 @@ export const createRefreshToken = (user) => {
   return { refreshToken, jti };
 };
 
-const COOKIE_OPTIONS = {
+export const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
 };
 
-const ACCESS_COOKIE_OPTIONS = {
+export const ACCESS_COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
   sameSite: 'strict',
@@ -145,7 +145,13 @@ export const resendCode = asyncHandler(async (req, res) => {
   }
 
   const isTester = normalizedEmail === 'google-tester@piyushydv.com';
-  const verificationCode = isTester ? '123456' : Math.floor(100000 + Math.random() * 900000).toString();
+  if (isTester) {
+    return ApiResponse.success(res, {
+      message: '2FA is disabled for this test user account.',
+    });
+  }
+
+  const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedCode = hashVerificationCode(verificationCode);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
