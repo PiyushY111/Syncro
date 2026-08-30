@@ -83,9 +83,10 @@ The platform isolates data between workspace organizations, offloads async work 
 
 ### Testing & Verification
 * **Enterprise Architecture Test Suite (`tests/architecture.test.js`)** — automated test suite validating AppError hierarchy, ApiResponse schemas, asyncHandler, and DTO validators (16 passed tests).
-* **Database Infrastructure Test Suite (`tests/database.test.js`)** — automated test suite verifying DB connection health probes, transaction retries, soft-delete rules, and L2 cache logic (7 passed tests).
 * **Security & Cryptographic Test Suite (`tests/security.test.js`)** — AES-256-GCM field encryption, timing-safe comparison, 2FA code hashing, and XSS sanitization (13 passed tests).
-* **Advanced Security Test Suite (`tests/advancedSecurity.test.js`)** — SHA-256 audit log hash chain validation, recursive body sanitization, security headers (12 passed tests).
+* **Transaction, Outbox & DLQ Suite (`tests/transaction.test.js`)** — transactional outbox event lifecycle, SHA-256 audit chaining, and DLQ replay handler (5 passed tests).
+* **Domain Invariants & Integration Test Suite (`tests/domainInvariants.test.js`)** — production-grade domain rules, authorization hierarchy, graph DAG cycles, sprints, retros, chat boundaries, and rollback security (83+ passed tests).
+* **Concurrency & Stampede Lock Suite (`tests/concurrency.test.js`)** — high-parallelism cache stampede lock, optimistic locking version conflicts, and exponential backoff retry (7 passed tests).
 * **Playwright** — End-to-end multi-browser user flow testing suite (`auth.spec.js`, `chat.spec.js`, `tasks.spec.js`, `whiteboard.spec.js`, `workspace.spec.js`).
 
 ---

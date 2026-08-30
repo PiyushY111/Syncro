@@ -8,6 +8,7 @@
     "start": "prisma generate && node server.js",
     "server": "nodemon server.js",
     "test": "node tests/runAllTests.js",
+    "test:domain": "node tests/domainInvariants.test.js",
     "test:security": "node tests/security.test.js",
     "test:concurrency": "node tests/concurrency.test.js",
     "db:seed": "node prisma/seed.js",
