@@ -32,11 +32,10 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
             const newWorkspace = payload.workspace;
 
             if (payload.requiresApproval || newWorkspace?.approvalStatus === 'PENDING') {
-                toast('Workspace request submitted for Super-Admin review.', {
+                toast('Your workspace request has been submitted for Super-Admin review. You can check the status of your request anytime in Settings > Workspace Requests.', {
                     icon: '⏳',
-                    duration: 5000,
+                    duration: 6000,
                 });
-                dispatch(fetchWorkspaces());
             } else if (newWorkspace) {
                 dispatch(addWorkspace(newWorkspace));
                 dispatch(setCurrentWorkspace(newWorkspace.id));

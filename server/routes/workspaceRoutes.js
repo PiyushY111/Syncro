@@ -4,6 +4,8 @@ import {
     acceptWorkspaceInvitation, 
     createWorkspace, 
     getUserWorkspaces, 
+    getMyWorkspaceRequests,
+    deleteMyWorkspaceRequest,
     sendWorkspaceInvitationEmail,
     updateWorkspace,
     deleteWorkspace,
@@ -14,6 +16,8 @@ import {
 const workspaceRouter = express.Router();
 
 workspaceRouter.get('/', getUserWorkspaces);
+workspaceRouter.get('/my-requests', getMyWorkspaceRequests);
+workspaceRouter.delete('/my-requests/:id', deleteMyWorkspaceRequest);
 workspaceRouter.post('/', createWorkspace);
 workspaceRouter.put('/:id', updateWorkspace);
 workspaceRouter.delete('/:id', deleteWorkspace);

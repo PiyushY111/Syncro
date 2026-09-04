@@ -100,7 +100,13 @@ export const getUserWorkspaces = asyncHandler(async (req, res) => {
     cacheKey,
     async () => {
       const workspaceMemberships = await prisma.workspaceMember.findMany({
-        where: { userId },
+        where: {
+          userId,
+          workspace: {
+            approvalStatus: 'APPROVED',
+            deletedAt: null,
+          },
+        },
         include: {
           workspace: {
             include: {
@@ -134,6 +140,8 @@ export const getUserWorkspaces = asyncHandler(async (req, res) => {
       const workspaces = [];
       for (const membership of workspaceMemberships) {
         const workspace = membership.workspace;
+        if (!workspace || workspace.approvalStatus !== 'APPROVED') continue;
+
         const userRole = membership.role;
         const isManagerOrOwner = ['OWNER', 'ADMIN', 'MANAGER'].includes(userRole) || workspace.ownerId === userId;
 
@@ -162,4 +170,68 @@ export const getUserWorkspaces = asyncHandler(async (req, res) => {
   return ApiResponse.success(res, { data: result });
 });
 
-export default { createWorkspace, getUserWorkspaces };
+/**
+ * Fetch all workspace creation requests submitted by the authenticated user (PENDING & REJECTED).
+ */
+export const getMyWorkspaceRequests = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+
+  const requests = await prisma.workspace.findMany({
+    where: {
+      ownerId: userId,
+      approvalStatus: { in: ['PENDING', 'REJECTED'] },
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      description: true,
+      image_url: true,
+      approvalStatus: true,
+      requestNotes: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  return ApiResponse.success(res, {
+    data: { requests },
+  });
+});
+
+/**
+ * Delete or dismiss a rejected workspace request.
+ */
+export const deleteMyWorkspaceRequest = asyncHandler(async (req, res) => {
+  const userId = req.user.id;
+  const { id } = req.params;
+
+  const workspace = await prisma.workspace.findFirst({
+    where: {
+      id,
+      ownerId: userId,
+      approvalStatus: { in: ['REJECTED', 'PENDING'] },
+    },
+  });
+
+  if (!workspace) {
+    throw new BadRequestError('Workspace request not found or cannot be deleted');
+  }
+
+  await prisma.workspace.delete({
+    where: { id },
+  });
+
+  return ApiResponse.success(res, {
+    message: 'Workspace request removed successfully',
+  });
+});
+
+export default {
+  createWorkspace,
+  getUserWorkspaces,
+  getMyWorkspaceRequests,
+  deleteMyWorkspaceRequest,
+};

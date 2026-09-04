@@ -34,11 +34,10 @@ export default function Layout() {
             const newWorkspace = payload.workspace;
 
             if (payload.requiresApproval || newWorkspace?.approvalStatus === 'PENDING') {
-                toast('Personal workspace request submitted for Super-Admin review.', {
+                toast('Personal workspace request submitted for Super-Admin review. Track status in Settings > Workspace Requests.', {
                     icon: '⏳',
-                    duration: 5000,
+                    duration: 6000,
                 });
-                dispatch(fetchWorkspaces());
             } else if (newWorkspace) {
                 dispatch(addWorkspace(newWorkspace));
                 dispatch(setCurrentWorkspace(newWorkspace.id));

@@ -1,7 +1,6 @@
 import { Routes, Route } from 'react-router-dom';
 import Layout from '@/pages/layout/Layout';
 import { Toaster } from 'react-hot-toast';
-import GlobalConfirmModal from '@/components/common/GlobalConfirmModal';
 import Dashboard from '@/pages/dashboard/Dashboard';
 import Projects from '@/pages/project/Projects';
 import Team from '@/pages/workspace/Team';
@@ -32,7 +31,6 @@ const App = () => {
     return (
         <>
             <Toaster />
-            <GlobalConfirmModal />
             <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<AuthPage />} />

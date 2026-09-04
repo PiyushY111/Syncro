@@ -62,7 +62,6 @@ function WorkspaceDropdown({ onCreateWorkspace }) {
                         {workspaces.map((workspace) => {
                             const initials = workspace.name ? workspace.name.substring(0, 2).toUpperCase() : 'W';
                             const isSelected = currentWorkspace?.id === workspace.id;
-                            const isPending = workspace.approvalStatus === 'PENDING';
 
                             return (
                                 <DropdownMenuItem
@@ -82,16 +81,9 @@ function WorkspaceDropdown({ onCreateWorkspace }) {
                                             </AvatarFallback>
                                         </Avatar>
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-1.5">
-                                                <p className="text-xs font-medium truncate">{workspace.name}</p>
-                                                {isPending && (
-                                                    <span className="text-[9px] px-1.5 py-0.2 rounded font-bold bg-amber-100 dark:bg-amber-950 text-amber-600 dark:text-amber-400">
-                                                        Review
-                                                    </span>
-                                                )}
-                                            </div>
+                                            <p className="text-xs font-medium truncate">{workspace.name}</p>
                                             <p className="text-[10px] text-slate-400 dark:text-zinc-500 truncate">
-                                                {isPending ? 'Pending Super-Admin approval' : `${workspace.members?.length || 0} member${(workspace.members?.length || 0) !== 1 ? 's' : ''}`}
+                                                {workspace.members?.length || 0} member{(workspace.members?.length || 0) !== 1 ? 's' : ''}
                                             </p>
                                         </div>
                                     </div>

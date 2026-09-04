@@ -1,6 +1,8 @@
 export {
     createWorkspace,
-    getUserWorkspaces
+    getUserWorkspaces,
+    getMyWorkspaceRequests,
+    deleteMyWorkspaceRequest
 } from './workspace/workspaceCreate.js';
 
 export {
