@@ -65,8 +65,8 @@ export const createTask = asyncHandler(async (req, res) => {
         } : undefined,
         isRecurring: typeof isRecurring === 'boolean' ? isRecurring : false,
         recurrence: recurrence || "NONE",
-        sprintId: sprintId || null,
-        epicId: epicId || null,
+        sprint: sprintId ? { connect: { id: sprintId } } : undefined,
+        epic: epicId ? { connect: { id: epicId } } : undefined,
         storyPoints: storyPoints ? parseInt(storyPoints, 10) : null,
       },
     });
