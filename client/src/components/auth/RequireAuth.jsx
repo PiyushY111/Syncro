@@ -19,6 +19,10 @@ const RequireAuth = ({ children }) => {
         return <Navigate to={`/auth?next=${next}`} replace />;
     }
 
+    if (user.status === 'PENDING_APPROVAL' && !user.isSuperAdmin && location.pathname !== '/pending-approval') {
+        return <Navigate to="/pending-approval" replace />;
+    }
+
     return children;
 };
 

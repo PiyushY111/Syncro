@@ -57,6 +57,10 @@ model User {
     updatedAt DateTime @updatedAt
     deletedAt DateTime?
 
+    status          String   @default("ACTIVE") // ACTIVE, PENDING_APPROVAL, REJECTED, SUSPENDED
+    isSuperAdmin    Boolean  @default(false)
+    rejectionReason String?
+
     starredChannelIds String[] @default([])
 
     workspaces      WorkspaceMember[]
@@ -82,6 +86,7 @@ model User {
 
     @@index([email])
     @@index([email, deletedAt])
+    @@index([status, deletedAt])
     @@index([deletedAt])
 }
 
@@ -98,6 +103,9 @@ model Workspace {
     updatedAt   DateTime @updatedAt
     deletedAt   DateTime?
 
+    approvalStatus String   @default("APPROVED") // APPROVED, PENDING, REJECTED
+    requestNotes   String?
+
     members    WorkspaceMember[]
     projects   Project[]
     portfolios Portfolio[]
@@ -110,6 +118,7 @@ model Workspace {
 
     @@index([ownerId])
     @@index([ownerId, deletedAt])
+    @@index([approvalStatus, deletedAt])
     @@index([slug])
     @@index([deletedAt])
 }
@@ -662,3 +671,30 @@ model FailedJob {
 
     @@index([isResolved, failedAt])
 }
+
+model PlatformSetting {
+    id        String   @id @default(uuid())
+    key       String   @unique
+    value     Json     @default("{}")
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@index([key])
+}
+
+model VipInviteCode {
+    id          String    @id @default(uuid())
+    code        String    @unique
+    scope       String    @default("ALL_ACCESS") // ALL_ACCESS, ACCOUNT_ONLY, ORG_ONLY
+    maxUses     Int       @default(1)
+    usedCount   Int       @default(0)
+    expiresAt   DateTime?
+    isActive    Boolean   @default(true)
+    createdById String
+    note        String?
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    @@index([code, isActive])
+}
+

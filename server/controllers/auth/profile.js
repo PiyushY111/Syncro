@@ -12,6 +12,9 @@ export const me = asyncHandler(async (req, res) => {
       email: true,
       name: true,
       image: true,
+      status: true,
+      isSuperAdmin: true,
+      rejectionReason: true,
       googleCalendarSync: true,
       googleCalendarEmail: true,
       starredChannelIds: true,
@@ -23,7 +26,22 @@ export const me = asyncHandler(async (req, res) => {
     throw new NotFoundError('User not found');
   }
 
-  return ApiResponse.success(res, { data: { user } });
+  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS || '')
+    .toLowerCase()
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean);
+  const normalizedEmail = (user.email || '').toLowerCase().trim();
+  const isSuperAdmin = Boolean(user.isSuperAdmin || superAdminEmails.includes(normalizedEmail));
+
+  return ApiResponse.success(res, {
+    data: {
+      user: {
+        ...user,
+        isSuperAdmin,
+      },
+    },
+  });
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {

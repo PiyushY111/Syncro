@@ -1,7 +1,7 @@
 /**
  * Global Navigation Header Component with Live Workspace Search
  */
-import { SearchIcon, PanelLeft, LogOut, MoonIcon, SunIcon, User, Settings, Bell, X, Command, FolderKanban, CheckSquare, LayoutDashboard, Inbox, Calendar, Edit3, ArrowRight } from 'lucide-react'
+import { SearchIcon, PanelLeft, LogOut, MoonIcon, SunIcon, User, Settings, Bell, X, Command, FolderKanban, CheckSquare, LayoutDashboard, Inbox, Calendar, Edit3, ArrowRight, Shield } from 'lucide-react'
 
 import { useState, useRef, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
@@ -295,6 +295,15 @@ const Navbar = ({ setIsSidebarOpen }) => {
                                 </div>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
+                            {user?.isSuperAdmin && (
+                                <>
+                                    <DropdownMenuItem onClick={() => navigate('/admin/gatekeeper')} className="cursor-pointer font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/30">
+                                        <Shield className="mr-2 h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                        <span>Gatekeeper Command</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                </>
+                            )}
                             <DropdownMenuItem onClick={() => navigate('/settings')} className="cursor-pointer">
                                 <User className="mr-2 h-4 w-4 text-slate-500" />
                                 <span>Profile & Account</span>

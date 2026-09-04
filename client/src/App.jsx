@@ -23,6 +23,9 @@ import AuditLogs from '@/pages/audit/AuditLogs';
 import OwnerAuditControl from '@/pages/ownerAudit/OwnerAuditControl';
 import Landing from '@/pages/landing/Landing';
 import WhiteboardsPage from '@/pages/whiteboard/WhiteboardsPage';
+import GatekeeperAdmin from '@/pages/admin/GatekeeperAdmin';
+import PendingApprovalScreen from '@/pages/auth/PendingApprovalScreen';
+import RequireSuperAdmin from '@/components/auth/RequireSuperAdmin';
 import { Analytics } from '@vercel/analytics/react'
 
 const App = () => {
@@ -35,6 +38,7 @@ const App = () => {
                 <Route path="/auth" element={<AuthPage />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
+                <Route path="/pending-approval" element={<PendingApprovalScreen />} />
                 <Route path="accept-invite" element={<RequireAuth><AcceptWorkspaceInvite /></RequireAuth>} />
                 
                 {/* Protected Application Routes */}
@@ -48,6 +52,7 @@ const App = () => {
                     <Route path="/roles" element={<RolePortal />} />
                     <Route path="/audit-logs" element={<AuditLogs />} />
                     <Route path="/owner-audit" element={<OwnerAuditControl />} />
+                    <Route path="/admin/gatekeeper" element={<RequireSuperAdmin><GatekeeperAdmin /></RequireSuperAdmin>} />
                     <Route path="/taskDetails" element={<TaskDetails />} />
                     <Route path="/calendar" element={<SmartCalendar />} />
                     <Route path="/whiteboards" element={<WhiteboardsPage />} />

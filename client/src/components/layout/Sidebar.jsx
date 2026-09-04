@@ -61,6 +61,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
         ...(canAccessRolePortal ? [{ name: 'Role Portal', href: '/roles', icon: ShieldCheck }] : []),
         ...(canAccessAuditLogs ? [{ name: 'Audit Logs', href: '/audit-logs', icon: History }] : []),
         ...(isOwner ? [{ name: 'Owner Command', href: '/owner-audit', icon: Crown }] : []),
+        ...(user?.isSuperAdmin ? [{ name: 'Gatekeeper Admin', href: '/admin/gatekeeper', icon: ShieldCheck }] : []),
         { name: 'Calendar', href: '/calendar', icon: Calendar },
         { name: 'Team', href: '/team', icon: UsersIcon },
         { name: 'Chat', href: '/chat', icon: MessageSquare },

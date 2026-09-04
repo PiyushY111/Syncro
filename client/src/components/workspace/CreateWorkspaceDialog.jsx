@@ -19,7 +19,7 @@ import { Textarea } from '@/components/ui/textarea';
 const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
     const dispatch = useDispatch();
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formData, setFormData] = useState({ name: '', description: '', image_url: '' });
+    const [formData, setFormData] = useState({ name: '', description: '', image_url: '', inviteCode: '' });
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -30,13 +30,20 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
             const { data } = await api.post('/api/workspaces', formData);
             const payload = data?.data || data;
             const newWorkspace = payload.workspace;
-            if (newWorkspace) {
+
+            if (payload.requiresApproval || newWorkspace?.approvalStatus === 'PENDING') {
+                toast('Workspace request submitted for Super-Admin review.', {
+                    icon: '⏳',
+                    duration: 5000,
+                });
+            } else if (newWorkspace) {
                 dispatch(addWorkspace(newWorkspace));
                 dispatch(setCurrentWorkspace(newWorkspace.id));
+                toast.success('Workspace created successfully');
             }
-            toast.success('Workspace created successfully');
+
             setIsDialogOpen(false);
-            setFormData({ name: '', description: '', image_url: '' });
+            setFormData({ name: '', description: '', image_url: '', inviteCode: '' });
         } catch (error) {
             toast.error(error.response?.data?.message || error.message);
         } finally {
@@ -64,6 +71,18 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                             onChange={(event) => setFormData({ ...formData, name: event.target.value })}
                             placeholder="e.g. Acme Product Team"
                             required
+                        />
+                    </div>
+
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
+                            VIP Invite Pass <span className="text-slate-400 font-normal">(Optional bypass)</span>
+                        </label>
+                        <Input
+                            value={formData.inviteCode}
+                            onChange={(event) => setFormData({ ...formData, inviteCode: event.target.value.toUpperCase() })}
+                            placeholder="e.g. SYNCRO-VIP-2026"
+                            className="font-mono uppercase text-xs"
                         />
                     </div>
 

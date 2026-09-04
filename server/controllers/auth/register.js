@@ -5,10 +5,14 @@ import { ConflictError, BadRequestError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode } from '../../utils/crypto.js';
+import {
+  resolveUserRegistrationPolicy,
+  notifySuperAdminOfPendingRequest,
+} from '../../services/gatekeeperService.js';
 import { createAccessToken, createRefreshToken, sanitizeUser, ACCESS_COOKIE_OPTIONS, COOKIE_OPTIONS } from './verify.js';
 
 export const register = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, inviteCode } = req.body;
   if (!name || !email || !password) {
     throw new BadRequestError('Name, email, and password are required');
   }
@@ -18,6 +22,12 @@ export const register = asyncHandler(async (req, res) => {
   if (existingUser) {
     throw new ConflictError('An account with this email already exists');
   }
+
+  // Resolve gatekeeper policy
+  const policy = await resolveUserRegistrationPolicy({
+    email: normalizedEmail,
+    inviteCode,
+  });
 
   // Elevate work factor to 12 for GPU cracking resistance
   const passwordHash = await bcrypt.hash(password, 12);
@@ -29,6 +39,8 @@ export const register = asyncHandler(async (req, res) => {
         name: name.trim(),
         email: normalizedEmail,
         passwordHash,
+        status: policy.status,
+        isSuperAdmin: policy.isSuperAdmin,
         twoFactorCode: null,
         twoFactorExpires: null,
       },
@@ -45,6 +57,7 @@ export const register = asyncHandler(async (req, res) => {
         requiresVerification: false,
         token: accessToken,
         user: sanitizeUser(user),
+        requiresApproval: policy.requiresApproval,
       },
       message: 'Account created and logged in successfully',
     });
@@ -59,10 +72,26 @@ export const register = asyncHandler(async (req, res) => {
       name: name.trim(),
       email: normalizedEmail,
       passwordHash,
+      status: policy.status,
+      isSuperAdmin: policy.isSuperAdmin,
       twoFactorCode: hashedCode,
       twoFactorExpires: expiresAt,
     },
   });
+
+  // If pending approval, alert super admin
+  if (policy.status === 'PENDING_APPROVAL') {
+    notifySuperAdminOfPendingRequest({
+      type: 'User Registration',
+      title: `${name.trim()} (${normalizedEmail})`,
+      details: {
+        Name: name.trim(),
+        Email: normalizedEmail,
+        Status: 'PENDING_APPROVAL',
+        RegisteredAt: new Date().toISOString(),
+      },
+    }).catch(() => {});
+  }
 
   eventBus
     .publish('app/auth.registered', {
@@ -76,9 +105,12 @@ export const register = asyncHandler(async (req, res) => {
     data: {
       requiresVerification: true,
       email: user.email,
+      requiresApproval: policy.requiresApproval,
+      status: policy.status,
     },
     message: 'Verification code sent to your email',
   });
 });
 
 export default register;
+

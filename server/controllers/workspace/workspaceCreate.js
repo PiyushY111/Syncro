@@ -6,11 +6,21 @@ import { executeTransaction, getCachedOrFetch } from '../../services/db/dbServic
 import { BadRequestError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
+import {
+  resolveWorkspaceCreationPolicy,
+  notifySuperAdminOfPendingRequest,
+} from '../../services/gatekeeperService.js';
 
 export const createWorkspace = asyncHandler(async (req, res) => {
   const userId = req.user.id;
-  const { name, description = '', image_url = '' } = req.body;
+  const { name, description = '', image_url = '', inviteCode, requestNotes = '' } = req.body;
   if (!name?.trim()) throw new BadRequestError('Workspace name is required');
+
+  // Resolve gatekeeper policy
+  const policy = await resolveWorkspaceCreationPolicy({
+    user: req.user,
+    inviteCode,
+  });
 
   const workspace = await executeTransaction(async (tx) => {
     return await tx.workspace.create({
@@ -20,6 +30,8 @@ export const createWorkspace = asyncHandler(async (req, res) => {
         description: description.trim() || null,
         ownerId: userId,
         image_url: image_url.trim(),
+        approvalStatus: policy.approvalStatus,
+        requestNotes: requestNotes.trim() || null,
         members: { create: { userId, role: 'OWNER' } },
       },
       include: {
@@ -36,6 +48,20 @@ export const createWorkspace = asyncHandler(async (req, res) => {
       },
     });
   });
+
+  if (policy.approvalStatus === 'PENDING') {
+    notifySuperAdminOfPendingRequest({
+      type: 'Workspace Creation',
+      title: `${name.trim()} by ${req.user.name || req.user.email}`,
+      details: {
+        Workspace: name.trim(),
+        Owner: `${req.user.name || 'User'} (${req.user.email})`,
+        Description: description.trim() || 'None',
+        RequestNotes: requestNotes.trim() || 'None',
+        Status: 'PENDING_APPROVAL',
+      },
+    }).catch(() => {});
+  }
 
   await eventBus
     .publish('app/workspace.created', {
@@ -55,8 +81,14 @@ export const createWorkspace = asyncHandler(async (req, res) => {
   } catch {}
 
   return ApiResponse.created(res, {
-    data: { workspace },
-    message: 'Workspace created successfully',
+    data: {
+      workspace,
+      requiresApproval: policy.requiresApproval,
+      approvalStatus: policy.approvalStatus,
+    },
+    message: policy.requiresApproval
+      ? 'Workspace creation request submitted for Super-Admin approval'
+      : 'Workspace created successfully',
   });
 });
 

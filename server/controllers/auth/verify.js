@@ -7,16 +7,29 @@ import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode, timingSafeCompare } from '../../utils/crypto.js';
 
-export const sanitizeUser = (user) => ({
-  id: user.id,
-  email: user.email,
-  name: user.name,
-  image: user.image || '',
-  googleCalendarSync: user.googleCalendarSync,
-  googleCalendarEmail: user.googleCalendarEmail,
-  starredChannelIds: user.starredChannelIds || [],
-  createdAt: user.createdAt,
-});
+export const sanitizeUser = (user) => {
+  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS || '')
+    .toLowerCase()
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean);
+  const normalizedEmail = (user.email || '').toLowerCase().trim();
+  const isSuperAdmin = Boolean(user.isSuperAdmin || superAdminEmails.includes(normalizedEmail));
+
+  return {
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    image: user.image || '',
+    status: user.status || 'ACTIVE',
+    isSuperAdmin,
+    rejectionReason: user.rejectionReason || null,
+    googleCalendarSync: user.googleCalendarSync,
+    googleCalendarEmail: user.googleCalendarEmail,
+    starredChannelIds: user.starredChannelIds || [],
+    createdAt: user.createdAt,
+  };
+};
 
 /**
  * Generates short-lived Access Token (15m) with unique JTI.

@@ -34,6 +34,7 @@ import whiteboardRouter from './routes/whiteboardRoutes.js'
 import sprintRouter from './routes/sprintRoutes.js'
 import epicRouter from './routes/epicRoutes.js'
 import retroRouter from './routes/retroRoutes.js'
+import adminRouter from './routes/adminRoutes.js'
 import { checkDatabaseHealth } from './services/db/dbService.js'
 import { basePrisma } from './config/prisma.js'
 import cookieParser from 'cookie-parser'
@@ -121,6 +122,7 @@ app.use('/api/whiteboards', protect, whiteboardRouter);
 app.use('/api/sprints', protect, sprintRouter);
 app.use('/api/epics', protect, epicRouter);
 app.use('/api/retros', protect, retroRouter);
+app.use('/api/admin', adminRouter);
 
 app.get('/', (req, res) => res.json({ message: "Server is live", status: "OK" }));
 

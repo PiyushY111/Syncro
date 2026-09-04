@@ -98,6 +98,21 @@ export const AuthProvider = ({ children }) => {
         return payload;
     };
 
+    const refreshUser = async () => {
+        if (!token) return null;
+        try {
+            const { data } = await api.get('/api/auth/me');
+            const payload = data?.data || data;
+            if (payload?.user) {
+                setUser(payload.user);
+                persistSession(token, payload.user);
+                return payload.user;
+            }
+        } catch {
+            return null;
+        }
+    };
+
     const logout = () => {
         clearSession();
         setToken('');
@@ -116,11 +131,15 @@ export const AuthProvider = ({ children }) => {
                 token,
                 loading,
                 isAuthenticated: Boolean(user),
+                isSuperAdmin: Boolean(user?.isSuperAdmin),
+                isPendingApproval: user?.status === 'PENDING_APPROVAL',
+                isRejected: user?.status === 'REJECTED',
                 login,
                 verifyLoginCode,
                 register,
                 logout,
                 updateUser,
+                refreshUser,
             }}
         >
             {children}
