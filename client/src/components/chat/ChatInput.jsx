@@ -96,11 +96,11 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
     }, []);
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white border-t border-zinc-200 px-5 py-3 relative" onClick={(e) => e.stopPropagation()}>
+        <form onSubmit={handleSubmit} className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 px-5 py-3 relative" onClick={(e) => e.stopPropagation()}>
             {/* Mention Suggestions Dropdown */}
             {showSuggestions && filteredMembers.length > 0 && (
                 <div className="absolute bottom-[calc(100%-8px)] left-5 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl overflow-hidden z-50">
-                    <div className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/80 text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">
+                    <div className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/80 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                         Mention workspace member
                     </div>
                     <ul className="max-h-48 overflow-y-auto divide-y divide-zinc-50 dark:divide-zinc-800/50">
@@ -123,7 +123,7 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                 </div>
             )}
 
-            <div className="flex items-center border border-zinc-300 rounded-lg border-l-4 border-l-blue-400 bg-white overflow-hidden focus-within:border-zinc-400 focus-within:border-l-blue-500 transition">
+            <div className="flex items-center border border-zinc-300 dark:border-zinc-700 rounded-lg border-l-4 border-l-blue-400 bg-white dark:bg-zinc-800/80 overflow-hidden focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:border-l-blue-500 transition">
                 <input
                     ref={inputRef}
                     type="text"
@@ -131,13 +131,13 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                     value={content}
                     onChange={handleChange}
                     onKeyDown={handleKeyDown}
-                    className="flex-1 min-w-0 bg-transparent px-4 py-3 text-sm text-zinc-800 placeholder-zinc-400 focus:outline-none"
+                    className="flex-1 min-w-0 bg-transparent px-4 py-3 text-sm text-zinc-800 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 focus:outline-none"
                 />
                 <div className="flex items-center gap-1 pr-2">
-                    <button type="button" className="p-2 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors cursor-pointer" title="Attachments coming soon">
+                    <button type="button" className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer" title="Attachments coming soon">
                         <Paperclip className="size-[18px]" />
                     </button>
-                    <button type="button" className="p-2 text-zinc-400 hover:text-zinc-600 hover:bg-zinc-100 rounded-lg transition-colors cursor-pointer" title="Emoji picker coming soon">
+                    <button type="button" className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer" title="Emoji picker coming soon">
                         <Smile className="size-[18px]" />
                     </button>
                     <button type="submit" disabled={!content.trim()} className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full disabled:opacity-30 transition cursor-pointer ml-1">

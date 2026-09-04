@@ -14,7 +14,7 @@ export default function Chat() {
     const s = useChatState();
 
     return (
-        <main className="h-full flex bg-white overflow-hidden">
+        <main className="h-full flex bg-white dark:bg-zinc-950 overflow-hidden">
             <ChatChannelSidebar
                 channels={s.channels}
                 members={s.currentWorkspace?.members || []}
@@ -33,7 +33,7 @@ export default function Chat() {
                 setSearchQuery={s.setSearchQuery}
             />
 
-            <section className="min-w-0 flex-1 flex flex-col h-full">
+            <section className="min-w-0 flex-1 flex flex-col h-full bg-white dark:bg-zinc-950">
                 <ChatHeader
                     activeChannel={s.activeChannel}
                     activeDM={s.activeDM}
@@ -47,18 +47,18 @@ export default function Chat() {
 
                 {s.searchQuery.trim() ? (
                     <div className="flex-1 flex flex-col h-full bg-zinc-50 dark:bg-zinc-950 overflow-hidden text-left animate-fade-in">
-                        <div className="px-5 py-4 border-b border-zinc-200 bg-white">
-                            <h2 className="text-sm font-bold text-zinc-900">Search Results for "{s.searchQuery}"</h2>
-                            <p className="text-[11px] text-zinc-405 mt-0.5">Found {s.searchResults.length} matches.</p>
+                        <div className="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+                            <h2 className="text-sm font-bold text-zinc-900 dark:text-white">Search Results for "{s.searchQuery}"</h2>
+                            <p className="text-[11px] text-zinc-400 dark:text-zinc-500 mt-0.5">Found {s.searchResults.length} matches.</p>
                         </div>
                         <div className="flex-1 overflow-y-auto p-5 space-y-3.5">
                             {s.searchResults.map((m) => (
-                                <div key={m.id} onClick={() => s.handleSelectSearchResult(m)} className="p-4 bg-white border border-zinc-200 hover:border-blue-400 rounded-xl cursor-pointer shadow-xs transition duration-200">
+                                <div key={m.id} onClick={() => s.handleSelectSearchResult(m)} className="p-4 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:border-blue-400 dark:hover:border-blue-500 rounded-xl cursor-pointer shadow-xs transition duration-200">
                                     <div className="flex justify-between items-start mb-2">
-                                        <span className="text-xs font-bold text-zinc-900">{m.user?.name || "Unknown"}</span>
-                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 text-blue-600">{m.channel ? `#${m.channel.name}` : `DM`}</span>
+                                        <span className="text-xs font-bold text-zinc-900 dark:text-white">{m.user?.name || "Unknown"}</span>
+                                        <span className="text-[10px] font-semibold px-2 py-0.5 rounded bg-blue-50 dark:bg-blue-950/50 text-blue-600 dark:text-blue-400">{m.channel ? `#${m.channel.name}` : `DM`}</span>
                                     </div>
-                                    <p className="text-xs text-zinc-700 leading-relaxed break-words">{m.content}</p>
+                                    <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed break-words">{m.content}</p>
                                 </div>
                             ))}
                         </div>

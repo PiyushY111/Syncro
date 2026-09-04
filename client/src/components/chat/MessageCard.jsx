@@ -12,14 +12,14 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
     if (isSystem) {
         return (
             <div className="flex items-center gap-3 py-3 px-5 animate-fade-in">
-                <hr className="flex-1 border-zinc-200" />
-                <span className="text-xs text-zinc-400 whitespace-nowrap">
+                <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                <span className="text-xs text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
                     {message.content}
-                    <span className="text-zinc-300 ml-2">
+                    <span className="text-zinc-400 dark:text-zinc-500 ml-2">
                         {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                 </span>
-                <hr className="flex-1 border-zinc-200" />
+                <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
             </div>
         );
     }
@@ -47,8 +47,8 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
             {/* Message Body & Metadata */}
             <div className={`flex flex-col max-w-[70%] ${isOwner ? 'items-end' : 'items-start'}`}>
                 {/* Name & Time */}
-                <div className="flex items-center gap-2 mb-1 text-[11px] text-zinc-400">
-                    {!isOwner && <span className="font-bold text-xs text-zinc-700">{senderName}</span>}
+                <div className="flex items-center gap-2 mb-1 text-[11px] text-zinc-400 dark:text-zinc-500">
+                    {!isOwner && <span className="font-bold text-xs text-zinc-700 dark:text-zinc-200">{senderName}</span>}
                     <span>
                         {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
