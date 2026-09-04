@@ -139,6 +139,48 @@ export const validateAndRedeemVipCode = async (code, requiredScope = 'ALL_ACCESS
 };
 
 /**
+ * Verifies whether a user has Super-Admin authorization through env whitelist, DB, or Redis cache.
+ */
+export const checkIsSuperAdmin = async (user) => {
+  if (!user) return false;
+  if (user.isSuperAdmin === true) return true;
+
+  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS || '')
+    .toLowerCase()
+    .split(',')
+    .map((e) => e.trim())
+    .filter(Boolean);
+
+  const normalizedEmail = (user.email || '').toLowerCase().trim();
+  if (normalizedEmail && superAdminEmails.includes(normalizedEmail)) {
+    return true;
+  }
+
+  if (user.id) {
+    try {
+      const cacheKey = `user:is_superadmin:${user.id}`;
+      const cached = await redisCache.get(cacheKey);
+      if (cached === 'true') return true;
+      if (cached === 'false') return false;
+
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { isSuperAdmin: true, email: true },
+      });
+      if (dbUser) {
+        const isAdmin = Boolean(
+          dbUser.isSuperAdmin ||
+          (dbUser.email && superAdminEmails.includes(dbUser.email.toLowerCase().trim()))
+        );
+        await redisCache.set(cacheKey, isAdmin ? 'true' : 'false', isAdmin ? 3600 : 300);
+        return isAdmin;
+      }
+    } catch {}
+  }
+  return false;
+};
+
+/**
  * Resolves user registration status and approval requirement.
  */
 export const resolveUserRegistrationPolicy = async ({ email, inviteCode, isInvited = false }) => {
@@ -151,7 +193,7 @@ export const resolveUserRegistrationPolicy = async ({ email, inviteCode, isInvit
   const normalizedEmail = (email || '').toLowerCase().trim();
 
   // Root Super-Admin check
-  if (superAdminEmails.includes(normalizedEmail)) {
+  if (normalizedEmail && superAdminEmails.includes(normalizedEmail)) {
     return {
       status: 'ACTIVE',
       isSuperAdmin: true,
@@ -222,15 +264,8 @@ export const resolveUserRegistrationPolicy = async ({ email, inviteCode, isInvit
  * Resolves workspace creation status and approval requirement.
  */
 export const resolveWorkspaceCreationPolicy = async ({ user, inviteCode }) => {
-  const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS || '')
-    .toLowerCase()
-    .split(',')
-    .map((e) => e.trim())
-    .filter(Boolean);
-
-  const normalizedEmail = (user?.email || '').toLowerCase().trim();
-
-  if (user?.isSuperAdmin || superAdminEmails.includes(normalizedEmail)) {
+  const isSuperAdmin = await checkIsSuperAdmin(user);
+  if (isSuperAdmin) {
     return {
       approvalStatus: 'APPROVED',
       requiresApproval: false,
@@ -238,6 +273,7 @@ export const resolveWorkspaceCreationPolicy = async ({ user, inviteCode }) => {
     };
   }
 
+  const normalizedEmail = (user?.email || '').toLowerCase().trim();
   const settings = await getPlatformSettings();
 
   // VIP code bypass

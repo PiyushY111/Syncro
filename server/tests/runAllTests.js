@@ -6,6 +6,7 @@ const testSuites = [
   { name: 'Security & Cryptographic Suite', file: 'tests/security.test.js' },
   { name: 'Transaction, Outbox & DLQ Suite', file: 'tests/transaction.test.js' },
   { name: 'Domain Invariants & Business Logic Suite', file: 'tests/domainInvariants.test.js' },
+  { name: 'Gatekeeper & Super-Admin Policy Suite', file: 'tests/gatekeeper.test.js' },
   { name: 'Concurrency & Stampede Lock Suite', file: 'tests/concurrency.test.js' },
 ];
 

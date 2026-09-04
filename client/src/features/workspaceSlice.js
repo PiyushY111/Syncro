@@ -95,19 +95,23 @@ const workspaceSlice = createSlice({
             }
         });
         builder.addCase(fetchWorkspaces.fulfilled, (state, action) => {
-            state.workspaces = action.payload;
-            if (action.payload.length > 0) {
+            state.workspaces = action.payload || [];
+            if (state.workspaces.length > 0) {
+                const approvedWorkspaces = state.workspaces.filter((w) => w.approvalStatus !== 'PENDING');
+                const defaultCandidate = approvedWorkspaces.length > 0 ? approvedWorkspaces[0] : state.workspaces[0];
                 const localStorageCurrentWorkspaceId = localStorage.getItem("currentWorkspaceId");
                 if (localStorageCurrentWorkspaceId) {
-                    const findWorkspace = action.payload.find((w) => w.id === localStorageCurrentWorkspaceId);
+                    const findWorkspace = state.workspaces.find((w) => w.id === localStorageCurrentWorkspaceId);
                     if (findWorkspace) {
                         state.currentWorkspace = findWorkspace;
                     } else {
-                        state.currentWorkspace = action.payload[0];
+                        state.currentWorkspace = defaultCandidate;
                     }
                 } else {
-                    state.currentWorkspace = action.payload[0];
+                    state.currentWorkspace = defaultCandidate;
                 }
+            } else {
+                state.currentWorkspace = null;
             }
             state.loading = false;
         });

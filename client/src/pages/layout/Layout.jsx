@@ -32,11 +32,18 @@ export default function Layout() {
             });
             const payload = data?.data || data;
             const newWorkspace = payload.workspace;
-            if (newWorkspace) {
+
+            if (payload.requiresApproval || newWorkspace?.approvalStatus === 'PENDING') {
+                toast('Personal workspace request submitted for Super-Admin review.', {
+                    icon: '⏳',
+                    duration: 5000,
+                });
+                dispatch(fetchWorkspaces());
+            } else if (newWorkspace) {
                 dispatch(addWorkspace(newWorkspace));
                 dispatch(setCurrentWorkspace(newWorkspace.id));
+                toast.success('Welcome! Your personal workspace is ready.');
             }
-            toast.success('Welcome! Your personal workspace is ready.');
         } catch (error) {
             toast.error(error.response?.data?.message || 'Failed to initialize workspace');
         } finally {
@@ -78,13 +85,18 @@ export default function Layout() {
         );
     }
 
-    if (!workspaces.length) {
+    const approvedWorkspaces = workspaces.filter((w) => w.approvalStatus !== 'PENDING');
+    const pendingWorkspaces = workspaces.filter((w) => w.approvalStatus === 'PENDING');
+
+    if (!approvedWorkspaces.length) {
         return (
             <NoWorkspaceScreen
                 isCreateWorkspaceOpen={isCreateWorkspaceOpen}
                 setIsCreateWorkspaceOpen={setIsCreateWorkspaceOpen}
                 handleCreatePersonalWorkspace={handleCreatePersonalWorkspace}
                 isCreatingPersonal={isCreatingPersonal}
+                pendingWorkspaces={pendingWorkspaces}
+                onRefresh={() => dispatch(fetchWorkspaces())}
             />
         );
     }

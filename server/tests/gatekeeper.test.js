@@ -2,6 +2,9 @@ import assert from 'assert';
 import {
   isDomainWhitelisted,
   DEFAULT_PLATFORM_SETTINGS,
+  checkIsSuperAdmin,
+  resolveUserRegistrationPolicy,
+  resolveWorkspaceCreationPolicy,
 } from '../services/gatekeeperService.js';
 import { requireSuperAdmin } from '../middlewares/superAdminMiddleware.js';
 import { redisCache } from '../config/redis.js';
@@ -123,10 +126,50 @@ await asyncIt('should reject regular user with cached non-admin status', async (
   assert.strictEqual(caughtError.errorCode, 'FORBIDDEN');
 });
 
+// 4. Gatekeeper checkIsSuperAdmin & Policies
+console.log('\n4. checkIsSuperAdmin & Policy Resolution');
+await asyncIt('checkIsSuperAdmin returns true when isSuperAdmin flag is true', async () => {
+  const user = { id: 'usr-admin-1', email: 'admin@syncro.dev', isSuperAdmin: true };
+  const isAdmin = await checkIsSuperAdmin(user);
+  assert.strictEqual(isAdmin, true);
+});
+
+await asyncIt('checkIsSuperAdmin returns true for env whitelist email', async () => {
+  process.env.SUPER_ADMIN_EMAILS = 'superboss@corp.com';
+  const user = { id: 'usr-boss', email: 'superboss@corp.com' };
+  const isAdmin = await checkIsSuperAdmin(user);
+  assert.strictEqual(isAdmin, true);
+});
+
+await asyncIt('checkIsSuperAdmin returns true for cached superadmin status', async () => {
+  process.env.SUPER_ADMIN_EMAILS = 'other@corp.com';
+  await redisCache.set('user:is_superadmin:usr-cached-admin', 'true');
+  const user = { id: 'usr-cached-admin', email: 'cached@test.com' };
+  const isAdmin = await checkIsSuperAdmin(user);
+  assert.strictEqual(isAdmin, true);
+});
+
+await asyncIt('resolveUserRegistrationPolicy allows super-admin instantly', async () => {
+  process.env.SUPER_ADMIN_EMAILS = 'founder@syncro.io';
+  const policy = await resolveUserRegistrationPolicy({ email: 'founder@syncro.io' });
+  assert.strictEqual(policy.status, 'ACTIVE');
+  assert.strictEqual(policy.isSuperAdmin, true);
+  assert.strictEqual(policy.requiresApproval, false);
+});
+
+await asyncIt('resolveWorkspaceCreationPolicy auto-approves for superadmin', async () => {
+  const user = { id: 'usr-sa', email: 'founder@syncro.io', isSuperAdmin: true };
+  const policy = await resolveWorkspaceCreationPolicy({ user });
+  assert.strictEqual(policy.approvalStatus, 'APPROVED');
+  assert.strictEqual(policy.requiresApproval, false);
+});
+
 console.log('\n====================================================');
 console.log(`Gatekeeper Unit Test Summary: ${passedTests}/${totalTests} Passed`);
 console.log('====================================================\n');
 
 if (passedTests !== totalTests) {
   process.exit(1);
+} else {
+  process.exit(0);
 }

@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useDispatch } from 'react-redux';
 import api from '@/configs/api';
-import { addWorkspace, setCurrentWorkspace } from '@/features/workspaceSlice';
+import { addWorkspace, setCurrentWorkspace, fetchWorkspaces } from '@/features/workspaceSlice';
 import {
     Dialog,
     DialogContent,
@@ -36,6 +36,7 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                     icon: '⏳',
                     duration: 5000,
                 });
+                dispatch(fetchWorkspaces());
             } else if (newWorkspace) {
                 dispatch(addWorkspace(newWorkspace));
                 dispatch(setCurrentWorkspace(newWorkspace.id));
