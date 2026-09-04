@@ -1,6 +1,17 @@
-import { encryptField, decryptField, timingSafeCompare, hashVerificationCode } from '../utils/crypto.js';
+import { 
+  encryptField, 
+  decryptField, 
+  timingSafeCompare, 
+  hashVerificationCode,
+  generateOAuthState,
+  verifyOAuthState,
+  generatePasswordResetToken,
+  hashToken,
+  generateApiKey,
+  hashApiKey
+} from '../utils/crypto.js';
 import { sanitizeString } from '../middlewares/sanitize.js';
-import { validateRegister } from '../validators/authValidators.js';
+import { validateRegister, validateForgotPassword, validateResetPassword } from '../validators/authValidators.js';
 
 async function runSecurityTestSuite() {
   console.log('Starting Enterprise Security & Cryptographic Verification Test Suite...\n');
@@ -66,6 +77,51 @@ async function runSecurityTestSuite() {
 
     assert(weakErr !== null, 'Weak password triggers validation error');
     assert(strongErr === null, 'NIST-compliant password passes validation');
+    console.log('');
+
+    // Test 6: OAuth 2.0 State HMAC-SHA256 Generation & Anti-CSRF Verification
+    console.log('Test 6: OAuth 2.0 HMAC-SHA256 State Anti-CSRF Protection');
+    const mockUserId = 'usr-sec-101';
+    const oauthState = generateOAuthState(mockUserId);
+    assert(oauthState.includes('.'), 'OAuth state combines base64url payload with HMAC-SHA256 signature separated by dot');
+
+    const verifiedResult = verifyOAuthState(oauthState);
+    assert(verifiedResult.valid === true && verifiedResult.payload.userId === mockUserId, 'verifyOAuthState successfully validates signature and extracts userId');
+
+    const tamperedState = oauthState.slice(0, -4) + 'abcd';
+    const tamperedResult = verifyOAuthState(tamperedState);
+    assert(tamperedResult.valid === false, 'Tampered OAuth state signature is rejected (valid: false)');
+
+    const expiredState = generateOAuthState(mockUserId);
+    // Verify with maxAgeMs = -1 to simulate immediate expiry
+    const expiredResult = verifyOAuthState(expiredState, -1);
+    assert(expiredResult.valid === false && expiredResult.error.includes('expired'), 'Expired OAuth state exceeds TTL and is rejected');
+    console.log('');
+
+    // Test 7: Cryptographic Password Reset Token Lifecycle & Validation
+    console.log('Test 7: Password Reset Cryptographic Token & DTO Validation');
+    const resetTokens = generatePasswordResetToken();
+    assert(resetTokens.token.length === 64, 'Password reset raw token is 32 random bytes (64 hex characters)');
+    assert(resetTokens.tokenHash.length === 64, 'SHA-256 hashed token is 64 hex characters');
+    assert(hashToken(resetTokens.token) === resetTokens.tokenHash, 'hashToken deterministic SHA-256 match');
+
+    const validForgotReq = { body: { email: 'user@syncro.dev' } };
+    const invalidForgotReq = { body: { email: 'not-an-email' } };
+    assert(validateForgotPassword(validForgotReq) === null, 'Valid email passes forgotPassword validation');
+    assert(validateForgotPassword(invalidForgotReq) !== null, 'Invalid email fails forgotPassword validation');
+
+    const validResetReq = { body: { token: resetTokens.token, newPassword: 'SecureResetPass123!' } };
+    const weakResetReq = { body: { token: resetTokens.token, newPassword: 'short' } };
+    assert(validateResetPassword(validResetReq) === null, 'Valid token and complex password pass resetPassword validation');
+    assert(validateResetPassword(weakResetReq) !== null, 'Weak new password fails resetPassword validation');
+    console.log('');
+
+    // Test 8: Enterprise API Key Generation & Cryptographic Hashing
+    console.log('Test 8: API Key Cryptographic Entropy & Hashing');
+    const apiKeyData = generateApiKey();
+    assert(apiKeyData.apiKey.startsWith('syncro_'), 'Generated API key has syncro_ prefix');
+    assert(apiKeyData.keyHash.length === 64, 'Hashed API key is standard SHA-256 digest');
+    assert(hashApiKey(apiKeyData.apiKey) === apiKeyData.keyHash, 'hashApiKey accurately derives identical hash from raw key');
     console.log('');
 
     console.log('----------------------------------------------------');

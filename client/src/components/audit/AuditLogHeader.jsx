@@ -1,8 +1,11 @@
-import { History, Search, ShieldAlert, Crown, FileSpreadsheet } from 'lucide-react';
+import { useState } from 'react';
+import { History, Search, ShieldAlert, ShieldCheck, Crown, FileSpreadsheet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import AuditChainVerifyModal from './AuditChainVerifyModal';
 
-export default function AuditLogHeader({ search, setSearch, entityFilter, setEntityFilter, severityFilter, setSeverityFilter, isOwner }) {
+export default function AuditLogHeader({ search, setSearch, entityFilter, setEntityFilter, severityFilter, setSeverityFilter, isOwner, userRole, workspaceId }) {
     const navigate = useNavigate();
+    const [isVerifyOpen, setIsVerifyOpen] = useState(false);
 
     const categories = ['ALL', 'TASK', 'PROJECT', 'MILESTONE', 'PORTFOLIO', 'USER'];
     const severities = ['ALL', 'INFO', 'WARNING', 'CRITICAL'];
@@ -20,14 +23,26 @@ export default function AuditLogHeader({ search, setSearch, entityFilter, setEnt
                     </div>
                 </div>
 
-                {isOwner && (
-                    <button
-                        onClick={() => navigate('/owner-audit')}
-                        className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-amber-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition shadow-xs cursor-pointer"
-                    >
-                        <Crown className="size-4" /> Owner Security Command Center
-                    </button>
-                )}
+                <div className="flex items-center gap-2 flex-wrap">
+                    {(isOwner || userRole === 'ADMIN') && (
+                        <button
+                            type="button"
+                            onClick={() => setIsVerifyOpen(true)}
+                            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl transition shadow-xs cursor-pointer"
+                        >
+                            <ShieldCheck className="size-4" /> Verify Chain Integrity
+                        </button>
+                    )}
+
+                    {isOwner && (
+                        <button
+                            onClick={() => navigate('/owner-audit')}
+                            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold text-amber-950 bg-amber-400 hover:bg-amber-300 rounded-xl transition shadow-xs cursor-pointer"
+                        >
+                            <Crown className="size-4" /> Owner Security Command Center
+                        </button>
+                    )}
+                </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-zinc-100 dark:border-zinc-800/80 pt-3 text-xs">
@@ -66,6 +81,12 @@ export default function AuditLogHeader({ search, setSearch, entityFilter, setEnt
                     </select>
                 </div>
             </div>
+
+            <AuditChainVerifyModal
+                isOpen={isVerifyOpen}
+                onClose={() => setIsVerifyOpen(false)}
+                workspaceId={workspaceId}
+            />
         </div>
     );
 }

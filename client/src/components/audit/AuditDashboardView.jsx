@@ -48,6 +48,8 @@ export default function AuditDashboardView() {
                 severityFilter={severityFilter}
                 setSeverityFilter={setSeverityFilter}
                 isOwner={isOwner}
+                userRole={userRole}
+                workspaceId={currentWorkspace?.id}
             />
 
             <AuditMetricsWidget logs={logs} total={total} />

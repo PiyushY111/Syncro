@@ -1,4 +1,6 @@
 import { prisma } from '../../../config/prisma.js';
+import { redisCache } from '../../../config/redis.js';
+import { invalidateUserWorkspaceRoleCache } from '../../role/checkPermissionHelper.js';
 
 export const removeMember = async (req, res) => {
     try {
@@ -42,6 +44,11 @@ export const removeMember = async (req, res) => {
         await prisma.workspaceMember.delete({
             where: { id: memberId },
         });
+
+        await invalidateUserWorkspaceRoleCache(targetMember.userId, workspaceId);
+        try {
+            await redisCache.del(`user:workspaces:${targetMember.userId}`);
+        } catch {}
 
         const updatedWorkspace = await prisma.workspace.findUnique({
             where: { id: workspaceId },

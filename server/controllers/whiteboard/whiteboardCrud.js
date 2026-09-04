@@ -177,6 +177,14 @@ export const starWhiteboard = async (req, res) => {
         const { id } = req.params;
         const board = await prisma.whiteboard.findUnique({ where: { id } });
         if (!board) return res.status(404).json({ message: 'Whiteboard not found' });
+
+        if (board.workspaceId) {
+            const { role } = await getUserWorkspaceRole(req.user.id, board.workspaceId);
+            if (!role) {
+                return res.status(403).json({ message: "Access restricted to workspace members only" });
+            }
+        }
+
         const updated = await prisma.whiteboard.update({
             where: { id },
             data: { isStarred: !board.isStarred }

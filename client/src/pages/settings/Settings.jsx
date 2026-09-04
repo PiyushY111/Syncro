@@ -1,6 +1,7 @@
 import { User, Settings2, Clock } from 'lucide-react';
 import ProfileSettingsForm from '@/components/settings/ProfileSettingsForm';
 import PasswordSettingsForm from '@/components/settings/PasswordSettingsForm';
+import ActiveSessionsCard from '@/components/settings/ActiveSessionsCard';
 import WorkspaceSettingsForm from '@/components/settings/WorkspaceSettingsForm';
 import WorkspaceDeleteModal from '@/components/settings/WorkspaceDeleteModal';
 import WorkspaceRequestsTab from '@/components/settings/WorkspaceRequestsTab';
@@ -81,6 +82,8 @@ export default function SettingsPage() {
                             isUpdatingPassword={settings.isUpdatingPassword}
                             handleUpdatePassword={settings.handleUpdatePassword}
                         />
+
+                        <ActiveSessionsCard />
                     </div>
                 )}
 

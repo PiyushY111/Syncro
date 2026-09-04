@@ -28,6 +28,12 @@ export const saveWhiteboard = async (req, res) => {
             }
         }
 
+        const expectedVersion = req.body.expectedVersion !== undefined ? Number(req.body.expectedVersion) : undefined;
+        if (expectedVersion !== undefined && board.version !== expectedVersion) {
+            return res.status(409).json({ message: "Conflict: Whiteboard was modified by another collaborator. Please reload." });
+        }
+        updateData.version = { increment: 1 };
+
         const previousState = { ...board };
 
         const whiteboard = await prisma.whiteboard.update({

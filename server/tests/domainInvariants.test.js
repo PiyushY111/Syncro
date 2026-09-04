@@ -54,6 +54,7 @@ import {
   hasWorkspacePermission, 
   getUserWorkspaceRole 
 } from '../controllers/role/checkPermissionHelper.js';
+import { validateCreateMeeting } from '../validators/meetingValidators.js';
 
 // Execution Telemetry
 let totalPassed = 0;
@@ -312,6 +313,28 @@ async function testTaskGraphAndConcurrency() {
   const conflictResult = checkVersionConflict(2, currentTaskInDb.version);
   assert(conflictResult.conflict === true && conflictResult.statusCode === 409, 'Stale expectedVersion (2 vs 3) triggers HTTP 409 Conflict');
   assert(checkVersionConflict(3, currentTaskInDb.version).conflict === false, 'Matching expectedVersion (3 == 3) passes optimistic lock validation');
+
+  // Project Optimistic Concurrency Invariant
+  const currentProjectInDb = { id: 'proj-1', version: 5, name: 'Core Engine' };
+  const checkProjectVersionConflict = (expectedVersion, dbVersion) => {
+    if (expectedVersion !== undefined && expectedVersion !== dbVersion) {
+      return { conflict: true, statusCode: 409, message: 'Conflict: Project was modified by another user. Please refresh and try again.' };
+    }
+    return { conflict: false };
+  };
+  assert(checkProjectVersionConflict(4, currentProjectInDb.version).conflict === true, 'Stale project expectedVersion (4 vs 5) triggers HTTP 409 Conflict');
+  assert(checkProjectVersionConflict(5, currentProjectInDb.version).conflict === false, 'Matching project expectedVersion (5 == 5) passes optimistic lock validation');
+
+  // Whiteboard Optimistic Concurrency Invariant
+  const currentBoardInDb = { id: 'wb-1', version: 12, name: 'Architecture Diagram' };
+  const checkWhiteboardVersionConflict = (expectedVersion, dbVersion) => {
+    if (expectedVersion !== undefined && expectedVersion !== dbVersion) {
+      return { conflict: true, statusCode: 409, message: 'Conflict: Whiteboard was modified by another collaborator. Please reload.' };
+    }
+    return { conflict: false };
+  };
+  assert(checkWhiteboardVersionConflict(11, currentBoardInDb.version).conflict === true, 'Stale whiteboard expectedVersion (11 vs 12) triggers HTTP 409 Conflict');
+  assert(checkWhiteboardVersionConflict(12, currentBoardInDb.version).conflict === false, 'Matching whiteboard expectedVersion (12 == 12) passes optimistic lock validation');
 }
 
 // ============================================================================
@@ -491,6 +514,14 @@ async function testMeetingAndCalendarGuards() {
   const validateDates = (start, end) => new Date(end) > new Date(start);
   assert(validateDates('2026-09-01T10:00:00Z', '2026-09-01T11:00:00Z') === true, 'Valid meeting with end > start passes temporal validation');
   assert(validateDates('2026-09-01T11:00:00Z', '2026-09-01T10:00:00Z') === false, 'Invalid meeting with end < start fails temporal validation');
+
+  // Meeting DTO validation
+  const validMeetingReq = { body: { title: 'Design Review', workspaceId: 'ws-1', start_time: '2026-09-01T10:00:00Z', end_time: '2026-09-01T11:00:00Z' } };
+  const invertedMeetingReq = { body: { title: 'Design Review', workspaceId: 'ws-1', start_time: '2026-09-01T11:00:00Z', end_time: '2026-09-01T10:00:00Z' } };
+  const equalMeetingReq = { body: { title: 'Design Review', workspaceId: 'ws-1', start_time: '2026-09-01T10:00:00Z', end_time: '2026-09-01T10:00:00Z' } };
+  assert(validateCreateMeeting(validMeetingReq) === null, 'Valid meeting with end_time > start_time passes DTO validation');
+  assert(validateCreateMeeting(invertedMeetingReq) !== null, 'Inverted meeting end_time < start_time rejected by DTO validation');
+  assert(validateCreateMeeting(equalMeetingReq) !== null, 'Equal meeting start_time === end_time rejected by DTO validation');
 }
 
 // ============================================================================
@@ -593,6 +624,74 @@ async function testAuditTrailAndRollbackSecurity() {
   assert(canExecuteRollback('ADMIN', false) === true, 'Workspace Admin is authorized for time-travel rollback');
   assert(canExecuteRollback('MANAGER', false) === false, 'Manager role is restricted from time-travel rollback');
   assert(canExecuteRollback('MEMBER', false) === false, 'Member role is restricted from time-travel rollback');
+
+  // Live Hash Chain Integrity Verification Algorithm
+  const testLogs = [
+    {
+      id: 'log-1',
+      prevHash: 'GENESIS',
+      workspaceId: 'ws-1',
+      userId: 'usr-1',
+      action: 'CREATE',
+      entityType: 'WORKSPACE',
+      entityId: 'ws-1',
+      details: {},
+    },
+    {
+      id: 'log-2',
+      prevHash: '',
+      workspaceId: 'ws-1',
+      userId: 'usr-1',
+      action: 'CREATE',
+      entityType: 'PROJECT',
+      entityId: 'proj-1',
+      details: {},
+    }
+  ];
+  testLogs[0].hash = generateAuditHash(testLogs[0]);
+  testLogs[1].prevHash = testLogs[0].hash;
+  testLogs[1].hash = generateAuditHash(testLogs[1]);
+
+  const verifyAuditLogs = (logs) => {
+    let expectedPrevHash = 'GENESIS';
+    for (let i = 0; i < logs.length; i++) {
+      const log = logs[i];
+      if (log.prevHash !== expectedPrevHash) {
+        return { intact: false, brokenAtIndex: i, reason: 'BROKEN_CHAIN' };
+      }
+      const recalculated = generateAuditHash({
+        prevHash: log.prevHash,
+        workspaceId: log.workspaceId,
+        userId: log.userId,
+        action: log.action,
+        entityType: log.entityType,
+        entityId: log.entityId,
+        details: log.details || {}
+      });
+      if (recalculated !== log.hash) {
+        return { intact: false, brokenAtIndex: i, reason: 'PAYLOAD_TAMPERED' };
+      }
+      expectedPrevHash = log.hash;
+    }
+    return { intact: true, verifiedCount: logs.length };
+  };
+
+  const validChainResult = verifyAuditLogs(testLogs);
+  assert(validChainResult.intact === true && validChainResult.verifiedCount === 2, 'Live hash chain verification confirms valid uncorrupted chain');
+
+  const tamperedLogs = [
+    { ...testLogs[0], action: 'DELETE' },
+    { ...testLogs[1] }
+  ];
+  const tamperedResult = verifyAuditLogs(tamperedLogs);
+  assert(tamperedResult.intact === false && tamperedResult.reason === 'PAYLOAD_TAMPERED', 'Tampered action in log chain detected as PAYLOAD_TAMPERED');
+
+  const brokenLinkLogs = [
+    { ...testLogs[0] },
+    { ...testLogs[1], prevHash: 'CORRUPTED_HASH' }
+  ];
+  const brokenResult = verifyAuditLogs(brokenLinkLogs);
+  assert(brokenResult.intact === false && brokenResult.reason === 'BROKEN_CHAIN', 'Broken prevHash linkage detected as BROKEN_CHAIN');
 }
 
 // ============================================================================

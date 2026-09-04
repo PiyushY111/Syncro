@@ -96,11 +96,119 @@ export const generateAuditHash = ({ prevHash = 'GENESIS', workspaceId, userId, a
   return crypto.createHash('sha256').update(payloadString).digest('hex');
 };
 
+/**
+ * Generates an HMAC-SHA256 signed OAuth 2.0 state parameter to prevent CSRF and session fixation.
+ *
+ * @param {string} userId - User ID initiating the OAuth flow
+ * @param {Object} [metadata={}] - Additional metadata to embed
+ * @returns {string} base64url-encoded signed state token
+ */
+export const generateOAuthState = (userId, metadata = {}) => {
+  const payload = {
+    userId,
+    nonce: crypto.randomBytes(16).toString('hex'),
+    timestamp: Date.now(),
+    ...metadata,
+  };
+  const serialized = Buffer.from(JSON.stringify(payload)).toString('base64url');
+  const signature = crypto.createHmac('sha256', ENCRYPTION_KEY).update(serialized).digest('base64url');
+  return `${serialized}.${signature}`;
+};
+
+/**
+ * Validates an HMAC-SHA256 signed OAuth 2.0 state parameter and verifies expiration.
+ *
+ * @param {string} stateString - The incoming state query parameter
+ * @param {number} [maxAgeMs=600000] - Maximum state age in ms (default 10 minutes)
+ * @returns {{ valid: boolean, payload?: Object, error?: string }}
+ */
+export const verifyOAuthState = (stateString, maxAgeMs = 600000) => {
+  if (!stateString || typeof stateString !== 'string') {
+    return { valid: false, error: 'State parameter missing or invalid' };
+  }
+  const parts = stateString.split('.');
+  if (parts.length !== 2) {
+    return { valid: false, error: 'Malformed state parameter format' };
+  }
+  const [serialized, signature] = parts;
+  const expectedSig = crypto.createHmac('sha256', ENCRYPTION_KEY).update(serialized).digest('base64url');
+  if (!timingSafeCompare(signature, expectedSig)) {
+    return { valid: false, error: 'Invalid state signature - possible CSRF tampering' };
+  }
+  try {
+    const payload = JSON.parse(Buffer.from(serialized, 'base64url').toString('utf8'));
+    if (!payload.userId || !payload.timestamp) {
+      return { valid: false, error: 'Invalid state payload structure' };
+    }
+    const age = Date.now() - payload.timestamp;
+    if (age > maxAgeMs) {
+      return { valid: false, error: 'OAuth state token has expired' };
+    }
+    return { valid: true, payload };
+  } catch (e) {
+    return { valid: false, error: 'Corrupted state payload encoding' };
+  }
+};
+
+/**
+ * Generates a cryptographically secure password reset token and its SHA-256 database hash.
+ *
+ * @param {number} [ttlMinutes=15] - Time to live in minutes
+ * @returns {{ token: string, tokenHash: string, expiresAt: Date }}
+ */
+export const generatePasswordResetToken = (ttlMinutes = 15) => {
+  const token = crypto.randomBytes(32).toString('hex');
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const expiresAt = new Date(Date.now() + ttlMinutes * 60 * 1000);
+  return { token, tokenHash, expiresAt };
+};
+
+/**
+ * Computes SHA-256 digest of a raw token.
+ *
+ * @param {string} token
+ * @returns {string}
+ */
+export const hashToken = (token) => {
+  if (!token) return '';
+  return crypto.createHash('sha256').update(String(token).trim()).digest('hex');
+};
+
+/**
+ * Generates a programmatic API key with prefix and secret hash.
+ *
+ * @returns {{ apiKey: string, keyPrefix: string, keyHash: string }}
+ */
+export const generateApiKey = () => {
+  const prefix = crypto.randomBytes(4).toString('hex');
+  const secret = crypto.randomBytes(24).toString('hex');
+  const apiKey = `syncro_${prefix}_${secret}`;
+  const keyHash = crypto.createHash('sha256').update(apiKey).digest('hex');
+  return { apiKey, keyPrefix: prefix, keyHash };
+};
+
+/**
+ * Computes SHA-256 hash of an API key for comparison.
+ *
+ * @param {string} key
+ * @returns {string}
+ */
+export const hashApiKey = (key) => {
+  if (!key) return '';
+  return crypto.createHash('sha256').update(String(key).trim()).digest('hex');
+};
+
 export default {
   encryptField,
   decryptField,
   timingSafeCompare,
   hashVerificationCode,
   generateAuditHash,
+  generateOAuthState,
+  verifyOAuthState,
+  generatePasswordResetToken,
+  hashToken,
+  generateApiKey,
+  hashApiKey,
 };
 

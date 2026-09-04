@@ -4,6 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import api from '@/configs/api';
 import LoginForm from '@/components/auth/LoginForm';
+import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm';
 import MfaVerifyForm from '@/components/auth/MfaVerifyForm';
 import AuthFeaturesSection from './AuthFeaturesSection';
 import { CheckCircle2, LoaderCircle } from 'lucide-react';
@@ -115,6 +116,10 @@ export default function AuthPage() {
                                 handleResendCode={handleResendCode}
                                 setVerificationEmail={setVerificationEmail}
                             />
+                        ) : mode === 'forgot-password' ? (
+                            <ForgotPasswordForm
+                                onBackToLogin={() => setMode('login')}
+                            />
                         ) : (
                             <LoginForm
                                 mode={mode}
@@ -123,6 +128,7 @@ export default function AuthPage() {
                                 setFormData={setFormData}
                                 handleSubmit={handleSubmit}
                                 isSubmitting={isSubmitting}
+                                onForgotPassword={() => setMode('forgot-password')}
                             />
                         )}
                     </div>

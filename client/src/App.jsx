@@ -9,6 +9,7 @@ import ProjectDetails from '@/pages/project/ProjectDetails';
 import TaskDetails from '@/pages/task/TaskDetails';
 import AcceptWorkspaceInvite from '@/pages/workspace/AcceptWorkspaceInvite';
 import AuthPage from '@/pages/auth/Auth';
+import ResetPassword from '@/pages/auth/ResetPassword';
 import RequireAuth from '@/components/auth/RequireAuth';
 import SettingsPage from '@/pages/settings/Settings';
 import SmartCalendar from '@/pages/calendar/SmartCalendar';
@@ -34,6 +35,7 @@ const App = () => {
             <Routes>
                 <Route path="/" element={<Landing />} />
                 <Route path="/auth" element={<AuthPage />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
                 <Route path="/pending-approval" element={<PendingApprovalScreen />} />

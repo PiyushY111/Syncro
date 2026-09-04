@@ -10,18 +10,20 @@ import {
     shareWhiteboard,
     starWhiteboard
 } from "../controllers/whiteboardController.js";
+import { validate } from "../middlewares/validate.js";
+import { validateCreateWhiteboard, validateUpdateWhiteboard } from "../validators/whiteboardValidators.js";
 
 const router = express.Router();
 
 router.use(protect);
 
-router.post("/", createWhiteboard);
+router.post("/", validate(validateCreateWhiteboard), createWhiteboard);
 router.post("/:id/share", shareWhiteboard);
 router.put("/:id/star", starWhiteboard);
 router.get("/project/:projectId", getProjectWhiteboards);
 router.get("/workspace/:workspaceId", getWorkspaceWhiteboards);
 router.get("/:id", getWhiteboard);
-router.put("/:id", saveWhiteboard);
+router.put("/:id", validate(validateUpdateWhiteboard), saveWhiteboard);
 router.delete("/:id", deleteWhiteboard);
 
 export default router;

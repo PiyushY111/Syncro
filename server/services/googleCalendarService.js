@@ -1,5 +1,6 @@
 import { google } from 'googleapis';
 import { prisma } from '../config/prisma.js';
+import { generateOAuthState } from '../utils/crypto.js';
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
@@ -22,7 +23,7 @@ export const getAuthUrl = (userId) => {
         access_type: 'offline',
         prompt: 'consent',
         scope: scopes,
-        state: userId
+        state: generateOAuthState(userId)
     });
 };
 

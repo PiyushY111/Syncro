@@ -6,7 +6,8 @@ export default function LoginForm({
     formData,
     setFormData,
     handleSubmit,
-    isSubmitting
+    isSubmitting,
+    onForgotPassword
 }) {
     return (
         <div>
@@ -54,7 +55,18 @@ export default function LoginForm({
                 </div>
 
                 <div>
-                    <label className="mb-2 block text-sm font-medium text-slate-700">Password</label>
+                    <div className="flex items-center justify-between mb-2">
+                        <label className="text-sm font-medium text-slate-700">Password</label>
+                        {mode === 'login' && onForgotPassword && (
+                            <button
+                                type="button"
+                                onClick={onForgotPassword}
+                                className="text-xs font-semibold text-blue-600 hover:text-blue-700 transition cursor-pointer"
+                            >
+                                Forgot password?
+                            </button>
+                        )}
+                    </div>
                     <div className="relative">
                         <Lock className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
                         <input type="password" value={formData.password} onChange={(event) => setFormData({ ...formData, password: event.target.value })} className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm outline-none transition focus:border-blue-500 text-slate-900" placeholder="Enter a password" required />

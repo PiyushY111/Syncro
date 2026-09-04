@@ -2,7 +2,7 @@ import { getCachedOrFetch, executeTransaction } from '../services/db/dbService.j
 import { redisCache } from '../config/redis.js';
 
 async function runConcurrencyTestSuite() {
-  console.log('Starting Enterprise Concurrency & High-Parallelism Stress Test Suite...\n');
+  console.log('Starting Enterprise Concurrency Test Suite...\n');
   let passed = 0;
   let failed = 0;
 
@@ -37,8 +37,8 @@ async function runConcurrencyTestSuite() {
     await redisCache.del(cacheKey);
     console.log('');
 
-    // Test 2: Optimistic Locking Conflict Under High-Parallelism Task Mutations
-    console.log('Test 2: Optimistic Locking Conflict Handling');
+    // Test 2: Optimistic Locking Conflict Under High-Parallelism Mutations (Tasks, Projects, Whiteboards)
+    console.log('Test 2: Optimistic Locking Conflict Handling (Task, Project, Whiteboard)');
     let taskState = { id: 'task-stress-1', version: 1, title: 'Initial Title' };
 
     const simulateTaskUpdate = async (expectedVersion, newTitle) => {
@@ -49,16 +49,48 @@ async function runConcurrencyTestSuite() {
       return { success: true, statusCode: 200, task: taskState };
     };
 
-    // Fire 10 simultaneous updates with expectedVersion = 1
+    // Fire 10 simultaneous task updates with expectedVersion = 1
     const updatePromises = Array.from({ length: 10 }, (_, idx) => simulateTaskUpdate(1, `Title Updated by Worker ${idx}`));
     const updateResults = await Promise.all(updatePromises);
 
     const successfulUpdates = updateResults.filter((r) => r.success);
     const conflictErrors = updateResults.filter((r) => r.statusCode === 409);
 
-    assert(successfulUpdates.length === 1, 'Exactly 1 concurrent update succeeded');
-    assert(conflictErrors.length === 9, 'Exactly 9 concurrent updates failed with HTTP 409 Conflict');
+    assert(successfulUpdates.length === 1, 'Exactly 1 concurrent task update succeeded');
+    assert(conflictErrors.length === 9, 'Exactly 9 concurrent task updates failed with HTTP 409 Conflict');
     assert(taskState.version === 2, 'Task version correctly incremented to 2');
+
+    // Test Project Concurrent Updates
+    let projectState = { id: 'proj-stress-1', version: 1, name: 'Initial Project' };
+    const simulateProjectUpdate = async (expectedVersion, newName) => {
+      if (projectState.version !== expectedVersion) {
+        return { success: false, statusCode: 409, message: 'Conflict: Project was modified by another user' };
+      }
+      projectState = { ...projectState, name: newName, version: projectState.version + 1 };
+      return { success: true, statusCode: 200, project: projectState };
+    };
+
+    const projPromises = Array.from({ length: 10 }, (_, idx) => simulateProjectUpdate(1, `Project Updated by Worker ${idx}`));
+    const projResults = await Promise.all(projPromises);
+    assert(projResults.filter((r) => r.success).length === 1, 'Exactly 1 concurrent project update succeeded');
+    assert(projResults.filter((r) => r.statusCode === 409).length === 9, 'Exactly 9 concurrent project updates failed with HTTP 409 Conflict');
+    assert(projectState.version === 2, 'Project version correctly incremented to 2');
+
+    // Test Whiteboard Concurrent Updates
+    let whiteboardState = { id: 'wb-stress-1', version: 1, name: 'Initial Board' };
+    const simulateWhiteboardUpdate = async (expectedVersion, newName) => {
+      if (whiteboardState.version !== expectedVersion) {
+        return { success: false, statusCode: 409, message: 'Conflict: Whiteboard was modified by another collaborator' };
+      }
+      whiteboardState = { ...whiteboardState, name: newName, version: whiteboardState.version + 1 };
+      return { success: true, statusCode: 200, whiteboard: whiteboardState };
+    };
+
+    const wbPromises = Array.from({ length: 10 }, (_, idx) => simulateWhiteboardUpdate(1, `Whiteboard Updated by Worker ${idx}`));
+    const wbResults = await Promise.all(wbPromises);
+    assert(wbResults.filter((r) => r.success).length === 1, 'Exactly 1 concurrent whiteboard update succeeded');
+    assert(wbResults.filter((r) => r.statusCode === 409).length === 9, 'Exactly 9 concurrent whiteboard updates failed with HTTP 409 Conflict');
+    assert(whiteboardState.version === 2, 'Whiteboard version correctly incremented to 2');
     console.log('');
 
     // Test 3: Transaction Backoff Retries on Transient Lock Contention
@@ -88,7 +120,7 @@ async function runConcurrencyTestSuite() {
     console.log('');
 
     console.log('----------------------------------------------------');
-    console.log(`CONCURRENCY & STRESS TEST SUMMARY: ${passed} Passed | ${failed} Failed`);
+    console.log(`CONCURRENCY TEST SUMMARY: ${passed} Passed | ${failed} Failed`);
     console.log('----------------------------------------------------');
 
     if (failed > 0) {

@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { executeTransaction } from '../../services/db/dbService.js';
 import { eventBus } from '../../services/eventBus.js';
 
 // Create a meeting and send invites
@@ -28,6 +29,12 @@ export const createMeeting = async (req, res) => {
             return res.status(400).json({ message: 'Start time and end time are required' });
         }
 
+        const start = new Date(start_time);
+        const end = new Date(end_time);
+        if (isNaN(start.getTime()) || isNaN(end.getTime()) || end <= start) {
+            return res.status(400).json({ message: 'Meeting end time must be strictly after start time' });
+        }
+
         // Verify workspace membership
         const membership = await prisma.workspaceMember.findUnique({
             where: {
@@ -42,57 +49,56 @@ export const createMeeting = async (req, res) => {
             return res.status(403).json({ message: 'You are not a member of this workspace' });
         }
 
-        // Create the meeting
-        const meeting = await prisma.meeting.create({
-            data: {
-                title: title.trim(),
-                description: description.trim() || null,
-                agenda: agenda.trim() || null,
-                start_time: new Date(start_time),
-                end_time: new Date(end_time),
-                meetingLink: meetingLink.trim() || null,
-                location: location.trim() || null,
-                workspaceId,
-                projectId: projectId || null,
-                creatorId
-            }
-        });
+        const uniqueInvitees = Array.from(new Set([creatorId, ...(Array.isArray(invitees) ? invitees : [])]));
 
-        // Setup invites: Creator is automatically invited and ACCEPTED.
-        // Other invitees are PENDING.
-        const uniqueInvitees = Array.from(new Set([creatorId, ...invitees]));
-        
-        await prisma.meetingInvite.createMany({
-            data: uniqueInvitees.map((userId) => ({
-                meetingId: meeting.id,
-                userId,
-                status: userId === creatorId ? 'ACCEPTED' : 'PENDING'
-            })),
-            skipDuplicates: true
-        });
+        // Create the meeting and invites atomically inside a transaction
+        const fullMeeting = await executeTransaction(async (tx) => {
+            const created = await tx.meeting.create({
+                data: {
+                    title: title.trim(),
+                    description: description.trim() || null,
+                    agenda: agenda.trim() || null,
+                    start_time: start,
+                    end_time: end,
+                    meetingLink: meetingLink.trim() || null,
+                    location: location.trim() || null,
+                    workspaceId,
+                    projectId: projectId || null,
+                    creatorId
+                }
+            });
 
-        // Retrieve full meeting with details
-        const fullMeeting = await prisma.meeting.findUnique({
-            where: { id: meeting.id },
-            include: {
-                creator: {
-                    select: { id: true, name: true, email: true, image: true }
-                },
-                project: {
-                    select: { id: true, name: true }
-                },
-                invites: {
-                    include: {
-                        user: {
-                            select: { id: true, name: true, email: true, image: true }
+            await tx.meetingInvite.createMany({
+                data: uniqueInvitees.map((userId) => ({
+                    meetingId: created.id,
+                    userId,
+                    status: userId === creatorId ? 'ACCEPTED' : 'PENDING'
+                })),
+                skipDuplicates: true
+            });
+
+            return await tx.meeting.findUnique({
+                where: { id: created.id },
+                include: {
+                    creator: {
+                        select: { id: true, name: true, email: true, image: true }
+                    },
+                    project: {
+                        select: { id: true, name: true }
+                    },
+                    invites: {
+                        include: {
+                            user: {
+                                select: { id: true, name: true, email: true, image: true }
+                            }
                         }
                     }
                 }
-            }
+            });
         });
 
         await eventBus.publish('app/meeting.created', {
-            meetingId: meeting.id,
+            meetingId: fullMeeting.id,
             creatorId,
             inviteeIds: uniqueInvitees,
             auditContext: {

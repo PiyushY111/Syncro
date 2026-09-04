@@ -1,5 +1,6 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
+import { encryptField, decryptField } from '../utils/crypto.js'
 
 const rawConnectionString = process.env.DATABASE_URL
 if (!rawConnectionString) {
@@ -41,6 +42,38 @@ export const basePrisma = new PrismaClient({
 // Models that support soft deletion
 const SOFT_DELETE_MODELS = new Set(['User', 'Workspace', 'Project', 'Task'])
 
+// Sensitive fields to encrypt at rest in database
+const ENCRYPTED_USER_FIELDS = ['googleAccessToken', 'googleRefreshToken', 'twoFactorCode']
+
+const decryptUserObject = (user) => {
+  if (!user || typeof user !== 'object') return user
+  for (const field of ENCRYPTED_USER_FIELDS) {
+    if (typeof user[field] === 'string' && user[field].includes(':')) {
+      user[field] = decryptField(user[field])
+    }
+  }
+  return user
+}
+
+const decryptResults = (model, data) => {
+  if (model !== 'User' || !data) return data
+  if (Array.isArray(data)) {
+    return data.map(decryptUserObject)
+  }
+  return decryptUserObject(data)
+}
+
+const encryptUserData = (data) => {
+  if (!data || typeof data !== 'object') return data
+  const copy = { ...data }
+  for (const field of ENCRYPTED_USER_FIELDS) {
+    if (typeof copy[field] === 'string' && copy[field].length > 0 && !copy[field].includes(':')) {
+      copy[field] = encryptField(copy[field])
+    }
+  }
+  return copy
+}
+
 // Enhanced Enterprise Prisma Client with Extensions ($extends)
 export const prisma = basePrisma.$extends({
   name: 'EnterpriseDatabaseExtensions',
@@ -65,7 +98,7 @@ export const prisma = basePrisma.$extends({
                 `[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`
               )
             }
-            return result
+            return decryptResults(model, result)
           }
 
           if (operation === 'delete') {
@@ -95,18 +128,25 @@ export const prisma = basePrisma.$extends({
           }
         }
 
-        // 2. Execute query
+        // 2. Sensitive fields encryption for writes on User model
+        if (model === 'User') {
+          if (args?.data) args.data = encryptUserData(args.data)
+          if (args?.create) args.create = encryptUserData(args.create)
+          if (args?.update) args.update = encryptUserData(args.update)
+        }
+
+        // 3. Execute query
         const result = await query(args)
         const duration = performance.now() - start
 
-        // 3. Telemetry & Slow Query Diagnostics
+        // 4. Telemetry & Slow Query Diagnostics
         if (duration >= SLOW_QUERY_THRESHOLD_MS) {
           console.warn(
             `[SLOW DB QUERY ALERT] Model: ${model || 'Raw'} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`
           )
         }
 
-        return result
+        return decryptResults(model, result)
       },
     },
   },

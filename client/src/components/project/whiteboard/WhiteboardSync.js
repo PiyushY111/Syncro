@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSocket } from '@/context/SocketContext';
+import toast from 'react-hot-toast';
 import api from '@/configs/api';
 
 export default function useWhiteboardSync(whiteboardId) {
@@ -12,6 +13,7 @@ export default function useWhiteboardSync(whiteboardId) {
     const [drawings, setDrawings] = useState([]);
     const [cursors, setCursors] = useState({});
     const [saving, setSaving] = useState(false);
+    const [version, setVersion] = useState(0);
     const [history, setHistory] = useState({ past: [], future: [] });
 
     // Initial Load
@@ -21,6 +23,7 @@ export default function useWhiteboardSync(whiteboardId) {
             const dbPages = typeof data.pages === 'string' ? JSON.parse(data.pages) : (data.pages || []);
             const validPages = dbPages.length > 0 ? dbPages : [{ id: 'page-1', name: 'Page 1', nodes: [], edges: [], drawings: [] }];
             setPages(validPages);
+            if (data.version !== undefined) setVersion(data.version);
             const activeId = data.currentPageId || validPages[0].id;
             setCurrentPageId(activeId);
             const active = validPages.find(p => p.id === activeId) || validPages[0];
@@ -59,17 +62,35 @@ export default function useWhiteboardSync(whiteboardId) {
             setSaving(true);
             try {
                 const currentPages = pages.map(p => p.id === currentPageId ? { ...p, nodes, edges, drawings } : p);
-                await api.put(`/api/whiteboards/${whiteboardId}`, {
-                    pages: currentPages, currentPageId, data: { viewport }
+                const { data } = await api.put(`/api/whiteboards/${whiteboardId}`, {
+                    pages: currentPages, 
+                    currentPageId, 
+                    data: { viewport },
+                    expectedVersion: version
                 }, {
                     headers: { skipConfirm: true }
                 });
-
-            } catch (err) { console.error("Autosave failed", err); }
+                if (data?.version !== undefined) {
+                    setVersion(data.version);
+                }
+            } catch (err) { 
+                console.error("Autosave failed", err);
+                if (err.response?.status === 409) {
+                    toast.error("Collaborator made concurrent edits. Reloading latest board state...");
+                    try {
+                        const { data } = await api.get(`/api/whiteboards/${whiteboardId}`);
+                        const dbPages = typeof data.pages === 'string' ? JSON.parse(data.pages) : (data.pages || []);
+                        if (dbPages.length > 0) setPages(dbPages);
+                        if (data.version !== undefined) setVersion(data.version);
+                    } catch (e) {
+                        console.error("Reloading after conflict failed", e);
+                    }
+                }
+            }
             setSaving(false);
         }, 1500);
         return () => clearTimeout(timer);
-    }, [nodes, edges, viewport, drawings, pages, currentPageId, whiteboardId]);
+    }, [nodes, edges, viewport, drawings, pages, currentPageId, whiteboardId, version]);
 
     const broadcast = (newNodes, newEdges, newDrawings, newPages) => {
         const activePages = newPages || pages.map(p => p.id === currentPageId ? { ...p, nodes: newNodes || nodes, edges: newEdges || edges, drawings: newDrawings || drawings } : p);

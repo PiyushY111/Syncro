@@ -67,6 +67,15 @@ export const updateProject = async (req, res) => {
             }
         });
 
+        if (!previousState) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        const expectedVersion = req.body.expectedVersion !== undefined ? Number(req.body.expectedVersion) : undefined;
+        if (expectedVersion !== undefined && previousState.version !== expectedVersion) {
+            return res.status(409).json({ message: "Conflict: Project was modified by another user. Please refresh and try again." });
+        }
+
         await prisma.project.update({
             where: { id },
             data: {
@@ -78,7 +87,8 @@ export const updateProject = async (req, res) => {
                 end_date: end_date ? new Date(end_date) : null,
                 team_lead: resolvedTeamLeadId,
                 progress,
-                priority
+                priority,
+                version: { increment: 1 }
             }
         });
 

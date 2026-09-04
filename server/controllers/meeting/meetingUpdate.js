@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { executeTransaction } from '../../services/db/dbService.js';
 import { eventBus } from '../../services/eventBus.js';
 
 // Update a meeting
@@ -33,70 +34,73 @@ export const updateMeeting = async (req, res) => {
             return res.status(403).json({ message: 'Only the meeting creator can update details' });
         }
 
+        const newStart = start_time ? new Date(start_time) : new Date(meeting.start_time);
+        const newEnd = end_time ? new Date(end_time) : new Date(meeting.end_time);
+        if (isNaN(newStart.getTime()) || isNaN(newEnd.getTime()) || newEnd <= newStart) {
+            return res.status(400).json({ message: 'Meeting end time must be strictly after start time' });
+        }
+
         const previousState = await prisma.meeting.findUnique({
             where: { id },
             include: { invites: true }
         });
 
-        // Update basic details
-        const updatedMeeting = await prisma.meeting.update({
-            where: { id },
-            data: {
-                title: title !== undefined ? title.trim() : meeting.title,
-                description: description !== undefined ? (description?.trim() || null) : meeting.description,
-                agenda: agenda !== undefined ? (agenda?.trim() || null) : meeting.agenda,
-                start_time: start_time ? new Date(start_time) : meeting.start_time,
-                end_time: end_time ? new Date(end_time) : meeting.end_time,
-                meetingLink: meetingLink !== undefined ? (meetingLink?.trim() || null) : meeting.meetingLink,
-                location: location !== undefined ? (location?.trim() || null) : meeting.location,
-                projectId: projectId !== undefined ? (projectId || null) : meeting.projectId
-            }
-        });
-
-        // Update guest invites if provided
-        if (invitees && Array.isArray(invitees)) {
-            const uniqueInvitees = Array.from(new Set([meeting.creatorId, ...invitees]));
-
-            // Delete invites that are not in the new invitees list (exclude the creator)
-            await prisma.meetingInvite.deleteMany({
-                where: {
-                    meetingId: id,
-                    userId: {
-                        notIn: uniqueInvitees,
-                        not: meeting.creatorId
-                    }
+        const fullMeeting = await executeTransaction(async (tx) => {
+            await tx.meeting.update({
+                where: { id },
+                data: {
+                    title: title !== undefined ? title.trim() : meeting.title,
+                    description: description !== undefined ? (description?.trim() || null) : meeting.description,
+                    agenda: agenda !== undefined ? (agenda?.trim() || null) : meeting.agenda,
+                    start_time: newStart,
+                    end_time: newEnd,
+                    meetingLink: meetingLink !== undefined ? (meetingLink?.trim() || null) : meeting.meetingLink,
+                    location: location !== undefined ? (location?.trim() || null) : meeting.location,
+                    projectId: projectId !== undefined ? (projectId || null) : meeting.projectId
                 }
             });
 
-            // Add new invites
-            await prisma.meetingInvite.createMany({
-                data: uniqueInvitees.map((guestId) => ({
-                    meetingId: id,
-                    userId: guestId,
-                    status: guestId === meeting.creatorId ? 'ACCEPTED' : 'PENDING'
-                })),
-                skipDuplicates: true
-            });
-        }
+            if (invitees && Array.isArray(invitees)) {
+                const uniqueInvitees = Array.from(new Set([meeting.creatorId, ...invitees]));
 
-        // Retrieve full updated meeting
-        const fullMeeting = await prisma.meeting.findUnique({
-            where: { id },
-            include: {
-                creator: {
-                    select: { id: true, name: true, email: true, image: true }
-                },
-                project: {
-                    select: { id: true, name: true }
-                },
-                invites: {
-                    include: {
-                        user: {
-                            select: { id: true, name: true, email: true, image: true }
+                await tx.meetingInvite.deleteMany({
+                    where: {
+                        meetingId: id,
+                        userId: {
+                            notIn: uniqueInvitees,
+                            not: meeting.creatorId
+                        }
+                    }
+                });
+
+                await tx.meetingInvite.createMany({
+                    data: uniqueInvitees.map((guestId) => ({
+                        meetingId: id,
+                        userId: guestId,
+                        status: guestId === meeting.creatorId ? 'ACCEPTED' : 'PENDING'
+                    })),
+                    skipDuplicates: true
+                });
+            }
+
+            return await tx.meeting.findUnique({
+                where: { id },
+                include: {
+                    creator: {
+                        select: { id: true, name: true, email: true, image: true }
+                    },
+                    project: {
+                        select: { id: true, name: true }
+                    },
+                    invites: {
+                        include: {
+                            user: {
+                                select: { id: true, name: true, email: true, image: true }
+                            }
                         }
                     }
                 }
-            }
+            });
         });
 
         await eventBus.publish('app/meeting.updated', {

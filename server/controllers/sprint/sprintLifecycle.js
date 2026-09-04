@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { executeTransaction } from "../../services/db/dbService.js";
 import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
@@ -63,21 +64,25 @@ export const completeSprint = async (req, res) => {
         const hasPermission = await canManageSprints(req.user.id, sprint.project.workspaceId);
         if (!hasPermission) return res.status(403).json({ message: "You do not have permission to manage sprints" });
 
-        const updatedSprint = await prisma.sprint.update({
-            where: { id: sprintId },
-            data: { status: "COMPLETED" }
-        });
-
-        const incompleteTasks = await prisma.task.findMany({
-            where: { sprintId, status: { not: "DONE" } }
-        });
-
-        if (incompleteTasks.length > 0) {
-            await prisma.task.updateMany({
-                where: { id: { in: incompleteTasks.map(t => t.id) } },
-                data: { sprintId: null }
+        const { updatedSprint, incompleteTasksCount } = await executeTransaction(async (tx) => {
+            const updated = await tx.sprint.update({
+                where: { id: sprintId },
+                data: { status: "COMPLETED" }
             });
-        }
+
+            const incompleteTasks = await tx.task.findMany({
+                where: { sprintId, status: { not: "DONE" } }
+            });
+
+            if (incompleteTasks.length > 0) {
+                await tx.task.updateMany({
+                    where: { id: { in: incompleteTasks.map(t => t.id) } },
+                    data: { sprintId: null }
+                });
+            }
+
+            return { updatedSprint: updated, incompleteTasksCount: incompleteTasks.length };
+        });
 
         await eventBus.publish('app/sprint.updated', {
             sprint: updatedSprint,
@@ -94,7 +99,7 @@ export const completeSprint = async (req, res) => {
         return res.status(200).json({
             message: "Sprint completed successfully",
             sprint: updatedSprint,
-            incompleteTasksMoved: incompleteTasks.length
+            incompleteTasksMoved: incompleteTasksCount
         });
     } catch (error) {
         console.error("Error completing sprint:", error);

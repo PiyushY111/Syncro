@@ -83,6 +83,9 @@ model User {
     reactions          MessageReaction[]
     sprintCapacities   SprintCapacity[]
     retroItems         RetroItem[]
+    passwordResetTokens PasswordResetToken[]
+    sessions            UserSession[]
+    apiKeys             ApiKey[]
 
     @@index([email])
     @@index([email, deletedAt])
@@ -115,6 +118,8 @@ model Workspace {
     meetings   Meeting[]
     subTeams   SubTeam[]
     whiteboards Whiteboard[]
+    apiKeys    ApiKey[]
+    version    Int               @default(0)
 
     @@index([ownerId])
     @@index([ownerId, deletedAt])
@@ -167,6 +172,7 @@ model Project {
     Stage       Stage[]
     sprints     Sprint[]
     epics       Epic[]
+    version     Int             @default(0)
 
     @@index([workspaceId, status, deletedAt])
     @@index([team_lead, deletedAt])
@@ -552,6 +558,7 @@ model Whiteboard {
     data          Json     @default("{\"nodes\":[],\"edges\":[],\"viewport\":{\"x\":0,\"y\":0,\"zoom\":1}}")
     createdAt     DateTime @default(now())
     updatedAt     DateTime @updatedAt
+    version       Int      @default(0)
 
     project     Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
     workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
@@ -696,5 +703,61 @@ model VipInviteCode {
     updatedAt   DateTime  @updatedAt
 
     @@index([code, isActive])
+}
+
+model PasswordResetToken {
+    id        String    @id @default(uuid())
+    userId    String
+    tokenHash String    @unique
+    expiresAt DateTime
+    usedAt    DateTime?
+    createdAt DateTime  @default(now())
+    ipAddress String?
+    userAgent String?
+
+    user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, expiresAt])
+    @@index([tokenHash])
+}
+
+model UserSession {
+    id           String    @id @default(uuid())
+    userId       String
+    jti          String    @unique
+    ipAddress    String?
+    userAgent    String?
+    device       String?
+    isRevoked    Boolean   @default(false)
+    lastActiveAt DateTime  @default(now())
+    expiresAt    DateTime
+    createdAt    DateTime  @default(now())
+    updatedAt    DateTime  @updatedAt
+
+    user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@index([userId, isRevoked])
+    @@index([jti])
+}
+
+model ApiKey {
+    id          String    @id @default(uuid())
+    name        String
+    keyPrefix   String
+    keyHash     String    @unique
+    workspaceId String
+    createdById String
+    scopes      String[]  @default(["read", "write"])
+    lastUsedAt  DateTime?
+    expiresAt   DateTime?
+    isActive    Boolean   @default(true)
+    createdAt   DateTime  @default(now())
+    updatedAt   DateTime  @updatedAt
+
+    workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+    user        User      @relation(fields: [createdById], references: [id], onDelete: Cascade)
+
+    @@index([workspaceId, isActive])
+    @@index([keyHash])
 }
 

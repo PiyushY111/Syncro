@@ -1,5 +1,7 @@
 import { prisma } from '../../../config/prisma.js';
+import { redisCache } from '../../../config/redis.js';
 import { eventBus } from '../../../services/eventBus.js';
+import { invalidateUserWorkspaceRoleCache } from '../../role/checkPermissionHelper.js';
 
 export const updateMemberRole = async (req, res) => {
     try {
@@ -63,6 +65,11 @@ export const updateMemberRole = async (req, res) => {
             where: { id: memberId },
             data: updateData,
         });
+
+        await invalidateUserWorkspaceRoleCache(targetMember.userId, workspaceId);
+        try {
+            await redisCache.del(`user:workspaces:${targetMember.userId}`);
+        } catch {}
 
         await eventBus.publish('app/workspace.member_role_changed', {
             workspaceId,

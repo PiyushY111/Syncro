@@ -130,8 +130,21 @@ export const verifyLogin = asyncHandler(async (req, res) => {
     },
   });
 
-  const { token: accessToken } = createAccessToken(updatedUser);
+  const { token: accessToken, jti: accessJti } = createAccessToken(updatedUser);
   const { refreshToken } = createRefreshToken(updatedUser);
+
+  const ipAddress = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
+  const userAgent = req.headers['user-agent'] || null;
+
+  await prisma.userSession.create({
+    data: {
+      userId: updatedUser.id,
+      jti: accessJti,
+      ipAddress: typeof ipAddress === 'string' ? ipAddress : null,
+      userAgent: typeof userAgent === 'string' ? userAgent : null,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+  }).catch(() => {});
 
   res.cookie('syncro_access_token', accessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('syncro_refresh_token', refreshToken, COOKIE_OPTIONS);
@@ -211,8 +224,21 @@ export const refreshSession = asyncHandler(async (req, res) => {
     await redisCache.set(`revoked:${payload.jti}`, 'true', 7 * 24 * 60 * 60);
   }
 
-  const { token: newAccessToken } = createAccessToken(user);
+  const { token: newAccessToken, jti: newAccessJti } = createAccessToken(user);
   const { refreshToken: newRefreshToken } = createRefreshToken(user);
+
+  const ipAddress = req.headers['x-forwarded-for'] || req.socket?.remoteAddress || null;
+  const userAgent = req.headers['user-agent'] || null;
+
+  await prisma.userSession.create({
+    data: {
+      userId: user.id,
+      jti: newAccessJti,
+      ipAddress: typeof ipAddress === 'string' ? ipAddress : null,
+      userAgent: typeof userAgent === 'string' ? userAgent : null,
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    },
+  }).catch(() => {});
 
   res.cookie('syncro_access_token', newAccessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('syncro_refresh_token', newRefreshToken, COOKIE_OPTIONS);
@@ -233,6 +259,24 @@ export const logoutSession = asyncHandler(async (req, res) => {
       const payload = jwt.verify(refreshToken, process.env.JWT_SECRET || 'development-secret');
       if (payload.jti) {
         await redisCache.set(`revoked:${payload.jti}`, 'true', 7 * 24 * 60 * 60);
+      }
+    } catch {}
+  }
+
+  // Also revoke access token session if present
+  const authHeader = req.headers.authorization || '';
+  const headerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  const cookieToken = req.cookies?.syncro_access_token;
+  const token = headerToken || cookieToken;
+  if (token) {
+    try {
+      const payload = jwt.verify(token, process.env.JWT_SECRET || 'development-secret');
+      if (payload.jti) {
+        await redisCache.set(`revoked:${payload.jti}`, 'true', 7 * 24 * 60 * 60);
+        await prisma.userSession.updateMany({
+          where: { jti: payload.jti },
+          data: { isRevoked: true },
+        }).catch(() => {});
       }
     } catch {}
   }

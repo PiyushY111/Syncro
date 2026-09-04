@@ -6,12 +6,14 @@ import {
     deleteMeeting,
     updateRsvpStatus
 } from '../controllers/meetingController.js';
+import { validate } from '../middlewares/validate.js';
+import { validateCreateMeeting, validateUpdateMeeting } from '../validators/meetingValidators.js';
 
 const meetingRouter = express.Router();
 
-meetingRouter.post('/', createMeeting);
+meetingRouter.post('/', validate(validateCreateMeeting), createMeeting);
 meetingRouter.get('/', getWorkspaceMeetings);
-meetingRouter.put('/:id', updateMeeting);
+meetingRouter.put('/:id', validate(validateUpdateMeeting), updateMeeting);
 meetingRouter.delete('/:id', deleteMeeting);
 meetingRouter.patch('/:id/rsvp', updateRsvpStatus);
 

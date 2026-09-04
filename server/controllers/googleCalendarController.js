@@ -4,6 +4,7 @@ import {
     exchangeCodeForTokens,
     fetchGoogleCalendarEvents
 } from '../services/googleCalendarService.js';
+import { verifyOAuthState } from '../utils/crypto.js';
 
 // Get Google OAuth Authorization URL
 export const getGoogleAuthUrlController = async (req, res) => {
@@ -22,16 +23,22 @@ export const getGoogleAuthUrlController = async (req, res) => {
 
 // Handle Google OAuth Callback
 export const googleOAuthCallbackController = async (req, res) => {
+    const clientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',')[0] : 'http://localhost:5173';
     try {
-        const { code, state: userId } = req.query;
+        const { code, state } = req.query;
         if (!code) {
             return res.status(400).send('Authorization code missing');
         }
 
+        const stateCheck = verifyOAuthState(state);
+        if (!stateCheck.valid) {
+            console.error('[OAuth CSRF / State Tamper Error]', stateCheck.error);
+            return res.redirect(`${clientUrl}/calendar?sync=error&reason=invalid_state`);
+        }
+
+        const targetUserId = stateCheck.payload.userId;
         const { tokens, email } = await exchangeCodeForTokens(code);
 
-        // Update authenticated user by state (userId passed during auth request)
-        const targetUserId = userId || req.user?.id;
         if (targetUserId) {
             await prisma.user.update({
                 where: { id: targetUserId },
@@ -44,11 +51,9 @@ export const googleOAuthCallbackController = async (req, res) => {
             });
         }
 
-        const clientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',')[0] : 'http://localhost:5173';
         return res.redirect(`${clientUrl}/calendar?sync=success`);
     } catch (error) {
         console.error('Error in Google OAuth Callback:', error);
-        const clientUrl = process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',')[0] : 'http://localhost:5173';
         return res.redirect(`${clientUrl}/calendar?sync=error`);
     }
 };
