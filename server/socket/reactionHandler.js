@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma.js";
+import { invalidateChannelMessageCache } from "../controllers/chat/getMessages.js";
 
 export const registerReactionHandlers = (io, socket) => {
     socket.on("reaction:add", async ({ messageId, emoji, channelId }) => {
@@ -12,22 +13,29 @@ export const registerReactionHandlers = (io, socket) => {
                 include: { user: { select: { id: true, name: true } } }
             });
 
+            let targetChannelId = channelId;
             const rooms = channelId 
                 ? [`channel:${channelId}`] 
                 : await (async () => {
                     const msg = await prisma.message.findUnique({
                         where: { id: messageId },
-                        select: { userId: true, recipientId: true }
+                        select: { userId: true, recipientId: true, channelId: true }
                     });
                     if (!msg) return [];
+                    if (msg.channelId) targetChannelId = msg.channelId;
                     const list = [`user:${msg.userId}`];
                     if (msg.recipientId) list.push(`user:${msg.recipientId}`);
+                    if (msg.channelId) list.push(`channel:${msg.channelId}`);
                     return list;
                 })();
 
             rooms.forEach(room => {
                 io.to(room).emit("reaction:added", { messageId, reaction });
             });
+
+            if (targetChannelId) {
+                await invalidateChannelMessageCache(targetChannelId);
+            }
         } catch (error) {
             console.error("[SOCKET REACTION ADD ERROR]", error);
         }
@@ -43,22 +51,29 @@ export const registerReactionHandlers = (io, socket) => {
                 }
             });
 
+            let targetChannelId = channelId;
             const rooms = channelId 
                 ? [`channel:${channelId}`] 
                 : await (async () => {
                     const msg = await prisma.message.findUnique({
                         where: { id: messageId },
-                        select: { userId: true, recipientId: true }
+                        select: { userId: true, recipientId: true, channelId: true }
                     });
                     if (!msg) return [];
+                    if (msg.channelId) targetChannelId = msg.channelId;
                     const list = [`user:${msg.userId}`];
                     if (msg.recipientId) list.push(`user:${msg.recipientId}`);
+                    if (msg.channelId) list.push(`channel:${msg.channelId}`);
                     return list;
                 })();
 
             rooms.forEach(room => {
                 io.to(room).emit("reaction:removed", { messageId, emoji, userId: socket.user.id });
             });
+
+            if (targetChannelId) {
+                await invalidateChannelMessageCache(targetChannelId);
+            }
         } catch (error) {
             console.error("[SOCKET REACTION REMOVE ERROR]", error);
         }

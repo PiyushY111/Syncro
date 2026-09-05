@@ -1,8 +1,9 @@
+import { memo } from 'react';
 import { Pin, Star, MessageSquare, CheckSquare, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import ChatAvatar from './ChatAvatar';
 
-export default function MessageCard({ message, onReact, onOpenThread, onDelete, onPin, onStar, onConvertTask }) {
+const MessageCard = memo(function MessageCard({ message, onReact, onOpenThread, onDelete, onPin, onStar, onConvertTask }) {
     const { user } = useAuth();
     const isOwner = message.senderId === user?.id || message.userId === user?.id;
 
@@ -40,7 +41,7 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
     const reactionsList = Object.values(groupedReactions);
 
     return (
-        <div className={`group relative flex items-start gap-3 px-5 py-2 animate-stiff-slide-up ${isOwner ? 'flex-row-reverse' : 'flex-row'}`}>
+        <div className={`group relative flex items-start gap-3 px-5 py-2 animate-stiff-slide-up ${isOwner ? 'flex-row-reverse' : 'flex-row'} ${message.isSending ? 'opacity-70' : ''}`}>
             {/* Avatar */}
             <ChatAvatar name={senderName} imageUrl={message.user?.image || message.sender?.image} size="sm" className="mt-1 shrink-0" />
 
@@ -54,6 +55,7 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
                     </span>
                     {message.isPinned && <Pin className="size-3 text-amber-500 fill-amber-500" />}
                     {message.isStarred && <Star className="size-3 text-amber-500 fill-amber-500" />}
+                    {message.isSending && <span className="text-[10px] text-blue-400">sending...</span>}
                 </div>
 
                 {/* Bubble Container */}
@@ -111,4 +113,6 @@ export default function MessageCard({ message, onReact, onOpenThread, onDelete, 
             </div>
         </div>
     );
-}
+});
+
+export default MessageCard;

@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { redisCache } from "../../config/redis.js";
 import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
@@ -21,6 +22,12 @@ export const deletePortfolio = async (req, res) => {
         const previousState = { ...existing };
 
         await prisma.portfolio.delete({ where: { id } });
+
+        // Invalidate Redis caches
+        try {
+            await redisCache.del(`portfolio:detail:${id}`);
+            await redisCache.del(`workspace:portfolios:${existing.workspaceId}`);
+        } catch {}
 
         await eventBus.publish('app/portfolio.deleted', {
             portfolioId: id,

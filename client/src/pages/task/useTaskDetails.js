@@ -40,22 +40,46 @@ export default function useTaskDetails() {
 
     const handleAddComment = async () => {
         if (!newComment.trim()) return;
+        const text = newComment.trim();
+        const tempComment = {
+            id: `temp-${Date.now()}`,
+            content: text,
+            taskId: task.id,
+            createdAt: new Date().toISOString(),
+            user: user || { name: "You" }
+        };
+
+        // Instant optimistic append (0ms latency)
+        setComments((prev) => [...prev, tempComment]);
+        setNewComment("");
+
         try {
-            toast.loading("Adding comment...");
-            const { data } = await api.post(`/api/comments`, { taskId: task.id, content: newComment }, { headers: { Authorization: `Bearer ${token}` } });
-            setComments((prev) => [...prev, data.comment]);
-            setNewComment(""); toast.dismissAll(); toast.success("Comment added.");
-        } catch (error) { toast.dismissAll(); toast.error(error?.response?.data?.message || error.message); }
+            const { data } = await api.post(`/api/comments`, { taskId: task.id, content: text }, { headers: { Authorization: `Bearer ${token}` } });
+            if (data?.comment) {
+                setComments((prev) => prev.map(c => c.id === tempComment.id ? data.comment : c));
+            }
+            toast.success("Comment added.");
+        } catch (error) {
+            setComments((prev) => prev.filter(c => c.id !== tempComment.id));
+            toast.error(error?.response?.data?.message || "Failed to add comment");
+        }
     };
 
     const handleUpdateTask = async (updatedFields) => {
+        const previousTask = structuredClone(task);
+        // Instant optimistic Redux update (0ms latency)
+        dispatch(updateTask({ ...task, ...updatedFields }));
+
         try {
-            toast.loading("Updating task...");
             const { data } = await api.put(`/api/tasks/${task.id}`, updatedFields, { headers: { Authorization: `Bearer ${token}` } });
-            dispatch(updateTask(data.task));
-            toast.dismissAll();
+            if (data?.task) {
+                dispatch(updateTask(data.task));
+            }
             toast.success(data.message || "Task updated successfully");
-        } catch (error) { toast.dismissAll(); toast.error(error.response?.data?.message || "Failed to update task"); }
+        } catch (error) {
+            dispatch(updateTask(previousTask));
+            toast.error(error.response?.data?.message || "Failed to update task");
+        }
     };
 
     const handleDeleteTask = async () => {

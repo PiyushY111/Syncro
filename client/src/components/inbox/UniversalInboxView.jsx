@@ -25,31 +25,46 @@ export default function UniversalInboxView() {
     }, [filter, search]);
 
     const handleMarkRead = async (id) => {
+        // Optimistic UI update (0ms)
+        setNotifications((prev) => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+
         try {
             await api.patch(`/api/inbox/${id}/read`);
-            fetchInbox();
         } catch (err) {
             toast.error('Failed to mark read');
+            fetchInbox();
         }
     };
 
     const handleMarkAllRead = async () => {
+        // Optimistic UI update (0ms)
+        setNotifications((prev) => prev.map(n => ({ ...n, isRead: true })));
+        setUnreadCount(0);
+        toast.success('All notifications marked as read');
+
         try {
             await api.patch('/api/inbox/read-all');
-            toast.success('All notifications marked as read');
-            fetchInbox();
         } catch (err) {
             toast.error('Failed to mark all read');
+            fetchInbox();
         }
     };
 
     const handleArchive = async (id) => {
+        // Optimistic UI update (0ms)
+        const target = notifications.find(n => n.id === id);
+        setNotifications((prev) => prev.filter(n => n.id !== id));
+        if (target && !target.isRead) {
+            setUnreadCount((prev) => Math.max(0, prev - 1));
+        }
+        toast.success('Archived');
+
         try {
             await api.patch(`/api/inbox/${id}/archive`);
-            toast.success('Archived');
-            fetchInbox();
         } catch (err) {
             toast.error('Failed to archive');
+            fetchInbox();
         }
     };
 

@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { prisma } from "../config/prisma.js";
 import { redisCache } from "../config/redis.js";
 import { eventBus } from "../services/eventBus.js";
+import { invalidateChannelMessageCache } from "../controllers/chat/getMessages.js";
 
 export const registerMessageHandlers = (io, socket) => {
     socket.join(`user:${socket.user.id}`);
@@ -67,16 +68,31 @@ export const registerMessageHandlers = (io, socket) => {
                 }
             });
 
-            await eventBus.publish('app/chat.message_sent', {
-                message,
+            const formattedMessage = {
+                ...message,
+                reactions: [],
+                _count: { replies: 0 }
+            };
+
+            // 1. Instant ultra-low-latency broadcast to socket rooms (0ms)
+            if (channelId) {
+                io.to(`channel:${channelId}`).emit("message:received", formattedMessage);
+                await invalidateChannelMessageCache(channelId);
+            } else if (recipientId) {
+                io.to(`user:${recipientId}`).emit("message:received", formattedMessage);
+                io.to(`user:${socket.user.id}`).emit("message:received", formattedMessage);
+                const dmKey = `messages:dm:${[socket.user.id, recipientId].sort().join(':')}`;
+                await redisCache.del(dmKey);
+            }
+
+            // 2. Publish async domain event for notifications, email alerts & mentions (non-blocking)
+            eventBus.publish('app/chat.message_sent', {
+                message: formattedMessage,
                 channelId: channelId || null,
                 recipientId: recipientId || null,
                 senderName: socket.user.name
-            });
-            
-            if (channelId) {
-                redisCache.del(`messages:${channelId}`).catch(() => {});
-            }
+            }).catch(e => console.warn("[EVENTBUS CHAT MSG SENT NON-BLOCKING ERR]", e.message));
+
         } catch (error) {
             console.error("[SOCKET MESSAGE SEND ERROR]", error);
             socket.emit("message:error", { message: "Failed to send message" });
@@ -90,15 +106,25 @@ export const registerMessageHandlers = (io, socket) => {
 
             await prisma.message.delete({ where: { id: messageId } });
 
-            await eventBus.publish('app/chat.message_deleted', {
-                messageId,
-                channelId: channelId || null,
-                recipientId: message.recipientId
-            });
+            const targetChannelId = channelId || message.channelId;
 
-            if (channelId) {
-                redisCache.del(`messages:${channelId}`).catch(() => {});
+            // Instant broadcast to socket rooms
+            if (targetChannelId) {
+                io.to(`channel:${targetChannelId}`).emit("message:deleted", { messageId, channelId: targetChannelId });
+                await invalidateChannelMessageCache(targetChannelId);
+            } else if (message.recipientId) {
+                io.to(`user:${message.recipientId}`).emit("message:deleted", { messageId });
+                io.to(`user:${socket.user.id}`).emit("message:deleted", { messageId });
+                const dmKey = `messages:dm:${[socket.user.id, message.recipientId].sort().join(':')}`;
+                await redisCache.del(dmKey);
             }
+
+            eventBus.publish('app/chat.message_deleted', {
+                messageId,
+                channelId: targetChannelId || null,
+                recipientId: message.recipientId
+            }).catch(e => console.warn("[EVENTBUS CHAT MSG DELETED NON-BLOCKING ERR]", e.message));
+
         } catch (error) {
             console.error("[SOCKET MESSAGE DELETE ERROR]", error);
         }

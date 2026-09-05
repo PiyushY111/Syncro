@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { redisCache } from "../../config/redis.js";
 import { eventBus } from "../../services/eventBus.js";
 import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 
@@ -70,6 +71,10 @@ export const createPortfolio = async (req, res) => {
                 userAgent: req.headers["user-agent"]
             }
         });
+
+        try {
+            await redisCache.del(`workspace:portfolios:${workspaceId}`);
+        } catch {}
 
         return res.status(201).json({
             message: "Portfolio created successfully",

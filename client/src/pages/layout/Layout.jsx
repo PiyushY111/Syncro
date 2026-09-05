@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import { Outlet, useLocation } from 'react-router-dom';
@@ -21,6 +21,7 @@ export default function Layout() {
     const [isCreatingPersonal, setIsCreatingPersonal] = useState(false);
     const location = useLocation();
     const isChatPage = location.pathname.startsWith('/chat');
+    const lastFetchRef = useRef(0);
 
     const handleCreatePersonalWorkspace = async () => {
         setIsCreatingPersonal(true);
@@ -57,13 +58,19 @@ export default function Layout() {
     useEffect(() => {
         if (authLoading || !user) return;
 
-        const loadWorkspaces = () => dispatch(fetchWorkspaces());
-        loadWorkspaces();
+        const loadWorkspaces = (force = false) => {
+            const now = Date.now();
+            if (!force && now - lastFetchRef.current < 60 * 1000) return;
+            lastFetchRef.current = now;
+            dispatch(fetchWorkspaces());
+        };
 
-        const handleWindowFocus = () => loadWorkspaces();
+        loadWorkspaces(true);
+
+        const handleWindowFocus = () => loadWorkspaces(false);
         const handleVisibilityChange = () => {
             if (document.visibilityState === 'visible') {
-                loadWorkspaces();
+                loadWorkspaces(false);
             }
         };
 

@@ -30,14 +30,23 @@ export default function ProjectKanban({ tasks, project }) {
     const [showAddColumn, setShowAddColumn] = useState(false);
 
     const handleStatusChange = async (taskId, newStatus) => {
+        const originalTask = tasks.find((t) => t.id === taskId);
+        if (!originalTask) return;
+        const previousStatus = originalTask.status;
+
+        // 1. Instant Optimistic Redux Update (0ms visual latency)
+        let updatedTask = structuredClone(originalTask);
+        updatedTask.status = newStatus;
+        dispatch(updateTask(updatedTask));
+
+        // 2. Background Server Synchronization with automatic rollback
         try {
             await api.put(`/api/tasks/${taskId}`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
-            let updatedTask = structuredClone(tasks.find((t) => t.id === taskId));
-            updatedTask.status = newStatus;
-            dispatch(updateTask(updatedTask));
-            toast.success("Task status updated successfully");
         } catch (error) {
-            toast.error(error?.response?.data?.message || error.message);
+            let rollbackTask = structuredClone(originalTask);
+            rollbackTask.status = previousStatus;
+            dispatch(updateTask(rollbackTask));
+            toast.error(error?.response?.data?.message || "Failed to update status. Reverting...");
         }
     };
 

@@ -1,4 +1,5 @@
 import { prisma } from "../../config/prisma.js";
+import { redisCache } from "../../config/redis.js";
 import { getUserWorkspaceRole } from "../role/checkPermissionHelper.js";
 
 export const getWorkspacePortfolios = async (req, res) => {
@@ -13,6 +14,15 @@ export const getWorkspacePortfolios = async (req, res) => {
         if (!role) {
             return res.status(403).json({ message: "Access restricted to workspace members only" });
         }
+
+        const cacheKey = `workspace:portfolios:${workspaceId}`;
+        try {
+            const cached = await redisCache.get(cacheKey);
+            if (cached) {
+                const parsed = typeof cached === "string" ? JSON.parse(cached) : cached;
+                return res.status(200).json({ portfolios: parsed });
+            }
+        } catch {}
 
         const portfolios = await prisma.portfolio.findMany({
             where: { workspaceId },
@@ -74,6 +84,10 @@ export const getWorkspacePortfolios = async (req, res) => {
                 health
             };
         });
+
+        try {
+            await redisCache.set(cacheKey, JSON.stringify(formattedPortfolios), 60);
+        } catch {}
 
         return res.status(200).json({ portfolios: formattedPortfolios });
     } catch (error) {

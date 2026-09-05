@@ -73,18 +73,37 @@ export const sendMessage = async (req, res) => {
             }
         });
 
+        const formattedMessage = {
+            ...message,
+            reactions: [],
+            _count: { replies: 0 }
+        };
+
         if (channelId) {
             await invalidateChannelMessageCache(channelId);
+        } else if (recipientId) {
+            const dmKey = `messages:dm:${[userId, recipientId].sort().join(':')}`;
+            await redisCache.del(dmKey);
         }
 
-        await eventBus.publish('app/chat.message_sent', {
-            message,
+        // Instant broadcast if socket server is initialized
+        if (global.io) {
+            if (channelId) {
+                global.io.to(`channel:${channelId}`).emit('message:received', formattedMessage);
+            } else if (recipientId) {
+                global.io.to(`user:${recipientId}`).emit('message:received', formattedMessage);
+                global.io.to(`user:${userId}`).emit('message:received', formattedMessage);
+            }
+        }
+
+        eventBus.publish('app/chat.message_sent', {
+            message: formattedMessage,
             channelId: channelId || null,
             recipientId: recipientId || null,
             senderName: req.user.name
-        });
+        }).catch(e => console.warn("[EVENTBUS SEND MSG NON-BLOCKING ERR]", e.message));
 
-        return res.status(201).json({ message });
+        return res.status(201).json({ message: formattedMessage });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ message: err.message });
@@ -126,6 +145,9 @@ export const pinMessage = async (req, res) => {
 
         if (message.channelId) {
             await invalidateChannelMessageCache(message.channelId);
+            if (global.io) {
+                global.io.to(`channel:${message.channelId}`).emit('message:pinned', { messageId, isPinned: updated.isPinned });
+            }
         }
 
         return res.json({ message: updated, isPinned: updated.isPinned });
@@ -180,13 +202,23 @@ export const deleteMessage = async (req, res) => {
 
         if (message.channelId) {
             await invalidateChannelMessageCache(message.channelId);
+            if (global.io) {
+                global.io.to(`channel:${message.channelId}`).emit('message:deleted', { messageId, channelId: message.channelId });
+            }
+        } else if (message.recipientId) {
+            const dmKey = `messages:dm:${[userId, message.recipientId].sort().join(':')}`;
+            await redisCache.del(dmKey);
+            if (global.io) {
+                global.io.to(`user:${message.recipientId}`).emit('message:deleted', { messageId });
+                global.io.to(`user:${userId}`).emit('message:deleted', { messageId });
+            }
         }
 
-        await eventBus.publish('app/chat.message_deleted', {
+        eventBus.publish('app/chat.message_deleted', {
             messageId,
             channelId: message.channelId,
             recipientId: message.recipientId
-        });
+        }).catch(e => console.warn("[EVENTBUS DELETE MSG NON-BLOCKING ERR]", e.message));
 
         return res.json({ message: "Message deleted" });
     } catch (err) {

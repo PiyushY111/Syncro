@@ -124,6 +124,8 @@ export const getUserWorkspaces = asyncHandler(async (req, res) => {
                       assigneeId: true,
                       assignee: true,
                       projectId: true,
+                      createdAt: true,
+                      updatedAt: true,
                     },
                   },
                   members: { include: { user: true } },
@@ -164,7 +166,7 @@ export const getUserWorkspaces = asyncHandler(async (req, res) => {
 
       return { workspaces };
     },
-    10
+    60
   );
 
   return ApiResponse.success(res, { data: result });

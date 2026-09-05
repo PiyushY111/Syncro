@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import MessageCard from './MessageCard';
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, Loader2 } from 'lucide-react';
 
 const getDateLabel = (dateStr) => {
     const d = new Date(dateStr);
@@ -14,6 +14,7 @@ const getDateLabel = (dateStr) => {
 
 export default function MessageStream({
     messages = [],
+    isLoading = false,
     typingUser = null,
     onReact,
     onOpenThread,
@@ -22,11 +23,73 @@ export default function MessageStream({
     onStarMessage,
     onConvertTask
 }) {
+    const containerRef = useRef(null);
     const bottomRef = useRef(null);
+    const isInitialLoadRef = useRef(true);
 
     useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, [messages, typingUser]);
+        if (isLoading) {
+            isInitialLoadRef.current = true;
+        }
+    }, [isLoading]);
+
+    useEffect(() => {
+        if (isLoading || !containerRef.current) return;
+        const container = containerRef.current;
+        const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 160;
+
+        if (isInitialLoadRef.current) {
+            bottomRef.current?.scrollIntoView({ behavior: 'auto' });
+            if (messages.length > 0) {
+                isInitialLoadRef.current = false;
+            }
+        } else if (isNearBottom || typingUser) {
+            bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+        }
+    }, [messages.length, typingUser, isLoading]);
+
+    if (isLoading) {
+        return (
+            <div className="flex-1 min-h-0 bg-white dark:bg-zinc-950 flex flex-col justify-between p-5 space-y-6 overflow-hidden animate-pulse">
+                <div className="space-y-6">
+                    {/* Date divider skeleton */}
+                    <div className="flex items-center gap-4 px-5 py-2">
+                        <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                        <div className="h-2.5 w-16 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
+                        <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                    </div>
+
+                    {/* Message skeleton rows */}
+                    {[
+                        { wName: 'w-24', w1: 'w-3/4', w2: 'w-1/2' },
+                        { wName: 'w-20', w1: 'w-2/3', w2: 'w-1/3' },
+                        { wName: 'w-28', w1: 'w-5/6', w2: 'w-2/5' },
+                        { wName: 'w-20', w1: 'w-1/2', w2: '' }
+                    ].map((item, idx) => (
+                        <div key={idx} className="flex items-start gap-3 px-3">
+                            <div className="size-9 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+                            <div className="space-y-2 flex-1">
+                                <div className="flex items-center gap-2">
+                                    <div className={`h-3 ${item.wName} bg-zinc-200 dark:bg-zinc-800 rounded`} />
+                                    <div className="h-2.5 w-12 bg-zinc-100 dark:bg-zinc-800/60 rounded" />
+                                </div>
+                                <div className={`h-3.5 ${item.w1} bg-zinc-200 dark:bg-zinc-800 rounded`} />
+                                {item.w2 && <div className={`h-3.5 ${item.w2} bg-zinc-100 dark:bg-zinc-800/70 rounded`} />}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* Centered loader spinner */}
+                <div className="flex items-center justify-center pb-4">
+                    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 font-medium shadow-xs">
+                        <Loader2 className="size-3.5 animate-spin text-blue-500" />
+                        <span>Loading conversation...</span>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Group messages by date for dividers
     const renderMessages = () => {
@@ -64,7 +127,7 @@ export default function MessageStream({
 
     return (
         <div className="flex-1 min-h-0 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden">
-            <div className="flex-1 overflow-y-auto">
+            <div ref={containerRef} className="flex-1 overflow-y-auto">
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center p-8 text-zinc-400 dark:text-zinc-500">
                         <div className="size-14 grid place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-blue-400 mb-4">

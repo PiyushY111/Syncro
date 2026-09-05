@@ -36,7 +36,7 @@ export const getUserWorkspaceRole = async (userId, workspaceId) => {
     const cacheKey = `workspace:role:${userId}:${workspaceId}`;
     try {
         const cached = await redisCache.get(cacheKey);
-        if (cached) return JSON.parse(cached);
+        if (cached) return typeof cached === "string" ? JSON.parse(cached) : cached;
     } catch {}
 
     const member = await prisma.workspaceMember.findUnique({

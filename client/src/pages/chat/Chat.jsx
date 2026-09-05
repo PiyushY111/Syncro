@@ -20,8 +20,8 @@ export default function Chat() {
                 members={s.currentWorkspace?.members || []}
                 activeChannel={s.activeChannel}
                 activeDM={s.activeDM}
-                onSelectChannel={(ch) => { s.setActiveChannel(ch); s.setActiveDM(null); }}
-                onSelectDM={(dm) => { s.setActiveDM(dm); s.setActiveChannel(null); }}
+                onSelectChannel={s.handleSelectChannel}
+                onSelectDM={s.handleSelectDM}
                 onlineUsers={s.onlineUsers}
                 onOpenCreateChannel={() => s.setIsCreateModalOpen(true)}
                 onOpenChannelBrowser={() => s.setIsBrowserOpen(true)}
@@ -67,6 +67,7 @@ export default function Chat() {
                     <>
                         <MessageStream
                             messages={s.messages}
+                            isLoading={s.isLoadingMessages}
                             typingUser={s.typingUser}
                             onReact={s.handleToggleReaction}
                             onOpenThread={(m) => s.setActiveThreadMessage(m)}
@@ -82,9 +83,9 @@ export default function Chat() {
 
             {s.activeThreadMessage && <ThreadPanel parentMessage={s.activeThreadMessage} onClose={() => s.setActiveThreadMessage(null)} onSendReply={(pId, c) => s.handleSendMessage(c)} />}
 
-            <CreateChannelModal isOpen={s.isCreateModalOpen} onClose={() => s.setIsCreateModalOpen(false)} workspaceId={s.currentWorkspace?.id} onChannelCreated={(ch) => { s.setChannels(p => [...p, ch]); s.setActiveChannel(ch); }} />
-            <ChannelBrowserModal isOpen={s.isBrowserOpen} onClose={() => s.setIsBrowserOpen(false)} workspaceId={s.currentWorkspace?.id} onChannelJoined={(ch) => { s.setChannels(p => p.some(c => c.id === ch.id) ? p : [...p, ch]); s.setActiveChannel(ch); }} />
-            <ChannelDetailsModal isOpen={s.isDetailsOpen} onClose={() => s.setIsDetailsOpen(false)} channel={s.activeChannel} workspaceMembers={s.currentWorkspace?.members || []} messages={s.messages} onChannelUpdated={(ch) => { s.setActiveChannel(ch); s.setChannels(p => p.map(x => x.id === ch.id ? ch : x)); }} onChannelDeleted={(id) => s.setChannels(p => p.filter(c => c.id !== id))} onSelectDM={(u) => { s.setActiveDM(u); s.setActiveChannel(null); s.setIsDetailsOpen(false); }} canManage={s.canManageChat} currentUser={s.currentUser} />
+            <CreateChannelModal isOpen={s.isCreateModalOpen} onClose={() => s.setIsCreateModalOpen(false)} workspaceId={s.currentWorkspace?.id} onChannelCreated={(ch) => { s.setChannels(p => [...p, ch]); s.handleSelectChannel(ch); }} />
+            <ChannelBrowserModal isOpen={s.isBrowserOpen} onClose={() => s.setIsBrowserOpen(false)} workspaceId={s.currentWorkspace?.id} onChannelJoined={(ch) => { s.setChannels(p => p.some(c => c.id === ch.id) ? p : [...p, ch]); s.handleSelectChannel(ch); }} />
+            <ChannelDetailsModal isOpen={s.isDetailsOpen} onClose={() => s.setIsDetailsOpen(false)} channel={s.activeChannel} workspaceMembers={s.currentWorkspace?.members || []} messages={s.messages} onChannelUpdated={(ch) => { s.setActiveChannel(ch); s.setChannels(p => p.map(x => x.id === ch.id ? ch : x)); }} onChannelDeleted={(id) => s.setChannels(p => p.filter(c => c.id !== id))} onSelectDM={(u) => { s.handleSelectDM(u); s.setIsDetailsOpen(false); }} canManage={s.canManageChat} currentUser={s.currentUser} />
             <PinnedMessagesModal isOpen={s.isPinnedOpen} onClose={() => s.setIsPinnedOpen(false)} channelId={s.activeChannel?.id} />
             <ConvertMessageModal isOpen={Boolean(s.convertMsg)} onClose={() => s.setConvertMsg(null)} message={s.convertMsg} projects={s.currentWorkspace?.projects || []} />
         </main>

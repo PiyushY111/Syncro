@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { redisCache } from '../../config/redis.js';
 import { hasWorkspacePermission, getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
 
 export const createChannel = async (req, res) => {
@@ -35,6 +36,11 @@ export const createChannel = async (req, res) => {
             }
         });
 
+        await redisCache.del(`workspace:${workspaceId}:channels:${userId}`);
+        if (global.io) {
+            global.io.emit('channel:created', { channel });
+        }
+
         return res.status(201).json({ channel, message: "Channel created successfully" });
     } catch (err) {
         console.error(err);
@@ -46,6 +52,15 @@ export const getWorkspaceChannels = async (req, res) => {
     try {
         const userId = req.user.id;
         const { workspaceId } = req.params;
+
+        const cacheKey = `workspace:${workspaceId}:channels:${userId}`;
+        try {
+            const cached = await redisCache.get(cacheKey);
+            if (cached) {
+                const parsed = typeof cached === 'string' ? JSON.parse(cached) : cached;
+                return res.json({ channels: parsed, fromCache: true });
+            }
+        } catch {}
 
         const { role, isOwner, workspace } = await getUserWorkspaceRole(userId, workspaceId);
         if (!workspace || !role) {
@@ -71,7 +86,11 @@ export const getWorkspaceChannels = async (req, res) => {
             orderBy: { name: "asc" }
         });
 
-        return res.json({ channels });
+        try {
+            await redisCache.set(cacheKey, JSON.stringify(channels), 120);
+        } catch {}
+
+        return res.json({ channels, fromCache: false });
     } catch (err) {
         console.error("[GET CHANNELS ERROR]", err);
         return res.status(500).json({ message: err.message });
