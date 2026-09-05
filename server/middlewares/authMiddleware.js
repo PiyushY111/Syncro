@@ -20,7 +20,7 @@ export const protect = async (req, res, next) => {
       throw new Error('JWT_SECRET is not configured');
     }
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const payload = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
     // Check token revocation blacklist in Redis
     if (payload.jti) {

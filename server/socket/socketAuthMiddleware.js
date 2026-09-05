@@ -12,7 +12,7 @@ export const socketAuthMiddleware = async (socket, next) => {
         }
 
         const secret = process.env.JWT_SECRET || "change_this_to_a_long_random_secret";
-        const decoded = jwt.verify(token, secret);
+        const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] });
 
         if (decoded.jti) {
             const { redisCache } = await import("../config/redis.js");

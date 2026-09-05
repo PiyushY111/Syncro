@@ -16,6 +16,16 @@ const MAX_CLOCK_SKEW_MS = 60 * 1000; // 60 seconds
 const memorySessions = new Map();
 const memoryNonces = new Set();
 
+// Periodic cleanup of expired in-memory sessions every 15 minutes to prevent memory leaks
+setInterval(() => {
+    const now = Date.now();
+    for (const [id, session] of memorySessions.entries()) {
+        if (now - session.createdAt > SESSION_TTL_SECONDS * 1000) {
+            memorySessions.delete(id);
+        }
+    }
+}, 15 * 60 * 1000).unref();
+
 export const shieldEngine = {
     /**
      * Completes ECDH P-256 key exchange with client and generates derived session keys.
@@ -61,7 +71,8 @@ export const shieldEngine = {
                 JSON.stringify(sessionRecord),
                 SESSION_TTL_SECONDS
             );
-        } catch {
+        } catch (err) {
+            console.warn('[SHIELD WARN] Redis unavailable for session store, falling back to in-memory store:', err.message);
             memorySessions.set(sessionId, sessionRecord);
         }
 
@@ -103,6 +114,7 @@ export const shieldEngine = {
 
     /**
      * Verifies request timestamp and guards against replay attacks using nonces.
+     * Uses atomic SETNX with TTL in Redis to eliminate TOCTOU replay windows.
      */
     async verifyReplayGuard(sessionId, timestamp, nonce) {
         const now = Date.now();
@@ -119,13 +131,13 @@ export const shieldEngine = {
         const nonceKey = `shield:nonce:${sessionId}:${nonce}`;
 
         try {
-            // Check and set atomic nonce in Redis
-            const existing = await redisCache.get(nonceKey);
-            if (existing) {
+            // Atomic check and set with TTL in Redis
+            const acquired = await redisCache.setNx(nonceKey, '1', NONCE_TTL_SECONDS);
+            if (!acquired) {
                 return { valid: false, reason: 'Replay attack detected: duplicate nonce' };
             }
-            await redisCache.set(nonceKey, '1', NONCE_TTL_SECONDS);
-        } catch {
+        } catch (err) {
+            console.warn('[SHIELD WARN] Redis unavailable for nonce verification, using in-memory guard:', err.message);
             if (memoryNonces.has(nonceKey)) {
                 return { valid: false, reason: 'Replay attack detected: duplicate nonce' };
             }

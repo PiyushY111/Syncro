@@ -126,6 +126,7 @@ async function runConcurrencyTestSuite() {
     if (failed > 0) {
       process.exit(1);
     }
+    process.exit(0);
   } catch (err) {
     console.error('Concurrency test suite error:', err);
     process.exit(1);

@@ -42,8 +42,37 @@ export const registerMessageHandlers = (io, socket) => {
         }
     })();
 
-    socket.on("channel:join", (channelId) => {
-        if (channelId) socket.join(`channel:${channelId}`);
+    socket.on("channel:join", async (channelId) => {
+        if (!channelId) return;
+        try {
+            const channel = await prisma.channel.findUnique({
+                where: { id: channelId },
+                include: {
+                    members: { select: { id: true } },
+                    workspace: { select: { ownerId: true, members: { select: { userId: true } } } }
+                }
+            });
+            if (!channel) return;
+
+            const isWorkspaceMember =
+                channel.workspace?.ownerId === socket.user.id ||
+                channel.workspace?.members?.some((m) => m.userId === socket.user.id);
+
+            if (!isWorkspaceMember) return;
+
+            if (
+                channel.isPrivate &&
+                channel.creatorId !== socket.user.id &&
+                !channel.members?.some((m) => m.id === socket.user.id) &&
+                channel.workspace?.ownerId !== socket.user.id
+            ) {
+                return;
+            }
+
+            socket.join(`channel:${channelId}`);
+        } catch (err) {
+            console.error("[SOCKET CHANNEL JOIN AUTH ERROR]", err.message);
+        }
     });
 
     socket.on("channel:leave", (channelId) => {
@@ -52,14 +81,75 @@ export const registerMessageHandlers = (io, socket) => {
 
     socket.on("message:send", async ({ channelId, recipientId, content, attachments = [], parentMessageId = null }) => {
         try {
-            const contentHash = crypto.createHash('sha256').update(content || '').digest('hex');
+            if (!content || !content.trim()) {
+                return socket.emit("message:error", { message: "Message content cannot be empty" });
+            }
+
+            // Authorization Checks
+            if (channelId) {
+                const channel = await prisma.channel.findUnique({
+                    where: { id: channelId },
+                    include: {
+                        members: { select: { id: true } },
+                        workspace: { select: { ownerId: true, members: { select: { userId: true } } } }
+                    }
+                });
+                if (!channel) {
+                    return socket.emit("message:error", { message: "Channel not found" });
+                }
+
+                const isWorkspaceMember =
+                    channel.workspace?.ownerId === socket.user.id ||
+                    channel.workspace?.members?.some((m) => m.userId === socket.user.id);
+
+                if (!isWorkspaceMember) {
+                    return socket.emit("message:error", { message: "Access denied to channel" });
+                }
+
+                if (
+                    channel.isPrivate &&
+                    channel.creatorId !== socket.user.id &&
+                    !channel.members?.some((m) => m.id === socket.user.id) &&
+                    channel.workspace?.ownerId !== socket.user.id
+                ) {
+                    return socket.emit("message:error", { message: "Access denied to private channel" });
+                }
+            } else if (recipientId) {
+                const shareWorkspace = await prisma.workspaceMember.findFirst({
+                    where: {
+                        userId: socket.user.id,
+                        workspace: {
+                            OR: [
+                                { ownerId: recipientId },
+                                { members: { some: { userId: recipientId } } }
+                            ]
+                        }
+                    }
+                }) || await prisma.workspace.findFirst({
+                    where: {
+                        ownerId: socket.user.id,
+                        OR: [
+                            { ownerId: recipientId },
+                            { members: { some: { userId: recipientId } } }
+                        ]
+                    }
+                });
+
+                if (!shareWorkspace) {
+                    return socket.emit("message:error", { message: "You can only message users who share a workspace with you" });
+                }
+            } else {
+                return socket.emit("message:error", { message: "Either channelId or recipientId must be provided" });
+            }
+
+            const contentHash = crypto.createHash('sha256').update(content.trim()).digest('hex');
 
             const message = await prisma.message.create({
                 data: {
                     userId: socket.user.id,
                     channelId: channelId || null,
                     recipientId: recipientId || null,
-                    content,
+                    content: content.trim(),
                     contentHash,
                     parentId: parentMessageId
                 },
@@ -74,7 +164,7 @@ export const registerMessageHandlers = (io, socket) => {
                 _count: { replies: 0 }
             };
 
-            // 1. Instant ultra-low-latency broadcast to socket rooms (0ms)
+            // 1. Instant broadcast to socket rooms
             if (channelId) {
                 io.to(`channel:${channelId}`).emit("message:received", formattedMessage);
                 await invalidateChannelMessageCache(channelId);
@@ -101,8 +191,20 @@ export const registerMessageHandlers = (io, socket) => {
 
     socket.on("message:delete", async ({ messageId, channelId }) => {
         try {
-            const message = await prisma.message.findUnique({ where: { id: messageId } });
+            const message = await prisma.message.findUnique({
+                where: { id: messageId },
+                include: {
+                    channel: { select: { workspaceId: true, workspace: { select: { ownerId: true } } } }
+                }
+            });
             if (!message) return;
+
+            // Authorization: Message owner or workspace owner
+            const isOwner = message.userId === socket.user.id;
+            const isWorkspaceOwner = message.channel?.workspace?.ownerId === socket.user.id;
+            if (!isOwner && !isWorkspaceOwner) {
+                return socket.emit("message:error", { message: "Unauthorized to delete this message" });
+            }
 
             await prisma.message.delete({ where: { id: messageId } });
 

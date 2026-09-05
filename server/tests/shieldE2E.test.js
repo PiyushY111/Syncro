@@ -18,6 +18,8 @@ function dispatchInMemory(app, method, path, headers = {}, body = null) {
         );
         req.headers['content-type'] = req.headers['content-type'] || 'application/json';
         req.body = body;
+        req._body = true;
+        req.push(null);
 
         let statusCode = 200;
         let responseHeaders = {};
@@ -222,6 +224,7 @@ async function runShieldE2ETest() {
     console.log('----------------------------------------------------');
 
     if (failed > 0) process.exit(1);
+    process.exit(0);
 }
 
 runShieldE2ETest();

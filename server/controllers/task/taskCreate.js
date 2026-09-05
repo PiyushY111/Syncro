@@ -1,4 +1,5 @@
 import { prisma } from '../../config/prisma.js';
+import { redisCache } from '../../config/redis.js';
 import { eventBus } from '../../services/eventBus.js';
 import { executeTransaction } from '../../services/db/dbService.js';
 import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
@@ -82,6 +83,9 @@ export const createTask = asyncHandler(async (req, res) => {
     });
   });
 
+  // Invalidate workspace dashboard cache
+  await redisCache.del(`workspace:${project.workspaceId}:dashboard`);
+
   await eventBus.publish('app/task.created', {
     task: taskWithAssignee,
     origin,
@@ -143,10 +147,16 @@ export const deleteTask = asyncHandler(async (req, res) => {
       }).catch(() => {});
     }
 
-    return await tx.task.deleteMany({
+    return await tx.task.updateMany({
       where: { id: { in: tasksIds } },
+      data: { deletedAt: new Date() },
     });
   });
+
+  const workspaceIds = [...new Set(tasks.map(t => t.project.workspaceId))];
+  for (const wsId of workspaceIds) {
+    await redisCache.del(`workspace:${wsId}:dashboard`);
+  }
 
   return ApiResponse.success(res, {
     data: { task: deletedTasks },

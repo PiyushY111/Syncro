@@ -18,7 +18,7 @@ export const executeTransaction = async (actionFn, options = {}) => {
   while (attempt < maxRetries) {
     attempt++;
     try {
-      return await basePrisma.$transaction(
+      return await prisma.$transaction(
         async (tx) => {
           return await actionFn(tx);
         },
@@ -127,6 +127,7 @@ export const softDeleteEntity = async (modelName, entityId, context = {}) => {
     // Invalidate cached entity data
     if (workspaceId) {
       await redisCache.invalidateCache(`workspace:${workspaceId}:${lowerModel}:${entityId}`);
+      await redisCache.del(`workspace:${workspaceId}:dashboard`);
     }
 
     return updated;
@@ -154,14 +155,16 @@ export const getCachedOrFetch = async (cacheKey, fetchFn, ttlSeconds = 300) => {
   const gotLock = await redisCache.setNx(lockKey, "1", 10);
 
   if (!gotLock) {
-    // Another concurrent process is fetching - wait briefly & re-check cache
-    await new Promise((r) => setTimeout(r, 100));
-    try {
-      const retry = await redisCache.get(cacheKey);
-      if (retry) {
-        return typeof retry === "string" ? JSON.parse(retry) : retry;
-      }
-    } catch {}
+    // Another concurrent process is fetching - poll cache up to 5 times (total ~300ms) before dogpiling DB
+    for (let i = 0; i < 5; i++) {
+      await new Promise((r) => setTimeout(r, 60));
+      try {
+        const retry = await redisCache.get(cacheKey);
+        if (retry) {
+          return typeof retry === "string" ? JSON.parse(retry) : retry;
+        }
+      } catch {}
+    }
   }
 
   try {

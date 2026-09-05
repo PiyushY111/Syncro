@@ -1,30 +1,31 @@
 import { prisma } from "../../config/prisma.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
+import { ApiResponse } from "../../utils/response/apiResponse.js";
 
-export const getProjectEpics = async (req, res) => {
-    try {
-        const { projectId } = req.params;
+export const getProjectEpics = asyncHandler(async (req, res) => {
+    const { projectId } = req.params;
 
-        const epics = await prisma.epic.findMany({
-            where: { projectId },
-            include: { tasks: true },
-            orderBy: { createdAt: "desc" }
-        });
+    const epics = await prisma.epic.findMany({
+        where: { projectId },
+        include: { tasks: true },
+        orderBy: { createdAt: "desc" }
+    });
 
-        const epicsWithProgress = epics.map(epic => {
-            const totalTasks = epic.tasks.length;
-            const completedTasks = epic.tasks.filter(t => t.status === "DONE").length;
-            const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            return {
-                ...epic,
-                progress,
-                totalTasks,
-                completedTasks
-            };
-        });
+    const epicsWithProgress = epics.map(epic => {
+        const totalTasks = epic.tasks ? epic.tasks.length : 0;
+        const completedTasks = epic.tasks ? epic.tasks.filter(t => t.status === "DONE").length : 0;
+        const progress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+        return {
+            ...epic,
+            progress,
+            totalTasks,
+            completedTasks
+        };
+    });
 
-        return res.status(200).json({ epics: epicsWithProgress });
-    } catch (error) {
-        console.error("Error fetching project Epics:", error);
-        return res.status(500).json({ message: "Internal server error" });
-    }
-};
+    return ApiResponse.success(res, {
+        data: { epics: epicsWithProgress }
+    });
+});
+
+export default getProjectEpics;

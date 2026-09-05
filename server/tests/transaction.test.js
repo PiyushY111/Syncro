@@ -85,6 +85,7 @@ async function runTransactionTestSuite() {
     if (failed > 0) {
       process.exit(1);
     }
+    process.exit(0);
   } catch (err) {
     console.error('Transaction test suite error:', err);
     process.exit(1);

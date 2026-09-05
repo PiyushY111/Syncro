@@ -25,24 +25,6 @@ export const login = asyncHandler(async (req, res) => {
     throw new UnauthorizedError('Invalid email or password');
   }
 
-  const isTester = normalizedEmail === 'google-tester@piyushydv.com';
-  if (isTester) {
-    const { token: accessToken } = createAccessToken(user);
-    const { refreshToken } = createRefreshToken(user);
-
-    res.cookie('syncro_access_token', accessToken, ACCESS_COOKIE_OPTIONS);
-    res.cookie('syncro_refresh_token', refreshToken, COOKIE_OPTIONS);
-
-    return ApiResponse.success(res, {
-      data: {
-        requiresVerification: false,
-        token: accessToken,
-        user: sanitizeUser(user),
-      },
-      message: 'Logged in successfully',
-    });
-  }
-
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedCode = hashVerificationCode(verificationCode);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
@@ -63,7 +45,6 @@ export const login = asyncHandler(async (req, res) => {
     .publish('app/auth.login_code_requested', {
       email: user.email,
       verificationCode,
-      isTester,
     })
     .catch((err) => console.error('[login] Failed to publish login code event:', err));
 

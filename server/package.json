@@ -7,7 +7,10 @@
     "postinstall": "npx prisma generate",
     "start": "prisma generate && node server.js",
     "server": "nodemon server.js",
-    "test": "node tests/runAllTests.js",
+    "test": "vitest run && node tests/runAllTests.js",
+    "test:unit": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:integration": "node tests/runAllTests.js",
     "test:domain": "node tests/domainInvariants.test.js",
     "test:security": "node tests/security.test.js",
     "test:concurrency": "node tests/concurrency.test.js",
@@ -42,5 +45,9 @@
     "prisma": "^6.19.3",
     "socket.io": "^4.8.3",
     "svix": "^1.96.1"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^4.1.11",
+    "vitest": "^4.1.11"
   }
 }

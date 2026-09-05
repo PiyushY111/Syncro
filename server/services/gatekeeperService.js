@@ -26,24 +26,22 @@ export const getPlatformSettings = async () => {
     }
   } catch {}
 
-  let settingRecord = await prisma.platformSetting.findUnique({
-    where: { key: SETTINGS_KEY },
-  });
+  let settingRecord = null;
+  try {
+    settingRecord = await prisma.platformSetting.findUnique({
+      where: { key: SETTINGS_KEY },
+    });
 
-  if (!settingRecord) {
-    try {
+    if (!settingRecord) {
       settingRecord = await prisma.platformSetting.create({
         data: {
           key: SETTINGS_KEY,
           value: DEFAULT_PLATFORM_SETTINGS,
         },
       });
-    } catch {
-      // In case of race condition
-      settingRecord = await prisma.platformSetting.findUnique({
-        where: { key: SETTINGS_KEY },
-      });
     }
+  } catch {
+    // Fallback gracefully when database is offline or during initial startup
   }
 
   const settings = {

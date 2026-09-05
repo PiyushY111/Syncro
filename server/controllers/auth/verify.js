@@ -99,10 +99,9 @@ export const verifyLogin = asyncHandler(async (req, res) => {
 
   const submittedCodeHash = hashVerificationCode(code);
   const isMatchHashed = timingSafeCompare(user.twoFactorCode, submittedCodeHash);
-  const isMatchPlain = timingSafeCompare(user.twoFactorCode, code.trim());
   const isMatchDev = process.env.NODE_ENV !== 'production' && code.trim() === '123456';
 
-  if (!isMatchHashed && !isMatchPlain && !isMatchDev) {
+  if (!isMatchHashed && !isMatchDev) {
     const newFails = await redisCache.incrWithTtl(lockKey, 60);
     if (newFails >= 3) {
       throw new RateLimitError('Too many failed 2FA verification attempts. Account locked for 1 minute.', {
@@ -170,16 +169,13 @@ export const resendCode = asyncHandler(async (req, res) => {
     throw new NotFoundError('User not found');
   }
 
-  const isTester = normalizedEmail === 'google-tester@piyushydv.com';
-  if (isTester) {
-    return ApiResponse.success(res, {
-      message: '2FA is disabled for this test user account.',
-    });
-  }
-
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedCode = hashVerificationCode(verificationCode);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[DEV 2FA RESEND] User: ${user.email} | Verification Code: ${verificationCode}`);
+  }
 
   await prisma.user.update({
     where: { id: user.id },
@@ -202,7 +198,7 @@ export const refreshSession = asyncHandler(async (req, res) => {
 
   let payload;
   try {
-    payload = jwt.verify(refreshToken, process.env.JWT_SECRET || 'development-secret');
+    payload = jwt.verify(refreshToken, process.env.JWT_SECRET || 'development-secret', { algorithms: ['HS256'] });
   } catch (err) {
     throw new UnauthorizedError('Invalid or expired refresh token');
   }
@@ -256,7 +252,7 @@ export const logoutSession = asyncHandler(async (req, res) => {
   const refreshToken = req.cookies?.syncro_refresh_token || req.body?.refreshToken;
   if (refreshToken) {
     try {
-      const payload = jwt.verify(refreshToken, process.env.JWT_SECRET || 'development-secret');
+      const payload = jwt.verify(refreshToken, process.env.JWT_SECRET || 'development-secret', { algorithms: ['HS256'] });
       if (payload.jti) {
         await redisCache.set(`revoked:${payload.jti}`, 'true', 7 * 24 * 60 * 60);
       }
@@ -270,7 +266,7 @@ export const logoutSession = asyncHandler(async (req, res) => {
   const token = headerToken || cookieToken;
   if (token) {
     try {
-      const payload = jwt.verify(token, process.env.JWT_SECRET || 'development-secret');
+      const payload = jwt.verify(token, process.env.JWT_SECRET || 'development-secret', { algorithms: ['HS256'] });
       if (payload.jti) {
         await redisCache.set(`revoked:${payload.jti}`, 'true', 7 * 24 * 60 * 60);
         await prisma.userSession.updateMany({

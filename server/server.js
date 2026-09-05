@@ -44,6 +44,7 @@ import { errorMiddleware } from './middlewares/errorMiddleware.js'
 import { metricsMiddleware, getPrometheusMetrics } from './middlewares/metricsMiddleware.js'
 import { configureSecurityHeaders } from './middlewares/securityHeaders.js'
 import { sanitizeRequestBody } from './middlewares/sanitize.js'
+import { apiLimiter } from './middlewares/rateLimiter.js'
 
 const app = express()
 
@@ -109,7 +110,11 @@ app.use(sanitizeRequestBody);
 app.use(requestIdMiddleware);
 app.use(metricsMiddleware);
 
-app.get('/metrics', getPrometheusMetrics);
+// Internal telemetry metrics (protected)
+app.get('/metrics', protect, getPrometheusMetrics);
+
+// Global API rate limiting
+app.use('/api', apiLimiter);
 
 // Unified Cloaked Security Shield Gateway
 app.use('/api/v2/shield', shieldRouter);

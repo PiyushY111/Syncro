@@ -43,10 +43,8 @@ export const SocketProvider = ({ children }) => {
         });
 
         socketInstance.on("message:received", (msg) => {
-            console.log("[DEBUG SOCKET PROVIDER] Message received:", msg);
             const activeChatId = localStorage.getItem('active_chat_id');
             const targetId = msg.channelId || msg.userId || msg.senderId;
-            console.log("[DEBUG SOCKET PROVIDER] targetId:", targetId, "activeChatId:", activeChatId, "senderId:", msg.userId, "currentUserId:", user?.id);
             if (targetId && targetId !== activeChatId && msg.userId !== user?.id) {
                 // Add to standard unread chats
                 const key = 'unread_chats';
@@ -55,7 +53,6 @@ export const SocketProvider = ({ children }) => {
                 if (!unread.includes(targetId)) {
                     unread.push(targetId);
                     localStorage.setItem(key, JSON.stringify(unread));
-                    console.log("[DEBUG SOCKET PROVIDER] Unread list updated & event dispatched:", unread);
                 }
 
                 // Check for @mention (case-insensitive, matches first name / first word followed by word boundary)
@@ -68,7 +65,6 @@ export const SocketProvider = ({ children }) => {
                     if (!mentions.includes(targetId)) {
                         mentions.push(targetId);
                         localStorage.setItem(mentionKey, JSON.stringify(mentions));
-                        console.log("[DEBUG SOCKET PROVIDER] Mention list updated:", mentions);
                     }
                 }
 

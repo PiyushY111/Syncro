@@ -38,7 +38,7 @@ export default function EpicMapping({ project, tasks }) {
                 color
             }, { headers: { Authorization: `Bearer ${token}` } });
 
-            dispatch(addEpic({ projectId: project.id, epic: data.epic }));
+            dispatch(addEpic({ projectId: project.id, epic: data.epic || data.data?.epic }));
             toast.success('Epic created successfully');
             setName('');
             setDescription('');

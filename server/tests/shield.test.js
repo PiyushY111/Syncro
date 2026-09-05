@@ -124,6 +124,7 @@ async function runShieldTestSuite() {
     if (failed > 0) {
         process.exit(1);
     }
+    process.exit(0);
 }
 
 runShieldTestSuite();

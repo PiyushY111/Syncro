@@ -31,41 +31,14 @@ export const register = asyncHandler(async (req, res) => {
 
   // Elevate work factor to 12 for GPU cracking resistance
   const passwordHash = await bcrypt.hash(password, 12);
-  const isTester = normalizedEmail === 'google-tester@piyushydv.com';
-
-  if (isTester) {
-    const user = await prisma.user.create({
-      data: {
-        name: name.trim(),
-        email: normalizedEmail,
-        passwordHash,
-        status: policy.status,
-        isSuperAdmin: policy.isSuperAdmin,
-        twoFactorCode: null,
-        twoFactorExpires: null,
-      },
-    });
-
-    const { token: accessToken } = createAccessToken(user);
-    const { refreshToken } = createRefreshToken(user);
-
-    res.cookie('syncro_access_token', accessToken, ACCESS_COOKIE_OPTIONS);
-    res.cookie('syncro_refresh_token', refreshToken, COOKIE_OPTIONS);
-
-    return ApiResponse.created(res, {
-      data: {
-        requiresVerification: false,
-        token: accessToken,
-        user: sanitizeUser(user),
-        requiresApproval: policy.requiresApproval,
-      },
-      message: 'Account created and logged in successfully',
-    });
-  }
 
   const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
   const hashedCode = hashVerificationCode(verificationCode);
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`[DEV 2FA CODE] User: ${normalizedEmail} | Verification Code: ${verificationCode}`);
+  }
 
   const user = await prisma.user.create({
     data: {
@@ -97,7 +70,6 @@ export const register = asyncHandler(async (req, res) => {
     .publish('app/auth.registered', {
       email: user.email,
       verificationCode,
-      isTester,
     })
     .catch((err) => console.error('[register] Event publishing error:', err));
 

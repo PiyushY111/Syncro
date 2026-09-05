@@ -4,18 +4,9 @@ import { prisma } from '../../config/prisma.js';
 export const chatMessageSentJob = inngest.createFunction(
     { id: 'chat-message-sent', event: 'app/chat.message_sent' },
     async ({ event, step }) => {
-        const { message, channelId, recipientId, senderName } = event.data;
+        const { message, channelId, senderName } = event.data;
 
-        await step.run('websocket-broadcast-message', async () => {
-            if (channelId) {
-                broadcastSocketEvent(`channel:${channelId}`, 'message:received', message);
-            } else if (recipientId) {
-                broadcastSocketEvent(`user:${recipientId}`, 'message:received', message);
-                broadcastSocketEvent(`user:${message.userId}`, 'message:received', message);
-            }
-        });
-
-        if (channelId && message.content) {
+        if (channelId && message?.content) {
             await step.run('parse-mentions-and-notify', async () => {
                 const content = message.content;
                 const mentionNames = (content.match(/@\S+/g) || [])
@@ -69,15 +60,8 @@ export const chatMessageSentJob = inngest.createFunction(
 
 export const chatMessageDeletedJob = inngest.createFunction(
     { id: 'chat-message-deleted', event: 'app/chat.message_deleted' },
-    async ({ event, step }) => {
-        const { messageId, channelId, recipientId } = event.data;
-
-        await step.run('websocket-broadcast-delete', async () => {
-            if (channelId) {
-                broadcastSocketEvent(`channel:${channelId}`, 'message:deleted', { messageId });
-            } else if (recipientId) {
-                broadcastSocketEvent(`user:${recipientId}`, 'message:deleted', { messageId });
-            }
-        });
+    async () => {
+        // Message deletion real-time broadcast is handled directly in controller/socket handler
+        return { success: true };
     }
 );

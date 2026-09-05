@@ -131,6 +131,7 @@ async function runSecurityTestSuite() {
     if (failed > 0) {
       process.exit(1);
     }
+    process.exit(0);
   } catch (err) {
     console.error('Security test suite error:', err);
     process.exit(1);

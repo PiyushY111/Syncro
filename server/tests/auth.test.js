@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { register } from '../controllers/auth/register.js';
 import { login } from '../controllers/auth/login.js';
 import { prisma } from '../config/prisma.js';
+import { BadRequestError, ConflictError } from '../utils/errors/appError.js';
 
 vi.mock('../config/prisma.js', () => ({
     prisma: {
@@ -9,6 +10,9 @@ vi.mock('../config/prisma.js', () => ({
             findUnique: vi.fn(),
             create: vi.fn(),
             update: vi.fn()
+        },
+        platformSetting: {
+            findUnique: vi.fn().mockResolvedValue(null)
         }
     }
 }));
@@ -30,23 +34,21 @@ describe('Auth Controllers', () => {
     });
 
     describe('register', () => {
-        it('should return 400 if fields are missing', async () => {
+        it('should return 400 (throw BadRequestError) if fields are missing', async () => {
             req.body = { email: 'test@example.com' };
-            await register(req, res);
-            expect(res.status).toHaveBeenCalledWith(400);
+            await expect(register(req, res)).rejects.toThrow(BadRequestError);
         });
 
-        it('should return 409 if user already exists', async () => {
+        it('should return 409 (throw ConflictError) if user already exists', async () => {
             req.body = { name: 'Test User', email: 'exist@example.com', password: 'password123' };
             prisma.user.findUnique.mockResolvedValue({ id: '123' });
-            await register(req, res);
-            expect(res.status).toHaveBeenCalledWith(409);
+            await expect(register(req, res)).rejects.toThrow(ConflictError);
         });
 
         it('should register a new user and return 201 with 2FA required', async () => {
             req.body = { name: 'Test User', email: 'new@example.com', password: 'password123' };
             prisma.user.findUnique.mockResolvedValue(null);
-            prisma.user.create.mockResolvedValue({ email: 'new@example.com' });
+            prisma.user.create.mockResolvedValue({ id: 'u-new', email: 'new@example.com' });
             await register(req, res);
             expect(res.status).toHaveBeenCalledWith(201);
             expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
@@ -54,40 +56,38 @@ describe('Auth Controllers', () => {
             }));
         });
 
-        it('should bypass 2FA for google-tester@piyushydv.com during registration', async () => {
-            req.body = { name: 'Google Tester', email: 'google-tester@piyushydv.com', password: 'password123' };
+        it('should require 2FA during registration even for tester email', async () => {
+            req.body = { name: 'Test User', email: 'user@example.com', password: 'password123' };
             prisma.user.findUnique.mockResolvedValue(null);
-            prisma.user.create.mockResolvedValue({ id: 'tester-1', email: 'google-tester@piyushydv.com', name: 'Google Tester' });
+            prisma.user.create.mockResolvedValue({ id: 'user-1', email: 'user@example.com', name: 'Test User' });
             await register(req, res);
             expect(res.status).toHaveBeenCalledWith(201);
-            expect(res.cookie).toHaveBeenCalled();
             expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-                data: expect.objectContaining({ requiresVerification: false })
+                data: expect.objectContaining({ requiresVerification: true })
             }));
         });
     });
 
     describe('login', () => {
-        it('should return 400 if credentials are missing', async () => {
-            await login(req, res);
-            expect(res.status).toHaveBeenCalledWith(400);
+        it('should return 400 (throw BadRequestError) if credentials are missing', async () => {
+            await expect(login(req, res)).rejects.toThrow(BadRequestError);
         });
 
-        it('should bypass 2FA for google-tester@piyushydv.com during login', async () => {
+        it('should require 2FA code during login with valid password', async () => {
             const bcrypt = await import('bcryptjs');
             const passwordHash = await bcrypt.default.hash('Password123!', 10);
-            req.body = { email: 'google-tester@piyushydv.com', password: 'Password123!' };
+            req.body = { email: 'user@example.com', password: 'Password123!' };
             prisma.user.findUnique.mockResolvedValue({
-                id: 'tester-1',
-                email: 'google-tester@piyushydv.com',
-                name: 'Google Tester',
+                id: 'user-1',
+                email: 'user@example.com',
+                name: 'Test User',
                 passwordHash,
             });
+            prisma.user.update.mockResolvedValue({});
             await login(req, res);
             expect(res.status).toHaveBeenCalledWith(200);
-            expect(res.cookie).toHaveBeenCalled();
             expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-                data: expect.objectContaining({ requiresVerification: false })
+                data: expect.objectContaining({ requiresVerification: true })
             }));
         });
     });

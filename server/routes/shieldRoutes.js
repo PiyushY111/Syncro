@@ -8,13 +8,18 @@
 import express from 'express';
 import http from 'http';
 import { shieldEngine } from '../services/shieldEngine.js';
+import { apiLimiter, authLimiter } from '../middlewares/rateLimiter.js';
 
 const router = express.Router();
+
+const FORBIDDEN_OVERRIDE_HEADERS = new Set([
+    'host', 'x-forwarded-for', 'x-real-ip', 'connection', 'transfer-encoding', 'content-length'
+]);
 
 /**
  * Ephemeral ECDH P-256 Key Exchange
  */
-router.post('/handshake', async (req, res) => {
+router.post('/handshake', authLimiter, async (req, res) => {
     try {
         const { clientPublicKey } = req.body;
         if (!clientPublicKey) {
@@ -34,7 +39,7 @@ router.post('/handshake', async (req, res) => {
  * Transparently verifies HMAC signatures, enforces replay protection,
  * decrypts the incoming command, dispatches internally, and encrypts the response.
  */
-router.post('/dispatch', async (req, res) => {
+router.post('/dispatch', apiLimiter, async (req, res) => {
     try {
         const sessionId = req.headers['x-shield-session'];
         const timestamp = req.headers['x-shield-timestamp'];
@@ -80,6 +85,16 @@ router.post('/dispatch', async (req, res) => {
         const targetBody = command.body || null;
         const extraHeaders = command.headers || {};
 
+        // Security Validation: Endpoint allowlist & recursion prevention
+        if (
+            !targetEndpoint.startsWith('/api/') ||
+            targetEndpoint.startsWith('/api/v2/shield') ||
+            targetEndpoint.startsWith('/metrics') ||
+            targetEndpoint.startsWith('/health')
+        ) {
+            return res.status(400).json({ message: 'Invalid or restricted shield dispatch target endpoint' });
+        }
+
         // 5. Dispatch internally via Express pipeline (0ms in-memory execution)
         const dispatchResult = await new Promise((resolve) => {
             const syntheticReq = new http.IncomingMessage();
@@ -94,10 +109,18 @@ router.post('/dispatch', async (req, res) => {
 
             syntheticReq.url = targetEndpoint + queryString;
 
-            // Preserve all incoming auth, cookie & workspace headers
+            // Sanitize extraHeaders to prevent sensitive header overrides
+            const sanitizedExtra = {};
+            for (const [k, v] of Object.entries(extraHeaders)) {
+                if (!FORBIDDEN_OVERRIDE_HEADERS.has(k.toLowerCase())) {
+                    sanitizedExtra[k] = v;
+                }
+            }
+
+            // Real request headers take precedence over client-supplied headers
             const mergedHeaders = {
+                ...sanitizedExtra,
                 ...req.headers,
-                ...extraHeaders,
                 host: req.headers.host || 'localhost'
             };
             delete mergedHeaders['x-shield-sig'];

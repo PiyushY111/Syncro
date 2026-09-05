@@ -159,6 +159,7 @@ async function runArchitectureTestSuite() {
     if (failed > 0) {
       process.exit(1);
     }
+    process.exit(0);
   } catch (error) {
     console.error('Architecture test suite error:', error);
     process.exit(1);

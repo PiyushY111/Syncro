@@ -767,6 +767,7 @@ async function runDomainInvariantsTestSuite() {
       process.exit(1);
     } else {
       console.log('ALL ENTERPRISE DOMAIN INVARIANTS VERIFIED! [100% PASS]');
+      process.exit(0);
     }
   } catch (err) {
     console.error('Fatal test execution error:', err);

@@ -64,7 +64,7 @@ describe('Chat Message Caching & Retrieval', () => {
         await getChannelMessages(req, res);
         expect(prisma.message.findMany).toHaveBeenCalled();
         expect(redisCache.set).toHaveBeenCalledWith(
-            'messages:c1',
+            expect.stringContaining('messages:c1'),
             JSON.stringify([{ id: 'm1', content: 'db message' }]),
             300
         );

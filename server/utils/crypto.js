@@ -1,11 +1,18 @@
 import crypto from 'crypto';
 
 const ALGORITHM = 'aes-256-gcm';
-const KEY_STRING = process.env.FIELD_ENCRYPTION_KEY || process.env.JWT_SECRET || 'default-secret-32-character-key-for-dev';
-const ENCRYPTION_KEY = crypto.createHash('sha256').update(KEY_STRING).digest();
+const KEY_STRING = process.env.FIELD_ENCRYPTION_KEY || process.env.JWT_SECRET;
+if (!KEY_STRING) {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error('FATAL ERROR: FIELD_ENCRYPTION_KEY or JWT_SECRET must be configured in production!');
+  }
+}
+const EFFECTIVE_KEY = KEY_STRING || 'default-secret-32-character-key-for-dev';
+const ENCRYPTION_KEY = crypto.createHash('sha256').update(EFFECTIVE_KEY).digest();
 
 /**
  * Encrypts sensitive text using AES-256-GCM with randomized IV.
+ * Throws on failure to prevent silent plaintext persistence.
  *
  * @param {string} text
  * @returns {string|null} Encrypted string format iv:authTag:encryptedData
@@ -21,7 +28,7 @@ export const encryptField = (text) => {
     return `${iv.toString('hex')}:${authTag}:${encrypted}`;
   } catch (err) {
     console.error('[ENCRYPTION ERROR]', err.message);
-    return text;
+    throw new Error(`Field encryption failed: ${err.message}`);
   }
 };
 
@@ -32,7 +39,7 @@ export const encryptField = (text) => {
  * @returns {string|null} Original decrypted text
  */
 export const decryptField = (encryptedText) => {
-  if (!encryptedText || !encryptedText.includes(':')) return encryptedText;
+  if (!encryptedText || typeof encryptedText !== 'string' || !encryptedText.includes(':')) return encryptedText;
   try {
     const parts = encryptedText.split(':');
     if (parts.length !== 3) return encryptedText;
