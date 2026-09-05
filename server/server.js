@@ -61,14 +61,19 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://localhost:3000',
   'http://127.0.0.1:3000',
-].filter(Boolean)
+].filter(Boolean);
+
+const allowedOriginSuffixes = (process.env.ALLOWED_ORIGIN_SUFFIXES || '.piyushydv.com,piyushydv.com')
+  .split(',')
+  .map(s => s.trim().toLowerCase())
+  .filter(Boolean);
 
 process.on('uncaughtException', (err) => {
-    console.error('[UNCAUGHT EXCEPTION]', err);
+    logger.error('[UNCAUGHT EXCEPTION]', { error: err.message, stack: err.stack });
 });
 
 process.on('unhandledRejection', (reason) => {
-    console.error('[UNHANDLED REJECTION]', reason);
+    logger.error('[UNHANDLED REJECTION]', { reason: String(reason) });
 });
 
 const corsOptions = {
@@ -77,11 +82,10 @@ const corsOptions = {
       callback(null, true);
       return;
     }
-    const normalizedOrigin = origin.replace(/\/$/, '');
+    const normalizedOrigin = origin.replace(/\/$/, '').toLowerCase();
     const isAllowed =
       allowedOrigins.includes(normalizedOrigin) ||
-      /\.piyushydv\.com$/.test(normalizedOrigin) ||
-      normalizedOrigin.endsWith('piyushydv.com');
+      allowedOriginSuffixes.some(suffix => normalizedOrigin.endsWith(suffix));
 
     if (isAllowed) {
       callback(null, true);
