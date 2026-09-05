@@ -6,17 +6,24 @@ import { getPortfolioById } from "../controllers/portfolio/getPortfolioDetails.j
 import { updatePortfolio } from "../controllers/portfolio/updatePortfolio.js";
 import { deletePortfolio } from "../controllers/portfolio/deletePortfolio.js";
 import { addProjectsToPortfolio, removeProjectFromPortfolio } from "../controllers/portfolio/managePortfolioProjects.js";
+import { validate } from "../middlewares/validate.js";
+import { 
+    validateCreatePortfolio, 
+    validateUpdatePortfolio, 
+    validatePortfolioProjects 
+} from "../validators/portfolioValidators.js";
 
 const router = express.Router();
 
 router.use(protect);
 
-router.post("/", createPortfolio);
+router.post("/", validate(validateCreatePortfolio), createPortfolio);
 router.get("/workspace/:workspaceId", getWorkspacePortfolios);
 router.get("/:id", getPortfolioById);
-router.patch("/:id", updatePortfolio);
+router.patch("/:id", validate(validateUpdatePortfolio), updatePortfolio);
 router.delete("/:id", deletePortfolio);
-router.post("/:id/projects", addProjectsToPortfolio);
+router.post("/:id/projects", validate(validatePortfolioProjects), addProjectsToPortfolio);
 router.delete("/:id/projects/:projectId", removeProjectFromPortfolio);
 
 export default router;
+

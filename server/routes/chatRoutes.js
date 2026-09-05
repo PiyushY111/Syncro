@@ -24,12 +24,18 @@ import {
     sendMessage,
     searchMessages
 } from '../controllers/chatController.js';
+import { validate } from '../middlewares/validate.js';
+import { 
+    validateCreateChannel, 
+    validateUpdateChannel, 
+    validateSendMessage 
+} from '../validators/chatValidators.js';
 
 const chatRouter = express.Router();
 
 chatRouter.get('/search', searchMessages);
 
-chatRouter.post('/channels', createChannel);
+chatRouter.post('/channels', validate(validateCreateChannel), createChannel);
 chatRouter.get('/workspaces/:workspaceId/channels', getWorkspaceChannels);
 chatRouter.get('/workspaces/:workspaceId/browse', browsePublicChannels);
 chatRouter.post('/channels/:channelId/join', joinPublicChannel);
@@ -41,7 +47,7 @@ chatRouter.delete('/channels/:channelId/members/:memberUserId', removeMemberFrom
 chatRouter.delete('/channels/:channelId/clear', clearChannelChat);
 chatRouter.get('/channels/:channelId/export', exportChannelChat);
 
-chatRouter.post('/messages', sendMessage);
+chatRouter.post('/messages', validate(validateSendMessage), sendMessage);
 chatRouter.post('/messages/:messageId/star', toggleStarMessage);
 chatRouter.get('/channels/:channelId/starred', getStarredMessages);
 
@@ -57,6 +63,6 @@ chatRouter.delete('/direct/:otherUserId/clear', clearDirectMessages);
 
 chatRouter.patch('/channels/:channelId/archive', archiveChannel);
 chatRouter.delete('/channels/:channelId', deleteChannel);
-chatRouter.patch('/channels/:channelId', updateChannelDetails);
+chatRouter.patch('/channels/:channelId', validate(validateUpdateChannel), updateChannelDetails);
 
 export default chatRouter;
