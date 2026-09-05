@@ -43,30 +43,46 @@ export const basePrisma = new PrismaClient({
 const SOFT_DELETE_MODELS = new Set(['User', 'Workspace', 'Project', 'Task'])
 
 // Sensitive fields to encrypt at rest in database
-const ENCRYPTED_USER_FIELDS = ['googleAccessToken', 'googleRefreshToken', 'twoFactorCode']
+const ENCRYPTED_FIELDS_BY_MODEL = {
+  User: ['googleAccessToken', 'googleRefreshToken', 'twoFactorCode'],
+  Message: ['content'],
+  Comment: ['content']
+}
 
-const decryptUserObject = (user) => {
-  if (!user || typeof user !== 'object') return user
-  for (const field of ENCRYPTED_USER_FIELDS) {
-    if (typeof user[field] === 'string' && user[field].includes(':')) {
-      user[field] = decryptField(user[field])
+const decryptModelObject = (model, obj) => {
+  if (!obj || typeof obj !== 'object') return obj
+  const fields = ENCRYPTED_FIELDS_BY_MODEL[model]
+  if (fields) {
+    for (const field of fields) {
+      if (typeof obj[field] === 'string' && obj[field].includes(':')) {
+        obj[field] = decryptField(obj[field])
+      }
     }
   }
-  return user
+  // Recursively decrypt nested relations if present
+  if (obj.user && typeof obj.user === 'object') decryptModelObject('User', obj.user)
+  if (Array.isArray(obj.comments)) obj.comments.forEach(c => decryptModelObject('Comment', c))
+  if (Array.isArray(obj.messages)) obj.messages.forEach(m => decryptModelObject('Message', m))
+  if (Array.isArray(obj.replies)) obj.replies.forEach(r => decryptModelObject('Message', r))
+  if (obj.comment && typeof obj.comment === 'object') decryptModelObject('Comment', obj.comment)
+  if (obj.message && typeof obj.message === 'object') decryptModelObject('Message', obj.message)
+  return obj
 }
 
 const decryptResults = (model, data) => {
-  if (model !== 'User' || !data) return data
+  if (!data) return data
   if (Array.isArray(data)) {
-    return data.map(decryptUserObject)
+    return data.map(item => decryptModelObject(model, item))
   }
-  return decryptUserObject(data)
+  return decryptModelObject(model, data)
 }
 
-const encryptUserData = (data) => {
+const encryptModelData = (model, data) => {
   if (!data || typeof data !== 'object') return data
+  const fields = ENCRYPTED_FIELDS_BY_MODEL[model]
+  if (!fields) return data
   const copy = { ...data }
-  for (const field of ENCRYPTED_USER_FIELDS) {
+  for (const field of fields) {
     if (typeof copy[field] === 'string' && copy[field].length > 0 && !copy[field].includes(':')) {
       copy[field] = encryptField(copy[field])
     }
@@ -128,11 +144,11 @@ export const prisma = basePrisma.$extends({
           }
         }
 
-        // 2. Sensitive fields encryption for writes on User model
-        if (model === 'User') {
-          if (args?.data) args.data = encryptUserData(args.data)
-          if (args?.create) args.create = encryptUserData(args.create)
-          if (args?.update) args.update = encryptUserData(args.update)
+        // 2. Sensitive fields encryption for writes
+        if (model && ENCRYPTED_FIELDS_BY_MODEL[model]) {
+          if (args?.data) args.data = encryptModelData(model, args.data)
+          if (args?.create) args.create = encryptModelData(model, args.create)
+          if (args?.update) args.update = encryptModelData(model, args.update)
         }
 
         // 3. Execute query

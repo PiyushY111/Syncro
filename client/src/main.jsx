@@ -29,11 +29,20 @@ createRoot(document.getElementById('root')).render(
     </BrowserRouter>,
 )
 
-// Register Service Worker for offline capabilities
+// Register Service Worker for offline capabilities in production only;
+// In development, unregister any existing service worker so it doesn't intercept Vite HMR module requests
 if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/service-worker.js')
-            .then((reg) => console.log('[ServiceWorker] Registered successfully on scope:', reg.scope))
-            .catch((err) => console.error('[ServiceWorker] Registration failed:', err));
-    });
+    if (import.meta.env.PROD) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+                .then((reg) => console.log('[ServiceWorker] Registered successfully on scope:', reg.scope))
+                .catch((err) => console.error('[ServiceWorker] Registration failed:', err));
+        });
+    } else {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+            for (const registration of registrations) {
+                registration.unregister();
+            }
+        });
+    }
 }

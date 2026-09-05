@@ -1,4 +1,5 @@
 import axios from 'axios';
+import shieldSession from '../utils/shieldSession.js';
 
 // In-flight request deduplication store (single-flight cache)
 const inFlightRequests = new Map();
@@ -49,8 +50,8 @@ const getResourcePrefix = (url) => {
     return parts[0] ? `/${parts[0]}` : null;
 };
 
-// Request Interceptor: Attach Auth & Workspace Headers
-api.interceptors.request.use((config) => {
+// Request Interceptor: Attach Auth & Workspace Headers & Cloak via Shield Gateway
+api.interceptors.request.use(async (config) => {
     const token = localStorage.getItem('pm-auth-token');
     if (token) {
         config.headers = config.headers || {};
@@ -63,15 +64,52 @@ api.interceptors.request.use((config) => {
         config.headers['x-workspace-id'] = currentWorkspaceId;
     }
 
+    // Shield Cloaking: Skip if URL is already a shield endpoint or health/ping or opt-out
+    const url = config.url || '';
+    const isExempt = url.includes('/api/v2/shield') || url === '/health' || url === '/api/ping' || config._skipShield;
+
+    if (!isExempt) {
+        try {
+            const cloaked = await shieldSession.cloakRequest(
+                config.method || 'get',
+                config.url,
+                config.params,
+                config.data,
+                config.headers
+            );
+
+            config._originalUrl = config.url;
+            config._originalMethod = config.method;
+            config._originalParams = config.params;
+
+            config.url = cloaked.url;
+            config.method = cloaked.method;
+            config.params = undefined; // Query params encrypted inside payload
+            config.data = cloaked.data;
+            config.headers = cloaked.headers;
+        } catch (cloakErr) {
+            console.warn('[SHIELD CLOAK FAILED - FALLBACK]', cloakErr);
+        }
+    }
+
     return config;
 });
 
-// Response Interceptor: Invalidate cache on successful mutations
+// Response Interceptor: Invalidate cache on successful mutations & uncloak responses
 api.interceptors.response.use(
-    (response) => {
-        const method = (response.config.method || 'get').toLowerCase();
+    async (response) => {
+        // Transparently uncloak encrypted response envelopes
+        if (response.data && response.data.c) {
+            try {
+                response.data = await shieldSession.uncloakResponse(response.data);
+            } catch (uncloakErr) {
+                console.error('[SHIELD UNCLOAK ERROR]', uncloakErr);
+            }
+        }
+
+        const method = (response.config?._originalMethod || response.config?.method || 'get').toLowerCase();
         if (['post', 'put', 'patch', 'delete'].includes(method)) {
-            const url = response.config.url || '';
+            const url = response.config?._originalUrl || response.config?.url || '';
             const prefix = getResourcePrefix(url);
             if (prefix) {
                 invalidateApiCache(prefix);
@@ -90,7 +128,25 @@ api.interceptors.response.use(
         const config = error.config;
         if (!config) return Promise.reject(error);
 
-        const method = (config.method || 'get').toLowerCase();
+        // Transparently uncloak error payload if encrypted
+        if (error.response?.data?.c) {
+            try {
+                error.response.data = await shieldSession.uncloakResponse(error.response.data);
+            } catch {}
+        }
+
+        // Automatic session renegotiation if shield session expired or was rejected with 401
+        if (error.response?.status === 401 && error.response?.data?.message?.includes('re-handshake')) {
+            shieldSession.reset();
+            if (config._originalUrl) {
+                config.url = config._originalUrl;
+                config.method = config._originalMethod;
+                config.params = config._originalParams;
+            }
+            return api(config);
+        }
+
+        const method = (config._originalMethod || config.method || 'get').toLowerCase();
         const isIdempotent = method === 'get' || method === 'head' || method === 'options';
 
         // Check if error is retryable (Network error or 502/503/504 status)
@@ -103,6 +159,11 @@ api.interceptors.response.use(
                 config._retryCount += 1;
                 const delay = Math.pow(2, config._retryCount) * 200 + Math.floor(Math.random() * 100);
                 await new Promise((resolve) => setTimeout(resolve, delay));
+                if (config._originalUrl) {
+                    config.url = config._originalUrl;
+                    config.method = config._originalMethod;
+                    config.params = config._originalParams;
+                }
                 return api(config);
             }
         }

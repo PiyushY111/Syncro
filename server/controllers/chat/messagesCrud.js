@@ -249,9 +249,10 @@ export const searchMessages = async (req, res) => {
             ...ownedWorkspaces.map(w => w.id)
         ])];
 
-        const messages = await prisma.message.findMany({
+        const queryTerm = q.trim().toLowerCase();
+
+        const candidateMessages = await prisma.message.findMany({
             where: {
-                content: { contains: q.trim(), mode: "insensitive" },
                 OR: [
                     {
                         channel: {
@@ -279,8 +280,12 @@ export const searchMessages = async (req, res) => {
                 reactions: { include: { user: { select: { id: true, name: true } } } }
             },
             orderBy: { createdAt: "desc" },
-            take: 50
+            take: 200
         });
+
+        const messages = candidateMessages
+            .filter(m => m.content && m.content.toLowerCase().includes(queryTerm))
+            .slice(0, 50);
 
         return res.json({ messages });
     } catch (err) {

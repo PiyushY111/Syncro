@@ -35,6 +35,7 @@ import sprintRouter from './routes/sprintRoutes.js'
 import epicRouter from './routes/epicRoutes.js'
 import retroRouter from './routes/retroRoutes.js'
 import adminRouter from './routes/adminRoutes.js'
+import shieldRouter from './routes/shieldRoutes.js'
 import { checkDatabaseHealth } from './services/db/dbService.js'
 import { basePrisma } from './config/prisma.js'
 import cookieParser from 'cookie-parser'
@@ -87,7 +88,16 @@ const corsOptions = {
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'X-Workspace-ID'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Accept',
+    'X-Workspace-ID',
+    'x-shield-session',
+    'x-shield-timestamp',
+    'x-shield-nonce',
+    'x-shield-sig'
+  ],
 };
 
 app.use(cors(corsOptions));
@@ -100,6 +110,9 @@ app.use(requestIdMiddleware);
 app.use(metricsMiddleware);
 
 app.get('/metrics', getPrometheusMetrics);
+
+// Unified Cloaked Security Shield Gateway
+app.use('/api/v2/shield', shieldRouter);
 
 app.use('/api/inngest', serve({ client: inngest, functions }));
 app.use('/api/auth', authRouter);

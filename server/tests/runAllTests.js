@@ -4,6 +4,8 @@ import path from 'path';
 const testSuites = [
   { name: 'Architecture & CI Guard Suite', file: 'tests/architecture.test.js' },
   { name: 'Security & Cryptographic Suite', file: 'tests/security.test.js' },
+  { name: 'Shield Zero-Trust Cryptographic Suite', file: 'tests/shield.test.js' },
+  { name: 'Shield End-to-End Cloaked Gateway Suite', file: 'tests/shieldE2E.test.js' },
   { name: 'Transaction, Outbox & DLQ Suite', file: 'tests/transaction.test.js' },
   { name: 'Domain Invariants & Business Logic Suite', file: 'tests/domainInvariants.test.js' },
   { name: 'Gatekeeper & Super-Admin Policy Suite', file: 'tests/gatekeeper.test.js' },
