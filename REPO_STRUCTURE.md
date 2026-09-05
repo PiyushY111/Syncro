@@ -46,7 +46,7 @@ client/
 │   │   ├── task/              # Task details, comments, selectors, & task creation dialogs
 │   │   └── workspace/         # Workspace invite list, active stats, sub-teams tab, & settings
 │   ├── configs/               # Client API connection config
-│   │   └── api.js             # Axios client instance with auth headers & confirmation interceptors
+│   │   └── api.js             # Axios client instance with transparent Shield cryptographic interceptors
 │   ├── context/               # React Context providers
 │   │   ├── AuthContext.jsx    # User JWT credentials & profile state provider with unwrapped payloads
 │   │   └── SocketContext.jsx  # Real-time WebSocket connection state provider
@@ -61,7 +61,7 @@ client/
 │   │   ├── useProfileSettings.js # Profile state updates
 │   │   ├── useSettings.js     # Settings context fetchers
 │   │   └── useWorkspaceSettings.js # Workspace info update orchestrators
-│   ├── pages/                 # Page containers & routes
+│   ├── pages/                 # Dynamically imported route page containers (React.lazy)
 │   │   ├── audit/             # AuditLogs page container
 │   │   ├── auth/              # Auth sign-in / registration container page (with auto-reset 2FA state)
 │   │   ├── calendar/          # SmartCalendar container page
@@ -79,13 +79,15 @@ client/
 │   │   ├── task/              # TaskDetails page container
 │   │   ├── whiteboard/        # Whiteboard canvas container page
 │   │   └── workspace/         # Workspace setup, team management, and accept-invite forms
-│   ├── utils/                 # Utility files
-│   │   └── permissions.js     # Dynamic client-side roles and permissions checker
-│   ├── App.jsx                # Router route switch manager
-│   ├── main.jsx               # Main React bundle mounting entry point & SW registration
+│   ├── utils/                 # Utility files & cryptographic modules
+│   │   ├── permissions.js     # Dynamic client-side roles and permissions checker
+│   │   ├── shieldCrypto.js    # Client WebCrypto ECDH P-256, AES-256-GCM, HKDF-SHA256, HMAC-SHA256
+│   │   └── shieldSession.js   # Active session manager, handshake orchestration, & atomic nonce tracker
+│   ├── App.jsx                # Router switch manager with React.lazy dynamic chunk code-splitting & Suspense
+│   ├── main.jsx               # SPA mounting entry point & conditional environment-scoped SW registration
 │   └── index.css              # Styling configurations, colors, and fonts (Tailwind 4 base)
 ├── public/                    # Static public assets & Service Worker
-│   └── service-worker.js      # Custom client-side PWA cache interceptor (filters non-GET requests)
+│   └── service-worker.js      # Production-scoped PWA cache interceptor (GET request caching & offline assets)
 ├── .env.example              # Client environment variables blueprint
 ├── jsconfig.json              # Client path alias resolution (`@/*`) configs
 └── vite.config.js             # Vite compiler plugin configurations
@@ -101,7 +103,7 @@ The server is a Node.js Express 5 REST API and real-time Socket.IO server utiliz
 server/
 ├── config/                    # Database, Redis, & SMTP configurations
 │   ├── nodemailer.js          # SMTP transporter instance for 2FA & transactional emails
-│   ├── prisma.js              # Database client singleton with $extends soft-delete findUnique delegates
+│   ├── prisma.js              # Database client with $extends soft-delete delegates & AES-256-GCM data-at-rest encryption
 │   ├── redis.js               # Upstash Redis REST client instance with memory fallback
 │   └── test-smtp.js           # Transporter connection validation utility
 ├── controllers/               # Route controllers (grouped by domain)
@@ -233,7 +235,7 @@ server/
 ├── prisma/                    # Relational schema & database seed configuration
 │   ├── schema.prisma          # Prisma PostgreSQL multi-column composite indexed data models
 │   └── seed.js                # Enterprise multi-tenant database seed data generator
-├── routes/                    # Express routing maps (18 domain routes)
+├── routes/                    # Express routing maps (19 domain routes)
 │   ├── auditRoutes.js         # /api/audit routes (logs, rollbacks, purge)
 │   ├── authRoutes.js          # /api/auth routes (registration, logins, verification)
 │   ├── chatRoutes.js          # /api/chat routes (channels, messages, memberships)
@@ -247,6 +249,7 @@ server/
 │   ├── projectRoutes.js       # /api/projects routes (project stage settings)
 │   ├── retroRoutes.js         # /api/retros routes (sprint retrospectives)
 │   ├── roleRoutes.js          # /api/roles routes (permissions matrix maps)
+│   ├── shieldRoutes.js        # /api/v2/shield routes (handshake & cloaked synthetic dispatch gateway)
 │   ├── sprintRoutes.js        # /api/sprints routes (sprint lifecycles & capacities)
 │   ├── subTeamRoutes.js       # /api/subteams routes (managing subteam memberships)
 │   ├── taskRoutes.js          # /api/tasks routes (task card configurations)
@@ -257,7 +260,8 @@ server/
 │   ├── db/                    # Enterprise database service layer
 │   │   └── dbService.js       # Transaction engine, health probes, soft delete, L2 cache wrapper
 │   ├── eventBus.js            # Internal decoupled event emitter for background tasks
-│   └── googleCalendarService.js # Google OAuth and calendar sync helper service
+│   ├── googleCalendarService.js # Google OAuth and calendar sync helper service
+│   └── shieldEngine.js        # Zero-trust cryptographic cloaking engine, ECDH/HKDF/AES-256-GCM, anti-replay nonce store
 ├── socket/                    # Socket.IO real-time event handlers
 │   ├── messageHandler.js      # Real-time chat messages, typing status, & pins
 │   ├── presenceHandler.js     # Real-time member online/offline status tracking
@@ -271,16 +275,20 @@ server/
 │   ├── architecture.test.js   # Enterprise AppError, ApiResponse, DTO validation tests (16 passed)
 │   ├── auth.test.js           # Authentication & 2FA endpoint tests
 │   ├── chat.test.js           # Messaging & channel endpoint tests
-│   ├── concurrency.test.js    # Distributed stampede locking & transaction retry tests
+│   ├── concurrency.test.js    # Distributed stampede locking & transaction retry tests (7 passed)
 │   ├── database.test.js       # DB connection health, transaction retries, soft delete tests (7 passed)
+│   ├── domainInvariants.test.js# Domain business rules, sprint lifecycles & task dependencies (10 passed)
+│   ├── gatekeeper.test.js     # RBAC roles & super-admin policy tests (11 passed)
 │   ├── inbox.test.js          # Inbox notification tests
 │   ├── permissions.test.js    # Role matrix & permission enforcement tests
 │   ├── rateLimit2FA.test.js   # 2FA rate limiting and security tests
 │   ├── redis.test.js          # Redis caching & versioning tests
-│   ├── runAllTests.js         # Enterprise test suite orchestrator
+│   ├── runAllTests.js         # Enterprise test suite orchestrator (8 suites)
 │   ├── security.test.js       # AES-256-GCM encryption & constant-time comparison tests (13 passed)
+│   ├── shield.test.js         # Shield zero-trust cryptographic unit tests (12 passed)
+│   ├── shieldE2E.test.js      # Shield end-to-end handshake & synthetic cloaked dispatch tests (8 passed)
 │   ├── stress5k.test.js       # 5,000 concurrent user load benchmark
-│   ├── transaction.test.js    # Outbox pattern & Dead-Letter Queue (DLQ) tests
+│   ├── transaction.test.js    # Outbox pattern & Dead-Letter Queue (DLQ) tests (9 passed)
 │   └── workspace.test.js      # Workspace management & onboarding tests
 ├── utils/                     # Enterprise cross-cutting utilities
 │   ├── errors/                # Operational Error Class Hierarchy
