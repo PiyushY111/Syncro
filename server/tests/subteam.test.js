@@ -6,12 +6,12 @@ import {
     deleteSubTeam,
     addSubTeamMember,
     removeSubTeamMember
-} from '../controllers/subTeamController.js';
-import { prisma } from '../config/prisma.js';
-import { hasWorkspacePermission } from '../controllers/role/checkPermissionHelper.js';
-import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors/appError.js';
+} from '../src/controllers/subTeamController.js';
+import { prisma } from '../src/config/prisma.js';
+import { hasWorkspacePermission } from '../src/controllers/role/checkPermissionHelper.js';
+import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../src/utils/errors/appError.js';
 
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         workspace: { findUnique: vi.fn() },
         subTeam: {
@@ -30,11 +30,11 @@ vi.mock('../config/prisma.js', () => ({
     }
 }));
 
-vi.mock('../controllers/role/checkPermissionHelper.js', () => ({
+vi.mock('../src/controllers/role/checkPermissionHelper.js', () => ({
     hasWorkspacePermission: vi.fn()
 }));
 
-vi.mock('../services/eventBus.js', () => ({
+vi.mock('../src/services/eventBus.js', () => ({
     eventBus: { publish: vi.fn().mockResolvedValue(true) }
 }));
 

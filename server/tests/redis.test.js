@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { redisCache } from '../config/redis.js';
+import { redisCache } from '../src/config/redis.js';
 
 describe('Redis Cache Wrapper & Memory Fallback', () => {
     beforeEach(async () => {

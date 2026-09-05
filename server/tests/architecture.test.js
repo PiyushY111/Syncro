@@ -1,9 +1,9 @@
-import { AppError, BadRequestError, UnauthorizedError, NotFoundError, ConflictError, ValidationError } from '../utils/errors/appError.js';
-import { ApiResponse } from '../utils/response/apiResponse.js';
-import { asyncHandler } from '../utils/asyncHandler.js';
-import { requestIdMiddleware } from '../middlewares/requestIdMiddleware.js';
-import { validate } from '../middlewares/validate.js';
-import { validateRegister } from '../validators/authValidators.js';
+import { AppError, BadRequestError, UnauthorizedError, NotFoundError, ConflictError, ValidationError } from '../src/utils/errors/appError.js';
+import { ApiResponse } from '../src/utils/response/apiResponse.js';
+import { asyncHandler } from '../src/utils/asyncHandler.js';
+import { requestIdMiddleware } from '../src/middlewares/requestIdMiddleware.js';
+import { validate } from '../src/middlewares/validate.js';
+import { validateRegister } from '../src/validators/authValidators.js';
 
 async function runArchitectureTestSuite() {
   console.log('Starting Enterprise Code Architecture Automated Test Suite...\n');

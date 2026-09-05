@@ -1,6 +1,6 @@
 import crypto from 'crypto';
-import shieldEngine from '../services/shieldEngine.js';
-import { encryptField, decryptField } from '../utils/crypto.js';
+import shieldEngine from '../src/services/shieldEngine.js';
+import { encryptField, decryptField } from '../src/utils/crypto.js';
 
 async function runShieldTestSuite() {
     console.log('Starting Syncro Shield Zero-Trust Cryptographic Verification Suite...\n');

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { verifyLogin } from '../controllers/auth/verify.js';
-import { prisma } from '../config/prisma.js';
-import { redisCache } from '../config/redis.js';
-import { hashVerificationCode } from '../utils/crypto.js';
+import { verifyLogin } from '../src/controllers/auth/verify.js';
+import { prisma } from '../src/config/prisma.js';
+import { redisCache } from '../src/config/redis.js';
+import { hashVerificationCode } from '../src/utils/crypto.js';
  
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         user: {
             findUnique: vi.fn(),
@@ -16,7 +16,7 @@ vi.mock('../config/prisma.js', () => ({
     },
 }));
 
-vi.mock('../services/eventBus.js', () => ({
+vi.mock('../src/services/eventBus.js', () => ({
     eventBus: { publish: vi.fn() },
 }));
 

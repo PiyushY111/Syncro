@@ -1,15 +1,15 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getUserWorkspaceRole, hasWorkspacePermission } from '../controllers/role/checkPermissionHelper.js';
-import { prisma } from '../config/prisma.js';
+import { getUserWorkspaceRole, hasWorkspacePermission } from '../src/controllers/role/checkPermissionHelper.js';
+import { prisma } from '../src/config/prisma.js';
 
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         workspaceMember: { findUnique: vi.fn() },
         workspace: { findUnique: vi.fn() }
     }
 }));
 
-vi.mock('../config/redis.js', () => ({
+vi.mock('../src/config/redis.js', () => ({
     redisCache: {
         get: vi.fn().mockResolvedValue(null),
         set: vi.fn().mockResolvedValue("OK")

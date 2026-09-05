@@ -9,9 +9,9 @@ import {
   hashToken,
   generateApiKey,
   hashApiKey
-} from '../utils/crypto.js';
-import { sanitizeString } from '../middlewares/sanitize.js';
-import { validateRegister, validateForgotPassword, validateResetPassword } from '../validators/authValidators.js';
+} from '../src/utils/crypto.js';
+import { sanitizeString } from '../src/middlewares/sanitize.js';
+import { validateRegister, validateForgotPassword, validateResetPassword } from '../src/validators/authValidators.js';
 
 async function runSecurityTestSuite() {
   console.log('Starting Enterprise Security & Cryptographic Verification Test Suite...\n');

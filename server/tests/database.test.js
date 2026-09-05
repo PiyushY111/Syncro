@@ -1,5 +1,5 @@
-import { checkDatabaseHealth, executeTransaction, getCachedOrFetch } from '../services/db/dbService.js';
-import { prisma, basePrisma } from '../config/prisma.js';
+import { checkDatabaseHealth, executeTransaction, getCachedOrFetch } from '../src/services/db/dbService.js';
+import { prisma, basePrisma } from '../src/config/prisma.js';
 
 async function runDatabaseTestSuite() {
   console.log('🧪 Starting Enterprise Database Automated Test Suite...\n');

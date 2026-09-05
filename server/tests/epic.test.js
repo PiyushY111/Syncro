@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createEpic } from '../controllers/epic/createEpic.js';
-import { getProjectEpics } from '../controllers/epic/getProjectEpics.js';
-import { updateEpic, deleteEpic } from '../controllers/epic/epicManage.js';
-import { prisma } from '../config/prisma.js';
-import { hasWorkspacePermission } from '../controllers/role/checkPermissionHelper.js';
-import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors/appError.js';
+import { createEpic } from '../src/controllers/epic/createEpic.js';
+import { getProjectEpics } from '../src/controllers/epic/getProjectEpics.js';
+import { updateEpic, deleteEpic } from '../src/controllers/epic/epicManage.js';
+import { prisma } from '../src/config/prisma.js';
+import { hasWorkspacePermission } from '../src/controllers/role/checkPermissionHelper.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../src/utils/errors/appError.js';
 
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         project: { findUnique: vi.fn() },
         epic: {
@@ -19,11 +19,11 @@ vi.mock('../config/prisma.js', () => ({
     }
 }));
 
-vi.mock('../controllers/role/checkPermissionHelper.js', () => ({
+vi.mock('../src/controllers/role/checkPermissionHelper.js', () => ({
     hasWorkspacePermission: vi.fn()
 }));
 
-vi.mock('../services/eventBus.js', () => ({
+vi.mock('../src/services/eventBus.js', () => ({
     eventBus: { publish: vi.fn().mockResolvedValue(true) }
 }));
 

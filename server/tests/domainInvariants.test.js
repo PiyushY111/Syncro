@@ -35,26 +35,26 @@ import {
   ConflictError, 
   RateLimitError, 
   ValidationError 
-} from '../utils/errors/appError.js';
-import { ApiResponse } from '../utils/response/apiResponse.js';
+} from '../src/utils/errors/appError.js';
+import { ApiResponse } from '../src/utils/response/apiResponse.js';
 import { 
   encryptField, 
   decryptField, 
   timingSafeCompare, 
   hashVerificationCode, 
   generateAuditHash 
-} from '../utils/crypto.js';
+} from '../src/utils/crypto.js';
 import { 
   createInvitationToken, 
   verifyInvitationToken, 
   createWorkspaceSlug 
-} from '../controllers/workspace/workspaceHelpers.js';
+} from '../src/controllers/workspace/workspaceHelpers.js';
 import { 
   defaultPermissions, 
   hasWorkspacePermission, 
   getUserWorkspaceRole 
-} from '../controllers/role/checkPermissionHelper.js';
-import { validateCreateMeeting } from '../validators/meetingValidators.js';
+} from '../src/controllers/role/checkPermissionHelper.js';
+import { validateCreateMeeting } from '../src/validators/meetingValidators.js';
 
 // Execution Telemetry
 let totalPassed = 0;

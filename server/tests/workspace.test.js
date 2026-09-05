@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { createWorkspace, getUserWorkspaces } from '../controllers/workspace/workspaceCreate.js';
-import { prisma } from '../config/prisma.js';
-import { redisCache } from '../config/redis.js';
+import { createWorkspace, getUserWorkspaces } from '../src/controllers/workspace/workspaceCreate.js';
+import { prisma } from '../src/config/prisma.js';
+import { redisCache } from '../src/config/redis.js';
 
-vi.mock('../config/prisma.js', () => {
+vi.mock('../src/config/prisma.js', () => {
     const mockPrisma = {
         $transaction: vi.fn(async (cb) => cb(mockPrisma)),
         workspace: { create: vi.fn() },
@@ -14,7 +14,7 @@ vi.mock('../config/prisma.js', () => {
     return { prisma: mockPrisma };
 });
 
-vi.mock('../config/redis.js', () => ({
+vi.mock('../src/config/redis.js', () => ({
     redisCache: {
         get: vi.fn().mockResolvedValue(null),
         set: vi.fn().mockResolvedValue("OK"),
@@ -23,7 +23,7 @@ vi.mock('../config/redis.js', () => ({
     }
 }));
 
-vi.mock('../services/eventBus.js', () => ({
+vi.mock('../src/services/eventBus.js', () => ({
     eventBus: { publish: vi.fn().mockResolvedValue(true) }
 }));
 

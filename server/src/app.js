@@ -3,41 +3,39 @@ import cors from 'cors'
 import cookieParser from 'cookie-parser'
 import { serve } from 'inngest/express'
 
-import {
-  logger,
-  protect,
-  requestIdMiddleware,
-  errorMiddleware,
-  metricsMiddleware,
-  getPrometheusMetrics,
-  configureSecurityHeaders,
-  sanitizeRequestBody,
-  apiLimiter,
-} from './shared/index.js'
+import logger from './utils/logger/logger.js'
+import { protect } from './middlewares/authMiddleware.js'
+import { requestIdMiddleware } from './middlewares/requestIdMiddleware.js'
+import { errorMiddleware } from './middlewares/errorMiddleware.js'
+import { metricsMiddleware, getPrometheusMetrics } from './middlewares/metricsMiddleware.js'
+import { configureSecurityHeaders } from './middlewares/securityHeaders.js'
+import { sanitizeRequestBody } from './middlewares/sanitize.js'
+import { apiLimiter } from './middlewares/rateLimiter.js'
 
-import { inngest, functions, checkDatabaseHealth } from './infra/index.js'
+import { inngest, functions } from './inngest/index.js'
+import { checkDatabaseHealth } from './services/db/dbService.js'
 
-// Domain Routers from Modules
-import { authRouter } from './modules/auth/index.js'
-import { workspaceRouter } from './modules/workspace/index.js'
-import { projectRouter } from './modules/project/index.js'
-import { taskRouter } from './modules/task/index.js'
-import { commentRouter } from './modules/comment/index.js'
-import { chatRouter } from './modules/chat/index.js'
-import { subTeamRouter } from './modules/subTeam/index.js'
-import { meetingRouter } from './modules/meeting/index.js'
-import { googleCalendarRouter } from './modules/googleCalendar/index.js'
-import { milestoneRouter } from './modules/milestone/index.js'
-import { portfolioRouter } from './modules/portfolio/index.js'
-import { inboxRouter } from './modules/inbox/index.js'
-import { roleRouter } from './modules/role/index.js'
-import { auditRouter } from './modules/audit/index.js'
-import { whiteboardRouter } from './modules/whiteboard/index.js'
-import { sprintRouter } from './modules/sprint/index.js'
-import { epicRouter } from './modules/epic/index.js'
-import { retroRouter } from './modules/retro/index.js'
-import { adminRouter } from './modules/admin/index.js'
-import { shieldRouter } from './modules/shield/index.js'
+// Domain Route Modules
+import authRouter from './routes/authRoutes.js'
+import workspaceRouter from './routes/workspaceRoutes.js'
+import projectRouter from './routes/projectRoutes.js'
+import { taskRouter } from './routes/taskRoutes.js'
+import commentRouter from './routes/commentRoutes.js'
+import chatRouter from './routes/chatRoutes.js'
+import subTeamRouter from './routes/subTeamRoutes.js'
+import meetingRouter from './routes/meetingRoutes.js'
+import googleCalendarRouter from './routes/googleCalendarRoutes.js'
+import milestoneRouter from './routes/milestoneRoutes.js'
+import portfolioRouter from './routes/portfolioRoutes.js'
+import inboxRouter from './routes/inboxRoutes.js'
+import roleRouter from './routes/roleRoutes.js'
+import auditRouter from './routes/auditRoutes.js'
+import whiteboardRouter from './routes/whiteboardRoutes.js'
+import sprintRouter from './routes/sprintRoutes.js'
+import epicRouter from './routes/epicRoutes.js'
+import retroRouter from './routes/retroRoutes.js'
+import adminRouter from './routes/adminRoutes.js'
+import shieldRouter from './routes/shieldRoutes.js'
 
 const app = express()
 

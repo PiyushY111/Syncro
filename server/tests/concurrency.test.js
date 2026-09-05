@@ -1,5 +1,5 @@
-import { getCachedOrFetch, executeTransaction } from '../services/db/dbService.js';
-import { redisCache } from '../config/redis.js';
+import { getCachedOrFetch, executeTransaction } from '../src/services/db/dbService.js';
+import { redisCache } from '../src/config/redis.js';
 
 async function runConcurrencyTestSuite() {
   console.log('Starting Enterprise Concurrency Test Suite...\n');
@@ -106,7 +106,7 @@ async function runConcurrencyTestSuite() {
       return 'TRANSACTION_SUCCESS';
     };
 
-    const { basePrisma } = await import('../config/prisma.js');
+    const { basePrisma } = await import('../src/config/prisma.js');
     const originalTx = basePrisma.$transaction;
     basePrisma.$transaction = async (fn) => fn({});
 

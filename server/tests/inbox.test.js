@@ -1,11 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getInbox } from '../controllers/inbox/getInbox.js';
-import { markNotificationRead, markAllNotificationsRead } from '../controllers/inbox/markRead.js';
-import { archiveNotification } from '../controllers/inbox/archiveItem.js';
-import { prisma } from '../config/prisma.js';
-import { redisCache } from '../config/redis.js';
+import { getInbox } from '../src/controllers/inbox/getInbox.js';
+import { markNotificationRead, markAllNotificationsRead } from '../src/controllers/inbox/markRead.js';
+import { archiveNotification } from '../src/controllers/inbox/archiveItem.js';
+import { prisma } from '../src/config/prisma.js';
+import { redisCache } from '../src/config/redis.js';
 
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         notification: {
             findMany: vi.fn(),
@@ -18,7 +18,7 @@ vi.mock('../config/prisma.js', () => ({
     }
 }));
 
-vi.mock('../config/redis.js', () => ({
+vi.mock('../src/config/redis.js', () => ({
     redisCache: {
         get: vi.fn(),
         set: vi.fn(),

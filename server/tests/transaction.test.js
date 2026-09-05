@@ -1,6 +1,6 @@
-import { queueOutboxEvent, dispatchOutboxEvents } from '../services/outboxDispatcher.js';
-import { logAuditEvent } from '../services/auditLogger.js';
-import { recordFailedJob, replayFailedJob } from '../services/deadLetterQueue.js';
+import { queueOutboxEvent, dispatchOutboxEvents } from '../src/services/outboxDispatcher.js';
+import { logAuditEvent } from '../src/services/auditLogger.js';
+import { recordFailedJob, replayFailedJob } from '../src/services/deadLetterQueue.js';
 
 async function runTransactionTestSuite() {
   console.log('Starting Enterprise Transaction, Outbox & DLQ Test Suite...\n');

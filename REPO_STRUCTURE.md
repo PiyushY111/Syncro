@@ -97,6 +97,8 @@ client/
 │   └── service-worker.js      # Production-scoped PWA cache interceptor (GET request caching & offline assets)
 ├── .env.example              # Client environment variables blueprint
 ├── jsconfig.json              # Client path alias resolution (`@/*`) configs
+├── tsconfig.json              # TypeScript configuration
+├── vitest.config.js           # Vitest unit & component test configuration
 └── vite.config.js             # Vite compiler plugin configurations
 ```
 
@@ -108,111 +110,77 @@ The server is a Node.js Express 5 REST API and real-time Socket.IO server utiliz
 
 ```text
 server/
-├── src/
+├── prisma/                    # Database schema, migrations & seed pipeline
+├── tests/                     # Unit & Enterprise Integration test suites
+├── src/                       # 📦 ALL APPLICATION SOURCE CODE
 │   ├── app.js                 # Express application orchestrator & route mounts
-│   ├── infra/                 # Infrastructure persistent drivers (Prisma, Redis, Socket, Inngest)
-│   ├── shared/                # Shared utilities, middlewares, errors, logger, & response contracts
-│   │   ├── errors/            # AppError hierarchy
-│   │   ├── response/          # ApiResponse contract formatters
-│   │   ├── logger/            # Winston JSON telemetry
-│   │   ├── middlewares/       # Auth, rate limiting, sanitization, security headers, correlation IDs
-│   │   ├── permissions/       # RBAC checkPermissionHelper
-│   │   ├── types/             # Domain TypeScript contracts
-│   │   └── utils/             # Async exception isolation, crypto utilities
-│   └── modules/               # Domain-Driven Modules (routes, controllers, validators, services)
-│       ├── admin/
-│       ├── audit/
-│       ├── auth/
-│       ├── chat/
-│       ├── comment/
-│       ├── epic/
-│       ├── googleCalendar/
-│       ├── inbox/
-│       ├── meeting/
-│       ├── milestone/
-│       ├── portfolio/
-│       ├── project/
-│       ├── retro/
-│       ├── role/
-│       ├── shield/
-│       ├── sprint/
-│       ├── subTeam/
-│       ├── task/
-│       ├── whiteboard/
-│       └── workspace/
-├── config/                    # Database, Redis, & SMTP configurations
-│   ├── nodemailer.js          # SMTP transporter instance for 2FA & transactional emails
-│   ├── prisma.js              # Database client with $extends soft-delete delegates & AES-256-GCM data-at-rest encryption
-│   ├── redis.js               # Upstash Redis REST client instance with memory fallback
-│   └── test-smtp.js           # Transporter connection validation utility
-├── controllers/               # Route controllers (grouped by domain)
-│   ├── audit/                 # Audit controllers
-│   │   ├── auditController.js # Domain exporter barrel file
-│   │   ├── deleteAuditLogs.js # Purges workspace logs (Owner only)
-│   │   ├── getAuditLogs.js    # Returns workspace activity audit entries
-│   │   ├── getEntityHistory.js# Fetches rollback history for specific entities
-│   │   └── rollbackEntity.js  # Restores database entity to an audited state
-│   ├── auth/                  # User authentication handlers
-│   │   ├── login.js           # Password validation & 2FA code dispatcher (with dev log)
-│   │   ├── profile.js         # Profile updates & 2FA toggles
-│   │   ├── register.js        # User account generation
-│   │   └── verify.js          # Resolves 6-digit email 2FA codes (supports dev code 123456)
-│   ├── chat/                  # Messaging controllers
-│   │   ├── channelMembers.js  # Channel subscription & membership rosters
-│   │   ├── channelsCrud.js    # Channel creation & management
-│   │   ├── channelSettings.js # Channel parameters & privacy toggles
-│   │   ├── chatController.js  # Chat domain exporter barrel file
-│   │   ├── getMessages.js     # Message log fetchers with Redis caching
-│   │   ├── messagesCrud.js    # Message creation, pinning, & deleting
-│   │   ├── messagesDirect.js  # 1-on-1 direct message operations
-│   │   └── channels/          # Channel archive, query, and membership handlers
-│   ├── epic/                  # Epic roadmap management
-│   │   ├── createEpic.js      # Generates project epics
-│   │   ├── epicManage.js      # Modifies epic metadata & assignments
-│   │   └── getProjectEpics.js # Retrieves project epic listings
-│   ├── inbox/                 # Notification inbox operations
-│   │   ├── archiveItem.js     # Archives inbox notifications
-│   │   ├── getInbox.js        # Returns priority unread alerts list
-│   │   ├── inboxAction.js     # Direct actions on inbox items
-│   │   ├── inboxController.js # Domain exporter barrel file
-│   │   └── markRead.js        # Sets alert read states
-│   ├── meeting/               # Meeting schedule events handlers
-│   │   ├── meetingCreate.js   # Generates meetings, triggers external invites
-│   │   ├── meetingStatus.js   # Update invite statuses (Accept/Decline)
-│   │   └── meetingUpdate.js   # Modifies meeting timings & links
-│   ├── milestone/             # Project milestone managers
-│   │   ├── createMilestone.js # Creates project milestones
-│   │   ├── deleteMilestone.js # Deletes milestones
-│   │   ├── getMilestones.js   # Lists milestones for active projects
-│   │   ├── linkTasks.js       # Binds database tasks to a milestone
-│   │   └── updateMilestone.js # Updates milestone statuses and dates
-│   ├── portfolio/             # Portfolio dashboard controllers
-│   │   ├── createPortfolio.js # Generates portfolio folders
-│   │   ├── deletePortfolio.js # Deletes portfolio listings
-│   │   ├── getPortfolioDetails.js # Fetches linked portfolio project metrics
-│   │   ├── getPortfolios.js   # Lists portfolios inside workspace
-│   │   ├── managePortfolioProjects.js # Associates projects to portfolios
-│   │   └── updatePortfolio.js # Modifies portfolio attributes
-│   ├── project/               # Project pipeline managers
-│   │   ├── projectCreate.js   # Generates project pipelines
-│   │   ├── projectDelete.js   # Soft deletes projects
-│   │   ├── projectMembers.js  # Manages project member assignments
-│   │   └── projectUpdate.js   # Updates statuses and leads
-│   ├── retro/                 # Sprint retrospective controllers
-│   │   ├── getSprintRetro.js  # Fetches retro columns & cards
-│   │   └── retroItemActions.js# Handles card creation, votes, and deletions
-│   ├── role/                  # Security matrix managers
-│   │   ├── checkPermissionHelper.js # Resolves permission keys dynamically
-│   │   ├── getRoleMatrix.js   # Returns workspace permission configurations
-│   │   ├── manageCustomRole.js# Adds or deletes custom user roles
-│   │   ├── roleController.js  # Role controller domain exporter
-│   │   ├── updateMemberRole.js# Reassigns user roles
-│   │   └── updateRoleMatrix.js# Reconfigures preset role permission matrixes
-│   ├── sprint/                # Agile sprint controllers
-│   │   ├── createSprint.js    # Creates project sprints
-│   │   ├── getProjectSprints.js # Fetches sprint backlogs & statuses
-│   │   ├── sprintCapacity.js  # Configures user story point capacities
-│   │   ├── sprintLifecycle.js # Starts, completes, or archives sprints
+│   ├── cache/                 # Upstash Redis caching utilities & stampede lock
+│   ├── config/                # Persistent infrastructure configs (Prisma, Redis, Nodemailer)
+│   │   ├── nodemailer.js      # SMTP transporter instance for 2FA & transactional emails
+│   │   ├── prisma.js          # Prisma Client with $extends soft-delete delegates & encryption
+│   │   └── redis.js           # Upstash Redis client with in-memory fallback
+│   ├── controllers/           # Domain route controllers
+│   │   ├── admin/             # Gatekeeper super-admin policies & user directory
+│   │   ├── audit/             # Audit logs, hash verification & time-travel rollback
+│   │   ├── auth/              # Registration, login, 2FA & sessions
+│   │   ├── chat/              # Channels, DMs & real-time messaging
+│   │   ├── epic/              # Epic creation & backlog management
+│   │   ├── inbox/             # Unified notifications & inbox items
+│   │   ├── meeting/           # Meeting scheduler & invite RSVP
+│   │   ├── milestone/         # Project milestones & task associations
+│   │   ├── portfolio/         # Multi-project portfolio dashboards
+│   │   ├── project/           # Projects CRUD & member assignments
+│   │   ├── retro/             # Sprint retrospectives & action items
+│   │   ├── role/              # RBAC matrix & custom role management
+│   │   ├── sprint/            # Sprint lifecycle & velocity capacity
+│   │   ├── task/              # Task lifecycle, priorities & recurrence
+│   │   ├── whiteboard/        # Vector whiteboard canvas & node persistence
+│   │   └── workspace/         # Workspace setups, members, invites & tenant configs
+│   ├── inngest/               # Distributed background event workers
+│   │   ├── collab/            # Chat, comment, whiteboard, meeting background jobs
+│   │   ├── core/              # Auth, sub-team, workspace member jobs
+│   │   ├── projects/          # Milestone, portfolio, project, retro jobs
+│   │   └── tasks/             # Task lifecycle, update & recurrence jobs
+│   ├── middlewares/           # Express middleware pipeline
+│   │   ├── authMiddleware.js  # JWT validation & Redis revocation blacklist
+│   │   ├── errorMiddleware.js # Centralized AppError handling
+│   │   ├── metricsMiddleware.js # Prometheus telemetry metrics
+│   │   ├── rateLimiter.js     # IP & user-based rate limiting
+│   │   ├── requestIdMiddleware.js # Unique x-request-id correlation tracing
+│   │   ├── sanitize.js        # Strict payload XSS sanitization
+│   │   ├── securityHeaders.js # Helmet CSP, HSTS & frame protection
+│   │   ├── superAdminMiddleware.js # Super-admin access enforcement
+│   │   └── validate.js        # DTO request schema validation interceptor
+│   ├── routes/                # Express REST & Gateway route endpoints
+│   ├── services/              # Domain business logic engines
+│   │   ├── auditLogger.js     # SHA-256 tamper-evident hash chaining
+│   │   ├── db/dbService.js    # Resilient transaction retries & stampede locks
+│   │   ├── gatekeeperService.js # Whitelist policy resolution & registration gating
+│   │   ├── googleCalendarService.js # Google Calendar bidirectional sync
+│   │   └── shieldEngine.js    # Zero-Trust ECDH P-256 cloaked gateway engine
+│   ├── socket/                # Real-time WebSocket Socket.IO engine
+│   │   ├── messageHandler.js  # Real-time chat & typing events
+│   │   ├── presenceHandler.js # Online member presence tracking
+│   │   ├── reactionHandler.js # Message reaction broadcast
+│   │   ├── retroHandler.js    # Live retrospective card syncing
+│   │   ├── socketInit.js      # Socket.IO bootstrap & Redis adapter
+│   │   └── whiteboardHandler.js # Live drawing coordinate sync
+│   ├── utils/                 # Cross-cutting infrastructure utilities
+│   │   ├── asyncHandler.js    # Express async error boundary wrapper
+│   │   ├── crypto.js          # AES-256-GCM encryption & hashing
+│   │   ├── errors/appError.js # Operational AppError class hierarchy
+│   │   ├── logger/logger.js   # Winston structured JSON telemetry
+│   │   └── response/apiResponse.js # Unified response formatting
+│   └── validators/            # Centralized DTO schema validators
+├── .env
+├── .env.example
+├── eslint.config.js
+├── package.json
+├── package-lock.json
+├── server.js                  # Lightweight HTTP listener bootstrap & graceful shutdown
+├── tsconfig.json
+├── vercel.json
+└── vitest.config.jsarchives sprints
 │   │   └── sprintManage.js    # Edits sprint dates and goals
 │   ├── task/                  # Task updates & operations
 │   │   ├── taskCreate.js      # Creates tasks with dependencies & recurrence

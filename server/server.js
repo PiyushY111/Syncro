@@ -5,10 +5,10 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import http from 'http'
-import logger from './utils/logger/logger.js'
+import logger from './src/utils/logger/logger.js'
 import { app } from './src/app.js'
-import { initSocketIO } from './socket/socketInit.js'
-import { basePrisma } from './config/prisma.js'
+import { initSocketIO } from './src/socket/socketInit.js'
+import { basePrisma } from './src/config/prisma.js'
 
 if (!process.env.JWT_SECRET) {
     logger.error("FATAL ERROR: JWT_SECRET environment variable is missing!");

@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { register } from '../controllers/auth/register.js';
-import { login } from '../controllers/auth/login.js';
-import { prisma } from '../config/prisma.js';
-import { BadRequestError, ConflictError } from '../utils/errors/appError.js';
+import { register } from '../src/controllers/auth/register.js';
+import { login } from '../src/controllers/auth/login.js';
+import { prisma } from '../src/config/prisma.js';
+import { BadRequestError, ConflictError } from '../src/utils/errors/appError.js';
 
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         user: {
             findUnique: vi.fn(),
@@ -17,7 +17,7 @@ vi.mock('../config/prisma.js', () => ({
     }
 }));
 
-vi.mock('../services/eventBus.js', () => ({
+vi.mock('../src/services/eventBus.js', () => ({
     eventBus: { publish: vi.fn().mockResolvedValue() }
 }));
 

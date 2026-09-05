@@ -5,9 +5,9 @@ import {
   checkIsSuperAdmin,
   resolveUserRegistrationPolicy,
   resolveWorkspaceCreationPolicy,
-} from '../services/gatekeeperService.js';
-import { requireSuperAdmin } from '../middlewares/superAdminMiddleware.js';
-import { redisCache } from '../config/redis.js';
+} from '../src/services/gatekeeperService.js';
+import { requireSuperAdmin } from '../src/middlewares/superAdminMiddleware.js';
+import { redisCache } from '../src/config/redis.js';
 
 let totalTests = 0;
 let passedTests = 0;

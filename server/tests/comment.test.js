@@ -1,10 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { canAccessTaskComments, addComment, getComments } from '../controllers/commentController.js';
-import { prisma } from '../config/prisma.js';
-import { getUserWorkspaceRole } from '../controllers/role/checkPermissionHelper.js';
-import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors/appError.js';
+import { canAccessTaskComments, addComment, getComments } from '../src/controllers/commentController.js';
+import { prisma } from '../src/config/prisma.js';
+import { getUserWorkspaceRole } from '../src/controllers/role/checkPermissionHelper.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../src/utils/errors/appError.js';
 
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         task: { findUnique: vi.fn() },
         project: { findUnique: vi.fn() },
@@ -16,11 +16,11 @@ vi.mock('../config/prisma.js', () => ({
     }
 }));
 
-vi.mock('../controllers/role/checkPermissionHelper.js', () => ({
+vi.mock('../src/controllers/role/checkPermissionHelper.js', () => ({
     getUserWorkspaceRole: vi.fn()
 }));
 
-vi.mock('../services/eventBus.js', () => ({
+vi.mock('../src/services/eventBus.js', () => ({
     eventBus: { publish: vi.fn().mockResolvedValue(true) }
 }));
 

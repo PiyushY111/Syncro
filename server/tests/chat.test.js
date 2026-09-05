@@ -1,17 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getChannelMessages } from '../controllers/chat/getMessages.js';
-import { prisma } from '../config/prisma.js';
-import { redisCache } from '../config/redis.js';
-import { NotFoundError } from '../utils/errors/appError.js';
+import { getChannelMessages } from '../src/controllers/chat/getMessages.js';
+import { prisma } from '../src/config/prisma.js';
+import { redisCache } from '../src/config/redis.js';
+import { NotFoundError } from '../src/utils/errors/appError.js';
 
-vi.mock('../config/prisma.js', () => ({
+vi.mock('../src/config/prisma.js', () => ({
     prisma: {
         channel: { findUnique: vi.fn() },
         message: { findMany: vi.fn() }
     }
 }));
 
-vi.mock('../config/redis.js', () => ({
+vi.mock('../src/config/redis.js', () => ({
     redisCache: {
         get: vi.fn().mockResolvedValue(null),
         set: vi.fn().mockResolvedValue("OK")

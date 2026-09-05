@@ -1,8 +1,8 @@
 import crypto from 'crypto';
 import express from 'express';
 import http from 'http';
-import shieldRouter from '../routes/shieldRoutes.js';
-import shieldEngine from '../services/shieldEngine.js';
+import shieldRouter from '../src/routes/shieldRoutes.js';
+import shieldEngine from '../src/services/shieldEngine.js';
 
 // Helper to dispatch in-memory request to Express app without opening network sockets
 function dispatchInMemory(app, method, path, headers = {}, body = null) {
