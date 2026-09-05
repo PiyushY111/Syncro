@@ -15,14 +15,11 @@ client/
 │   │   └── store.js           # Global Redux store definition & slice reducer root
 │   ├── assets/                # Static assets (images, logos, vectors, dummy datasets)
 │   ├── components/            # Focused presentational components
+│   │   ├── admin/             # GatekeeperAdmin subcomponents (Stats, Policies, Users, VIP)
 │   │   ├── audit/             # Audit Log Dashboard, Table, Diff Modal, Timeline, & Metrics
 │   │   ├── auth/              # LoginForm, MfaVerifyForm, RequireAuth wrapper
-│   │   ├── calendar/          # SmartCalendar view elements, meeting dialogs, & timeline schedules
+│   │   ├── calendar/          # SmartCalendar view elements, EventDetailModal, & meeting dialogs
 │   │   ├── chat/              # Chat message stream, input, thread panel, & channel/DM sidebars
-│   │   │   ├── channelSettings/ # Channel archiving and preference dialogs
-│   │   │   ├── dialogs/       # Channel creation and member invite modals
-│   │   │   ├── panels/        # Sliding thread panels & channel detail sidebars
-│   │   │   └── stream/        # Infinite scroll message streams & reaction pickers
 │   │   ├── common/            # Shared cross-application components (GlobalConfirmModal)
 │   │   ├── dashboard/         # Activity feed, statistics grid, scratchpad, & progress charts
 │   │   ├── inbox/             # Universal Inbox list, header, summary widget, & quick actions
@@ -30,30 +27,40 @@ client/
 │   │   ├── ownerAudit/        # Owner Security Command Center, Purge logs, rollback, & exports
 │   │   ├── portfolio/         # Portfolio card index, project creation modals
 │   │   ├── project/           # Focused project dashboards and layouts
-│   │   │   ├── analytics/     # Metrics distribution charts
-│   │   │   ├── calendar/      # Timeline and scheduling calendars
-│   │   │   ├── dialogs/       # Project creation and member invites modals
-│   │   │   ├── gantt/         # Project Gantt chart scheduling
-│   │   │   ├── kanban/        # Drag-and-drop task boards
-│   │   │   ├── milestones/    # Project Milestones card, task association pickers
-│   │   │   ├── overview/      # Statistics, sidebars, and summary cards
-│   │   │   ├── scrum/         # Agile Sprint planning, Epic backlogs, & Retrospective boards
-│   │   │   ├── tasks/         # Filters and task listing tables
-│   │   │   ├── whiteboard/    # Canvas drawing components, toolbar, and task-to-node wrappers
-│   │   │   └── whiteboardView/# Share modals, page control bar, and layout container
 │   │   ├── roles/             # Permissions matrix table, members lists, custom role forms
 │   │   ├── settings/          # Profile details, password updates, delete workspace confirmation
 │   │   ├── task/              # Task details, comments, selectors, & task creation dialogs
+│   │   ├── ui/                # Radix UI design primitives
 │   │   └── workspace/         # Workspace invite list, active stats, sub-teams tab, & settings
-│   ├── configs/               # Client API connection config
-│   │   └── api.js             # Axios client instance with transparent Shield cryptographic interceptors
-│   ├── context/               # React Context providers
-│   │   ├── AuthContext.jsx    # User JWT credentials & profile state provider with unwrapped payloads
-│   │   └── SocketContext.jsx  # Real-time WebSocket connection state provider
-│   ├── features/              # Redux Toolkit slices
+│   ├── features/              # Domain-driven feature modules & Redux slices
+│   │   ├── admin/             # Admin feature module barrel
+│   │   ├── audit/             # Audit feature module barrel
+│   │   ├── auth/              # Auth feature module barrel
+│   │   ├── calendar/          # Calendar feature module barrel
+│   │   ├── chat/              # Chat feature module barrel
+│   │   ├── dashboard/         # Dashboard feature module barrel
+│   │   ├── inbox/             # Inbox feature module barrel
+│   │   ├── milestone/         # Milestone feature module barrel
+│   │   ├── portfolio/         # Portfolio feature module barrel
+│   │   ├── project/           # Project feature module barrel
+│   │   ├── retro/             # Retro feature module barrel
+│   │   ├── roles/             # Roles feature module barrel
+│   │   ├── settings/          # Settings feature module barrel
+│   │   ├── sprint/            # Sprint feature module barrel
+│   │   ├── task/              # Task feature module barrel
+│   │   ├── theme/             # Theme slice & feature barrel
+│   │   ├── whiteboard/        # Whiteboard feature module barrel
+│   │   ├── workspace/         # Workspace slice, helpers & feature barrel
 │   │   ├── themeSlice.js      # Dark/light mode configuration state
 │   │   ├── workspaceHelpers.js# Workspace permissions and switching helpers
-│   │   └── workspaceSlice.js  # Current active workspace and member state (ApiResponse unwrapped)
+│   │   └── workspaceSlice.js  # Current active workspace and member state
+│   ├── shared/                # Shared domain-agnostic assets & primitives
+│   │   ├── api/               # Axios client instance (client.js)
+│   │   ├── lib/               # Utility functions (cn class merging)
+│   │   ├── types/             # Domain TypeScript interface contracts (domain.d.ts)
+│   │   └── utils/             # Re-exported utility functions (permissions)
+│   ├── test/                  # Vitest test setup and configuration
+│   │   └── setup.js           # DOM matchers & localStorage polyfill
 │   ├── hooks/                 # Custom React hooks
 │   │   ├── useChat.js         # Core chat state and socket orchestration
 │   │   ├── useChatChannels.js # Channel indexing and updates
@@ -101,6 +108,38 @@ The server is a Node.js Express 5 REST API and real-time Socket.IO server utiliz
 
 ```text
 server/
+├── src/
+│   ├── app.js                 # Express application orchestrator & route mounts
+│   ├── infra/                 # Infrastructure persistent drivers (Prisma, Redis, Socket, Inngest)
+│   ├── shared/                # Shared utilities, middlewares, errors, logger, & response contracts
+│   │   ├── errors/            # AppError hierarchy
+│   │   ├── response/          # ApiResponse contract formatters
+│   │   ├── logger/            # Winston JSON telemetry
+│   │   ├── middlewares/       # Auth, rate limiting, sanitization, security headers, correlation IDs
+│   │   ├── permissions/       # RBAC checkPermissionHelper
+│   │   ├── types/             # Domain TypeScript contracts
+│   │   └── utils/             # Async exception isolation, crypto utilities
+│   └── modules/               # Domain-Driven Modules (routes, controllers, validators, services)
+│       ├── admin/
+│       ├── audit/
+│       ├── auth/
+│       ├── chat/
+│       ├── comment/
+│       ├── epic/
+│       ├── googleCalendar/
+│       ├── inbox/
+│       ├── meeting/
+│       ├── milestone/
+│       ├── portfolio/
+│       ├── project/
+│       ├── retro/
+│       ├── role/
+│       ├── shield/
+│       ├── sprint/
+│       ├── subTeam/
+│       ├── task/
+│       ├── whiteboard/
+│       └── workspace/
 ├── config/                    # Database, Redis, & SMTP configurations
 │   ├── nodemailer.js          # SMTP transporter instance for 2FA & transactional emails
 │   ├── prisma.js              # Database client with $extends soft-delete delegates & AES-256-GCM data-at-rest encryption
