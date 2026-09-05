@@ -4,8 +4,10 @@ dns.setDefaultResultOrder('ipv4first')
 import dotenv from 'dotenv'
 dotenv.config()
 
+import logger from './utils/logger/logger.js'
+
 if (!process.env.JWT_SECRET) {
-    console.error("FATAL ERROR: JWT_SECRET environment variable is missing!");
+    logger.error("FATAL ERROR: JWT_SECRET environment variable is missing!");
     process.exit(1);
 }
 
@@ -174,7 +176,7 @@ const httpServer = http.createServer(app);
 initSocketIO(httpServer);
 
 httpServer.listen(PORT, () => {
-    console.log(`Server and Socket.IO engine running on http://localhost:${PORT}`);
+    logger.info(`Server and Socket.IO engine running on http://localhost:${PORT}`, { port: PORT });
     
     // Render & Cloud Free Tier Keep-Alive Self-Ping Service
     const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_URL || process.env.BACKEND_URL;
@@ -184,32 +186,32 @@ httpServer.listen(PORT, () => {
             try {
                 const endpoint = `${keepAliveUrl.replace(/\/$/, '')}/health`;
                 await fetch(endpoint);
-                console.log(`[Keep-Alive Ping] Pinged ${endpoint} at ${new Date().toISOString()}`);
+                logger.info(`[Keep-Alive Ping] Pinged ${endpoint}`, { endpoint });
             } catch (err) {
-                console.error(`[Keep-Alive Ping Error]`, err.message);
+                logger.error(`[Keep-Alive Ping Error]`, { error: err.message });
             }
         }, PING_INTERVAL);
-        console.log(`[Keep-Alive Service] Active. Self-pinging ${keepAliveUrl}/health every 10 minutes.`);
+        logger.info(`[Keep-Alive Service] Active. Self-pinging ${keepAliveUrl}/health every 10 minutes.`, { keepAliveUrl });
     }
 });
 
 // Graceful Shutdown Handler for Zero-Downtime Connection Cleanup
 const gracefulShutdown = async (signal) => {
-    console.log(`[SERVER SHUTDOWN] Received ${signal}. Draining in-flight HTTP requests & database connections cleanly...`);
+    logger.info(`[SERVER SHUTDOWN] Received ${signal}. Draining in-flight HTTP requests & database connections cleanly...`, { signal });
     httpServer.close(async () => {
-        console.log('[SERVER SHUTDOWN] HTTP server stopped accepting new connections.');
+        logger.info('[SERVER SHUTDOWN] HTTP server stopped accepting new connections.');
         try {
             await basePrisma.$disconnect();
-            console.log('[SERVER SHUTDOWN] Database connections closed successfully.');
+            logger.info('[SERVER SHUTDOWN] Database connections closed successfully.');
         } catch (err) {
-            console.error('[SERVER SHUTDOWN ERROR]', err);
+            logger.error('[SERVER SHUTDOWN ERROR]', { error: err.message });
         }
         process.exit(0);
     });
 
     // Forceful exit fallback after 10 seconds timeout
     setTimeout(() => {
-        console.error('[SERVER SHUTDOWN TIMEOUT] Forcefully terminating process after 10s.');
+        logger.error('[SERVER SHUTDOWN TIMEOUT] Forcefully terminating process after 10s.');
         process.exit(1);
     }, 10000);
 };

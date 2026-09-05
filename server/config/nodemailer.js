@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import logger from '../utils/logger/logger.js';
 
 const user = process.env.SMTP_USERNAME || process.env.SMTP_USER;
 const pass = process.env.SMTP_PASSWORD || process.env.SMTP_PASS;
@@ -30,7 +31,7 @@ const sendEmail = async (toOrObj, subject, text, html) => {
     }
 
     if (!to) {
-        console.warn('Email not sent: missing recipient');
+        logger.warn('Email not sent: missing recipient');
         return null;
     }
 
@@ -57,17 +58,17 @@ const sendEmail = async (toOrObj, subject, text, html) => {
             if (!response.ok) {
                 throw new Error(data.message || 'Resend API error');
             }
-            console.log('Email sent via Resend API successfully! MessageId:', data.id);
+            logger.info('Email sent via Resend API successfully!', { messageId: data.id, to });
             return data;
         } catch (error) {
-            console.error('Failed to send email via Resend API:', error.message);
+            logger.error('Failed to send email via Resend API:', { error: error.message, to });
             // Fall back to SMTP attempt
         }
     }
 
     // Option B: Fallback to SMTP
     if (!user || !pass) {
-        console.warn('Email not sent: missing SMTP configuration');
+        logger.warn('Email not sent: missing SMTP configuration');
         return null;
     }
 

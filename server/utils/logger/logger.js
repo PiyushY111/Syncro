@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Enterprise Production Structured Telemetry Logger.
  * Formats log entries as structured JSON with level, timestamp, correlation IDs, and context.

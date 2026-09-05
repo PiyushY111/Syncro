@@ -5,6 +5,7 @@ import {
     fetchGoogleCalendarEvents
 } from '../services/googleCalendarService.js';
 import { verifyOAuthState } from '../utils/crypto.js';
+import logger from '../utils/logger/logger.js';
 
 // Get Google OAuth Authorization URL
 export const getGoogleAuthUrlController = async (req, res) => {
@@ -16,7 +17,7 @@ export const getGoogleAuthUrlController = async (req, res) => {
         const url = getAuthUrl(userId);
         return res.json({ url, configured: true });
     } catch (error) {
-        console.error('Error generating Google Auth URL:', error);
+        logger.error('Error generating Google Auth URL:', { error: error.message, userId: req.user?.id });
         return res.status(500).json({ message: 'Failed to generate Google Auth URL' });
     }
 };
@@ -32,7 +33,7 @@ export const googleOAuthCallbackController = async (req, res) => {
 
         const stateCheck = verifyOAuthState(state);
         if (!stateCheck.valid) {
-            console.error('[OAuth CSRF / State Tamper Error]', stateCheck.error);
+            logger.error('[OAuth CSRF / State Tamper Error]', { error: stateCheck.error });
             return res.redirect(`${clientUrl}/calendar?sync=error&reason=invalid_state`);
         }
 
@@ -53,7 +54,7 @@ export const googleOAuthCallbackController = async (req, res) => {
 
         return res.redirect(`${clientUrl}/calendar?sync=success`);
     } catch (error) {
-        console.error('Error in Google OAuth Callback:', error);
+        logger.error('Error in Google OAuth Callback:', { error: error.message });
         return res.redirect(`${clientUrl}/calendar?sync=error`);
     }
 };
@@ -65,7 +66,7 @@ export const getRealGoogleCalendarEventsController = async (req, res) => {
         const events = await fetchGoogleCalendarEvents(userId);
         return res.json({ events });
     } catch (error) {
-        console.error('Error in getRealGoogleCalendarEventsController:', error);
+        logger.error('Error in getRealGoogleCalendarEventsController:', { error: error.message, userId: req.user?.id });
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -93,7 +94,7 @@ export const disconnectGoogleSyncController = async (req, res) => {
 
         return res.json({ user, message: 'Google Calendar disconnected successfully' });
     } catch (error) {
-        console.error('Error disconnecting Google Sync:', error);
+        logger.error('Error disconnecting Google Sync:', { error: error.message, userId: req.user?.id });
         return res.status(500).json({ message: 'Internal server error' });
     }
 };
@@ -104,11 +105,11 @@ export const googleWebhookController = async (req, res) => {
         const channelId = req.headers['x-goog-channel-id'];
         const resourceState = req.headers['x-goog-resource-state'];
 
-        console.log(`[Google Webhook Received] Channel: ${channelId}, State: ${resourceState}`);
+        logger.info(`[Google Webhook Received] Channel: ${channelId}, State: ${resourceState}`, { channelId, resourceState });
         // 2-way sync processing logic here
         return res.status(200).send('OK');
     } catch (error) {
-        console.error('Error handling Google Webhook:', error);
+        logger.error('Error handling Google Webhook:', { error: error.message });
         return res.status(500).send('Error');
     }
 };

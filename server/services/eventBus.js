@@ -1,5 +1,6 @@
 import { EventEmitter } from 'events';
 import { inngest } from '../inngest/index.js';
+import logger from '../utils/logger/logger.js';
 
 class EventBus extends EventEmitter {
     constructor() {
@@ -21,13 +22,13 @@ class EventBus extends EventEmitter {
             }
         };
 
-        console.log(`[EventBus] Publishing domain event: ${eventName}`);
+        logger.info(`[EventBus] Publishing domain event: ${eventName}`, { eventName });
 
         // Try to send via Inngest first
         try {
             await inngest.send(payload);
         } catch (inngestError) {
-            console.error(`[EventBus] Inngest publish failed for event "${eventName}":`, inngestError.message);
+            logger.error(`[EventBus] Inngest publish failed for event "${eventName}":`, { error: inngestError.message, eventName });
             
             // Fallback: Emit locally so direct EventEmitter listeners can process it
             this.emit(eventName, data);
@@ -59,9 +60,9 @@ eventBus.on('app/auth.login_code_requested', async (data) => {
 
     try {
         await sendEmail({ to: email, subject, text, html });
-        console.log(`[EventBus Direct Fallback] Verification code email sent to ${email}`);
+        logger.info(`[EventBus Direct Fallback] Verification code email sent to ${email}`, { email });
     } catch (err) {
-        console.error('[EventBus Direct Fallback Email Error]', err.message);
+        logger.error('[EventBus Direct Fallback Email Error]', { error: err.message, email });
     }
 });
 
@@ -84,9 +85,9 @@ eventBus.on('app/auth.registered', async (data) => {
 
     try {
         await sendEmail({ to: email, subject, text, html });
-        console.log(`[EventBus Direct Fallback] Sign-up verification code email sent to ${email}`);
+        logger.info(`[EventBus Direct Fallback] Sign-up verification code email sent to ${email}`, { email });
     } catch (err) {
-        console.error('[EventBus Direct Fallback Email Error]', err.message);
+        logger.error('[EventBus Direct Fallback Email Error]', { error: err.message, email });
     }
 });
 

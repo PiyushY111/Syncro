@@ -6,6 +6,7 @@ import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode } from '../../utils/crypto.js';
 import { createAccessToken, createRefreshToken, sanitizeUser, ACCESS_COOKIE_OPTIONS, COOKIE_OPTIONS } from './verify.js';
+import logger from '../../utils/logger/logger.js';
 
 export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
@@ -30,7 +31,7 @@ export const login = asyncHandler(async (req, res) => {
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[DEV 2FA CODE] User: ${user.email} | Verification Code: ${verificationCode}`);
+    logger.info(`[DEV 2FA CODE] User: ${user.email} | Verification Code: ${verificationCode}`, { email: user.email, verificationCode });
   }
 
   await prisma.user.update({
@@ -46,7 +47,7 @@ export const login = asyncHandler(async (req, res) => {
       email: user.email,
       verificationCode,
     })
-    .catch((err) => console.error('[login] Failed to publish login code event:', err));
+    .catch((err) => logger.error('[login] Failed to publish login code event:', { error: err.message }));
 
   return ApiResponse.success(res, {
     data: {

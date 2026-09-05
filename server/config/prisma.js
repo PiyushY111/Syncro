@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { encryptField, decryptField } from '../utils/crypto.js'
+import logger from '../utils/logger/logger.js'
 
 const rawConnectionString = process.env.DATABASE_URL
 if (!rawConnectionString) {
@@ -110,8 +111,9 @@ export const prisma = basePrisma.$extends({
             const result = await basePrisma[modelName][targetMethod]({ ...args, where })
             const duration = performance.now() - start
             if (duration >= SLOW_QUERY_THRESHOLD_MS) {
-              console.warn(
-                `[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`
+              logger.warn(
+                `[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`,
+                { model, operation, durationMs: duration }
               )
             }
             return decryptResults(model, result)
@@ -126,7 +128,7 @@ export const prisma = basePrisma.$extends({
             })
             const duration = performance.now() - start
             if (duration >= SLOW_QUERY_THRESHOLD_MS) {
-              console.warn(`[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`)
+              logger.warn(`[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`, { model, operation, durationMs: duration })
             }
             return result
           }
@@ -143,7 +145,7 @@ export const prisma = basePrisma.$extends({
             })
             const duration = performance.now() - start
             if (duration >= SLOW_QUERY_THRESHOLD_MS) {
-              console.warn(`[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`)
+              logger.warn(`[SLOW DB QUERY ALERT] Model: ${model} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`, { model, operation, durationMs: duration })
             }
             return result
           }
@@ -174,8 +176,9 @@ export const prisma = basePrisma.$extends({
 
         // 4. Telemetry & Slow Query Diagnostics
         if (duration >= SLOW_QUERY_THRESHOLD_MS) {
-          console.warn(
-            `[SLOW DB QUERY ALERT] Model: ${model || 'Raw'} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`
+          logger.warn(
+            `[SLOW DB QUERY ALERT] Model: ${model || 'Raw'} | Operation: ${operation} | Duration: ${duration.toFixed(2)}ms`,
+            { model: model || 'Raw', operation, durationMs: duration }
           )
         }
 

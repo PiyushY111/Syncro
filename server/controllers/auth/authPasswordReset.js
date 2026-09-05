@@ -7,6 +7,7 @@ import { BadRequestError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { generatePasswordResetToken, hashToken } from '../../utils/crypto.js';
+import logger from '../../utils/logger/logger.js';
 
 /**
  * Initiates the password recovery flow by generating a secure reset token.
@@ -61,8 +62,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
   const resetUrl = `${clientUrl}/reset-password?token=${token}&email=${encodeURIComponent(user.email)}`;
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[DEV PASSWORD RESET] User: ${user.email} | Token: ${token}`);
-    console.log(`[DEV PASSWORD RESET] Link: ${resetUrl}`);
+    logger.info(`[DEV PASSWORD RESET] User: ${user.email} | Token: ${token}`, { email: user.email, token, resetUrl });
   }
 
   // Dispatch background event and email
@@ -74,7 +74,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
       resetUrl,
       expiresAt,
     })
-    .catch((err) => console.error('[forgotPassword] EventBus publish error:', err));
+    .catch((err) => logger.error('[forgotPassword] EventBus publish error:', { error: err.message }));
 
   try {
     const subject = '🔒 Reset Your Syncro Password';
@@ -101,7 +101,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     `;
     await sendEmail({ to: user.email, subject, html }).catch(() => {});
   } catch (emailErr) {
-    console.warn('[forgotPassword] Email send warning:', emailErr.message);
+    logger.warn('[forgotPassword] Email send warning:', { error: emailErr.message });
   }
 
   return ApiResponse.success(res, genericResponse);
@@ -176,7 +176,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
       userId: resetRecord.userId,
       email: resetRecord.user.email,
     })
-    .catch((err) => console.error('[resetPassword] EventBus publish error:', err));
+    .catch((err) => logger.error('[resetPassword] EventBus publish error:', { error: err.message }));
 
   return ApiResponse.success(res, {
     message: 'Your password has been successfully reset. Please log in with your new credentials.',

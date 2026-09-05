@@ -10,6 +10,7 @@ import {
   notifySuperAdminOfPendingRequest,
 } from '../../services/gatekeeperService.js';
 import { createAccessToken, createRefreshToken, sanitizeUser, ACCESS_COOKIE_OPTIONS, COOKIE_OPTIONS } from './verify.js';
+import logger from '../../utils/logger/logger.js';
 
 export const register = asyncHandler(async (req, res) => {
   const { name, email, password, inviteCode } = req.body;
@@ -37,7 +38,7 @@ export const register = asyncHandler(async (req, res) => {
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
   if (process.env.NODE_ENV !== 'production') {
-    console.log(`[DEV 2FA CODE] User: ${normalizedEmail} | Verification Code: ${verificationCode}`);
+    logger.info(`[DEV 2FA CODE] User: ${normalizedEmail} | Verification Code: ${verificationCode}`, { email: normalizedEmail, verificationCode });
   }
 
   const user = await prisma.user.create({
@@ -71,7 +72,7 @@ export const register = asyncHandler(async (req, res) => {
       email: user.email,
       verificationCode,
     })
-    .catch((err) => console.error('[register] Event publishing error:', err));
+    .catch((err) => logger.error('[register] Event publishing error:', { error: err.message }));
 
   return ApiResponse.created(res, {
     data: {

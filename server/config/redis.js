@@ -1,4 +1,5 @@
 import { Redis } from "@upstash/redis";
+import logger from "../utils/logger/logger.js";
 
 let redisClient = null;
 
@@ -10,7 +11,7 @@ try {
         redisClient = new Redis({ url, token });
     }
 } catch (err) {
-    console.warn("[REDIS WARNING] Upstash Redis initialization failed, falling back to memory.", err.message);
+    logger.warn("[REDIS WARNING] Upstash Redis initialization failed, falling back to memory.", { error: err.message });
 }
 
 // In-memory fallback map if Upstash Redis is unreachable
@@ -69,7 +70,7 @@ export const redisCache = {
             await redisCache.del(key);
             await redisCache.publish("cache:invalidate", { key });
         } catch (e) {
-            console.warn("[CACHE INVALIDATION ERROR]", e.message);
+            logger.warn("[CACHE INVALIDATION ERROR]", { error: e.message, key });
         }
     },
     incr: async (key) => {
@@ -90,7 +91,7 @@ export const redisCache = {
                 return val;
             }
         } catch (e) {
-            console.error("[REDIS INCR ERROR]", e.message);
+            logger.error("[REDIS INCR ERROR]", { error: e.message, key });
         }
         const val = Number(memoryStore.get(key) || 0) + 1;
         memoryStore.set(key, val);
@@ -103,7 +104,7 @@ export const redisCache = {
                 return await redisClient.publish(channel, typeof message === 'object' ? JSON.stringify(message) : message);
             }
         } catch (e) {
-            console.error("[REDIS PUBLISH ERROR]", e.message);
+            logger.error("[REDIS PUBLISH ERROR]", { error: e.message, channel });
         }
     }
 };

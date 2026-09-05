@@ -7,6 +7,7 @@ import { registerMessageHandlers } from "./messageHandler.js";
 import { registerReactionHandlers } from "./reactionHandler.js";
 import { registerWhiteboardHandlers } from "./whiteboardHandler.js";
 import { registerRetroHandlers } from "./retroHandler.js";
+import logger from "../utils/logger/logger.js";
 
 let ioInstance = null;
 
@@ -28,16 +29,16 @@ export const initSocketIO = (httpServer) => {
             const pubClient = new Redis(redisUrl, { maxRetriesPerRequest: null });
             const subClient = pubClient.duplicate();
 
-            pubClient.on("error", (err) => console.warn("[SOCKET REDIS PUB ERROR]", err.message));
-            subClient.on("error", (err) => console.warn("[SOCKET REDIS SUB ERROR]", err.message));
+            pubClient.on("error", (err) => logger.warn("[SOCKET REDIS PUB ERROR]", { error: err.message }));
+            subClient.on("error", (err) => logger.warn("[SOCKET REDIS SUB ERROR]", { error: err.message }));
 
             ioInstance.adapter(createAdapter(pubClient, subClient));
-            console.log("[SOCKET.IO] Redis adapter attached successfully for multi-instance scaling.");
+            logger.info("[SOCKET.IO] Redis adapter attached successfully for multi-instance scaling.");
         } catch (err) {
-            console.warn("[SOCKET.IO REDIS ADAPTER WARN] Failed to attach Redis adapter:", err.message);
+            logger.warn("[SOCKET.IO REDIS ADAPTER WARN] Failed to attach Redis adapter:", { error: err.message });
         }
     } else {
-        console.log("[SOCKET.IO] REDIS_URL not configured. Running with in-memory adapter (single instance mode).");
+        logger.info("[SOCKET.IO] REDIS_URL not configured. Running with in-memory adapter (single instance mode).");
     }
 
     global.io = ioInstance;
@@ -45,7 +46,7 @@ export const initSocketIO = (httpServer) => {
     ioInstance.use(socketAuthMiddleware);
 
     ioInstance.on("connection", (socket) => {
-        console.log(`[SOCKET CONNECTED] User: ${socket.user.name} (${socket.user.id})`);
+        logger.info(`[SOCKET CONNECTED] User: ${socket.user.name} (${socket.user.id})`, { userId: socket.user.id, name: socket.user.name });
 
         // Join individual user room for cross-instance direct targeting
         socket.join(`user:${socket.user.id}`);

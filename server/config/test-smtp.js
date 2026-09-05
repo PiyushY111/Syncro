@@ -2,16 +2,18 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 import nodemailer from 'nodemailer';
+import logger from '../utils/logger/logger.js';
 
 const user = process.env.SMTP_USERNAME || process.env.SMTP_USER;
 const pass = process.env.SMTP_PASSWORD || process.env.SMTP_PASS;
 const from = process.env.SMTP_FROM || process.env.SENDER_EMAIL || user;
 
-console.log('Using SMTP Config:');
-console.log('Host:', process.env.SMTP_HOST || 'smtp.gmail.com');
-console.log('Port:', process.env.SMTP_PORT || 587);
-console.log('Username:', user);
-console.log('Password length:', pass ? pass.length : 0);
+logger.info('Using SMTP Config:', {
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: process.env.SMTP_PORT || 587,
+    username: user,
+    hasPassword: Boolean(pass)
+});
 
 const transporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -25,20 +27,20 @@ const transporter = nodemailer.createTransport({
 
 async function main() {
     try {
-        console.log('Verifying transporter connection...');
+        logger.info('Verifying transporter connection...');
         await transporter.verify();
-        console.log('Transporter is ready to send emails!');
+        logger.info('Transporter is ready to send emails!');
         
-        console.log('Sending test email to:', user);
+        logger.info('Sending test email to recipient', { recipient: user });
         const info = await transporter.sendMail({
             from,
             to: user,
             subject: 'Syncro SMTP Test',
             text: 'This is a test email to verify your SMTP settings.',
         });
-        console.log('Email sent successfully! MessageId:', info.messageId);
+        logger.info('Email sent successfully!', { messageId: info.messageId });
     } catch (error) {
-        console.error('SMTP test failed with error:', error);
+        logger.error('SMTP test failed with error:', { error: error.message });
     }
 }
 

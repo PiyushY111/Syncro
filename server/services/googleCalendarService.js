@@ -1,6 +1,7 @@
 import { google } from 'googleapis';
 import { prisma } from '../config/prisma.js';
 import { generateOAuthState } from '../utils/crypto.js';
+import logger from '../utils/logger/logger.js';
 
 const CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '';
 const CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET || '';
@@ -48,7 +49,7 @@ export const getAuthenticatedCalendarClient = async (userId) => {
     });
 
     if (!user || !user.googleCalendarSync) {
-        console.log(`[Google Calendar Client] User ${userId} sync is enabled=${user?.googleCalendarSync}`);
+        logger.info(`[Google Calendar Client] User sync check`, { userId, enabled: Boolean(user?.googleCalendarSync) });
         return null;
     }
 
@@ -83,7 +84,7 @@ export const pushMeetingToGoogleCalendar = async ({ userId, meeting, invites = [
     try {
         const calendar = await getAuthenticatedCalendarClient(userId);
         if (!calendar) {
-            console.log('[Google Calendar Push Warning] User is not authenticated or Google Sync is disabled for userId:', userId);
+            logger.warn('[Google Calendar Push Warning] User is not authenticated or Google Sync is disabled', { userId });
             return null;
         }
 
@@ -103,16 +104,17 @@ export const pushMeetingToGoogleCalendar = async ({ userId, meeting, invites = [
         const startTime = new Date(meeting.start_time);
         const endTime = new Date(meeting.end_time);
 
+        const organizerEmail = process.env.ORGANIZER_EMAIL || 'syncro@example.com';
         const requestBody = {
             summary: meeting.title,
             organizer: {
-                email: 'syncro@piyushydv.com',
+                email: organizerEmail,
                 displayName: 'Syncro Platform'
             },
             description: [
                 meeting.agenda ? `AGENDA:\n${meeting.agenda}` : '',
                 meeting.description ? `NOTES:\n${meeting.description}` : '',
-                `Organized by Syncro Platform (syncro@piyushydv.com)`
+                `Organized by Syncro Platform (${organizerEmail})`
             ].filter(Boolean).join('\n\n'),
             location: meeting.meetingLink || meeting.location || '',
             start: { dateTime: startTime.toISOString() },
@@ -142,7 +144,7 @@ export const pushMeetingToGoogleCalendar = async ({ userId, meeting, invites = [
                 requestBody
             });
         } catch (confErr) {
-            console.warn('[Google Calendar Push] Retrying without conferenceData:', confErr.message);
+            logger.warn('[Google Calendar Push] Retrying without conferenceData:', { error: confErr.message });
             delete requestBody.conferenceData;
             response = await calendar.events.insert({
                 calendarId: 'primary',
@@ -154,10 +156,10 @@ export const pushMeetingToGoogleCalendar = async ({ userId, meeting, invites = [
         const googleEventId = response.data.id;
         const meetingLink = response.data.hangoutLink || response.data.htmlLink || null;
 
-        console.log('[Google Calendar Push Success] Event created on Google Calendar! ID:', googleEventId);
+        logger.info('[Google Calendar Push Success] Event created on Google Calendar!', { googleEventId, meetingId: meeting.id });
         return { googleEventId, meetingLink };
     } catch (error) {
-        console.error('[Google Calendar SDK Error] Failed to insert event:', error?.response?.data || error.message);
+        logger.error('[Google Calendar SDK Error] Failed to insert event:', { error: error?.response?.data || error.message });
         return null;
     }
 };
@@ -185,6 +187,7 @@ export const updateMeetingInGoogleCalendar = async ({ userId, meeting, invites =
         const startTime = new Date(meeting.start_time);
         const endTime = new Date(meeting.end_time);
 
+        const organizerEmail = process.env.ORGANIZER_EMAIL || 'syncro@example.com';
         await calendar.events.update({
             calendarId: 'primary',
             eventId: meeting.googleEventId,
@@ -192,13 +195,13 @@ export const updateMeetingInGoogleCalendar = async ({ userId, meeting, invites =
             requestBody: {
                 summary: meeting.title,
                 organizer: {
-                    email: 'syncro@piyushydv.com',
+                    email: organizerEmail,
                     displayName: 'Syncro Platform'
                 },
                 description: [
                     meeting.agenda ? `AGENDA:\n${meeting.agenda}` : '',
                     meeting.description ? `NOTES:\n${meeting.description}` : '',
-                    `Organized by Syncro Platform (syncro@piyushydv.com)`
+                    `Organized by Syncro Platform (${organizerEmail})`
                 ].filter(Boolean).join('\n\n'),
                 location: meeting.meetingLink || meeting.location || '',
                 start: { dateTime: startTime.toISOString() },
@@ -207,7 +210,7 @@ export const updateMeetingInGoogleCalendar = async ({ userId, meeting, invites =
             }
         });
     } catch (error) {
-        console.error('[Google Calendar SDK Error] Failed to update event:', error?.response?.data || error.message);
+        logger.error('[Google Calendar SDK Error] Failed to update event:', { error: error?.response?.data || error.message });
     }
 };
 
@@ -224,7 +227,7 @@ export const deleteMeetingFromGoogleCalendar = async ({ userId, googleEventId })
             sendUpdates: 'all'
         });
     } catch (error) {
-        console.error('[Google Calendar SDK Error] Failed to delete event:', error?.response?.data || error.message);
+        logger.error('[Google Calendar SDK Error] Failed to delete event:', { error: error?.response?.data || error.message });
     }
 };
 
@@ -255,7 +258,7 @@ export const fetchGoogleCalendarEvents = async (userId) => {
             type: 'gcal'
         }));
     } catch (error) {
-        console.error('[Google Calendar SDK Error] Failed to fetch events:', error?.response?.data || error.message);
+        logger.error('[Google Calendar SDK Error] Failed to fetch events:', { error: error?.response?.data || error.message });
         return [];
     }
 };
