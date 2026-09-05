@@ -1,52 +1,44 @@
 import { prisma } from "../../config/prisma.js";
 import { redisCache } from "../../config/redis.js";
+import { NotFoundError } from "../../utils/errors/appError.js";
+import { asyncHandler } from "../../utils/asyncHandler.js";
 
-export const markNotificationRead = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { id } = req.params;
+export const markNotificationRead = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const { id } = req.params;
 
-        if (id.startsWith("task-dyn-") || id.startsWith("meeting-dyn-")) {
-            return res.status(200).json({ message: "Dynamic item updated" });
-        }
-
-        const notification = await prisma.notification.findUnique({ where: { id } });
-        if (!notification || notification.userId !== userId) {
-            return res.status(404).json({ message: "Notification not found" });
-        }
-
-        const updated = await prisma.notification.update({
-            where: { id },
-            data: { isRead: !notification.isRead }
-        });
-
-        try {
-            await redisCache.incr(`inbox:version:${userId}`);
-        } catch {}
-
-        return res.status(200).json({ notification: updated });
-    } catch (error) {
-        console.error("Error marking notification read:", error);
-        return res.status(500).json({ message: "Internal server error" });
+    if (id.startsWith("task-dyn-") || id.startsWith("meeting-dyn-")) {
+        return res.status(200).json({ message: "Dynamic item updated" });
     }
-};
 
-export const markAllNotificationsRead = async (req, res) => {
-    try {
-        const userId = req.user.id;
-
-        await prisma.notification.updateMany({
-            where: { userId, isRead: false },
-            data: { isRead: true }
-        });
-
-        try {
-            await redisCache.incr(`inbox:version:${userId}`);
-        } catch {}
-
-        return res.status(200).json({ message: "All notifications marked as read" });
-    } catch (error) {
-        console.error("Error marking all notifications read:", error);
-        return res.status(500).json({ message: "Internal server error" });
+    const notification = await prisma.notification.findUnique({ where: { id } });
+    if (!notification || notification.userId !== userId) {
+        throw new NotFoundError("Notification not found");
     }
-};
+
+    const updated = await prisma.notification.update({
+        where: { id },
+        data: { isRead: !notification.isRead }
+    });
+
+    try {
+        await redisCache.incr(`inbox:version:${userId}`);
+    } catch {}
+
+    return res.status(200).json({ notification: updated });
+});
+
+export const markAllNotificationsRead = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+
+    await prisma.notification.updateMany({
+        where: { userId, isRead: false },
+        data: { isRead: true }
+    });
+
+    try {
+        await redisCache.incr(`inbox:version:${userId}`);
+    } catch {}
+
+    return res.status(200).json({ message: "All notifications marked as read" });
+});

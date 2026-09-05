@@ -6,6 +6,7 @@ import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
+import logger from '../../utils/logger/logger.js';
 
 export const createTask = asyncHandler(async (req, res) => {
   const userId = req.user.id;
@@ -95,7 +96,7 @@ export const createTask = asyncHandler(async (req, res) => {
       ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
       userAgent: req.headers["user-agent"],
     },
-  }).catch((err) => console.error('[createTask] Event publication error:', err));
+  }).catch((err) => logger.error('[createTask] Event publication error:', { error: err.message }));
 
   return ApiResponse.created(res, {
     data: { task: taskWithAssignee },

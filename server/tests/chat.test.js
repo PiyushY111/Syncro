@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getChannelMessages } from '../controllers/chat/getMessages.js';
 import { prisma } from '../config/prisma.js';
 import { redisCache } from '../config/redis.js';
+import { NotFoundError } from '../utils/errors/appError.js';
 
 vi.mock('../config/prisma.js', () => ({
     prisma: {
@@ -30,9 +31,9 @@ describe('Chat Message Caching & Retrieval', () => {
 
     it('should return 404 if channel not found', async () => {
         prisma.channel.findUnique.mockResolvedValue(null);
-        await getChannelMessages(req, res);
-        expect(res.status).toHaveBeenCalledWith(404);
+        await expect(getChannelMessages(req, res)).rejects.toThrow(NotFoundError);
     });
+
 
     it('should use cached messages if available', async () => {
         prisma.channel.findUnique.mockResolvedValue({

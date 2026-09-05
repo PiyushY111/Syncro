@@ -6,21 +6,17 @@ import {
 } from '../services/googleCalendarService.js';
 import { verifyOAuthState } from '../utils/crypto.js';
 import logger from '../utils/logger/logger.js';
+import { asyncHandler } from '../utils/asyncHandler.js';
 
 // Get Google OAuth Authorization URL
-export const getGoogleAuthUrlController = async (req, res) => {
-    try {
-        if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_ID.trim()) {
-            return res.json({ url: null, configured: false, message: 'GOOGLE_CLIENT_ID is not configured in .env' });
-        }
-        const userId = req.user.id;
-        const url = getAuthUrl(userId);
-        return res.json({ url, configured: true });
-    } catch (error) {
-        logger.error('Error generating Google Auth URL:', { error: error.message, userId: req.user?.id });
-        return res.status(500).json({ message: 'Failed to generate Google Auth URL' });
+export const getGoogleAuthUrlController = asyncHandler(async (req, res) => {
+    if (!process.env.GOOGLE_CLIENT_ID || !process.env.GOOGLE_CLIENT_ID.trim()) {
+        return res.json({ url: null, configured: false, message: 'GOOGLE_CLIENT_ID is not configured in .env' });
     }
-};
+    const userId = req.user.id;
+    const url = getAuthUrl(userId);
+    return res.json({ url, configured: true });
+});
 
 // Handle Google OAuth Callback
 export const googleOAuthCallbackController = async (req, res) => {
@@ -60,56 +56,41 @@ export const googleOAuthCallbackController = async (req, res) => {
 };
 
 // Fetch user's Google Calendar events
-export const getRealGoogleCalendarEventsController = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const events = await fetchGoogleCalendarEvents(userId);
-        return res.json({ events });
-    } catch (error) {
-        logger.error('Error in getRealGoogleCalendarEventsController:', { error: error.message, userId: req.user?.id });
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+export const getRealGoogleCalendarEventsController = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const events = await fetchGoogleCalendarEvents(userId);
+    return res.json({ events });
+});
 
 // Disconnect Google Calendar Sync
-export const disconnectGoogleSyncController = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const user = await prisma.user.update({
-            where: { id: userId },
-            data: {
-                googleCalendarSync: false,
-                googleCalendarEmail: null,
-                googleAccessToken: null,
-                googleRefreshToken: null
-            },
-            select: {
-                id: true,
-                email: true,
-                name: true,
-                googleCalendarSync: true,
-                googleCalendarEmail: true
-            }
-        });
+export const disconnectGoogleSyncController = asyncHandler(async (req, res) => {
+    const userId = req.user.id;
+    const user = await prisma.user.update({
+        where: { id: userId },
+        data: {
+            googleCalendarSync: false,
+            googleCalendarEmail: null,
+            googleAccessToken: null,
+            googleRefreshToken: null
+        },
+        select: {
+            id: true,
+            email: true,
+            name: true,
+            googleCalendarSync: true,
+            googleCalendarEmail: true
+        }
+    });
 
-        return res.json({ user, message: 'Google Calendar disconnected successfully' });
-    } catch (error) {
-        logger.error('Error disconnecting Google Sync:', { error: error.message, userId: req.user?.id });
-        return res.status(500).json({ message: 'Internal server error' });
-    }
-};
+    return res.json({ user, message: 'Google Calendar disconnected successfully' });
+});
 
 // Webhook for 2-Way Push Notifications from Google Calendar
-export const googleWebhookController = async (req, res) => {
-    try {
-        const channelId = req.headers['x-goog-channel-id'];
-        const resourceState = req.headers['x-goog-resource-state'];
+export const googleWebhookController = asyncHandler(async (req, res) => {
+    const channelId = req.headers['x-goog-channel-id'];
+    const resourceState = req.headers['x-goog-resource-state'];
 
-        logger.info(`[Google Webhook Received] Channel: ${channelId}, State: ${resourceState}`, { channelId, resourceState });
-        // 2-way sync processing logic here
-        return res.status(200).send('OK');
-    } catch (error) {
-        logger.error('Error handling Google Webhook:', { error: error.message });
-        return res.status(500).send('Error');
-    }
-};
+    logger.info(`[Google Webhook Received] Channel: ${channelId}, State: ${resourceState}`, { channelId, resourceState });
+    // 2-way sync processing logic here
+    return res.status(200).send('OK');
+});
