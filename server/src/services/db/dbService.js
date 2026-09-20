@@ -64,7 +64,7 @@ export const checkDatabaseHealth = async () => {
     return {
       status: "HEALTHY",
       database: "PostgreSQL",
-      driver: "Prisma Client (Enterprise)",
+      driver: "Prisma Client",
       latencyMs,
       timestamp: new Date().toISOString(),
       details: {

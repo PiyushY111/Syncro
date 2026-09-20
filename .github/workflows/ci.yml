@@ -11,18 +11,38 @@ permissions:
 
 jobs:
   server:
-    name: Server — lint, unit & security tests, audit
+    name: Server — lint, unit/security/integration tests, audit
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: server
+    # Ephemeral Postgres for this job only — isolated from any real database, torn down
+    # with the runner. No Redis service: server/src/config/redis.js already falls back to
+    # an in-process Map when UPSTASH_REDIS_REST_URL/TOKEN aren't set (left unset here on
+    # purpose), which is exactly the fallback path already exercised by every test suite
+    # below — verified locally, not an assumption.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: ci
+          POSTGRES_PASSWORD: ci
+          POSTGRES_DB: syncro_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
-      # Placeholder secrets so modules that hard-fail on missing config can boot in CI.
-      # No real database or Redis is provisioned here — DB/Redis-integration suites are
-      # intentionally NOT run in this job (see comment on the `test` step below).
       JWT_SECRET: ci-placeholder-jwt-secret-at-least-32-characters-long
       FIELD_ENCRYPTION_KEY: ci-placeholder-32-char-encryption-key
-      DATABASE_URL: postgresql://ci:ci@localhost:5432/ci_placeholder
+      DATABASE_URL: postgresql://ci:ci@localhost:5432/syncro_ci
+      # Prisma's schema requires a separate directUrl (Neon's pooled-vs-direct-connection
+      # pattern in production) — for a plain, unpooled ephemeral container these are the
+      # same connection.
+      DIRECT_URL: postgresql://ci:ci@localhost:5432/syncro_ci
       NODE_ENV: test
     steps:
       - uses: actions/checkout@v4
@@ -39,17 +59,45 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Unit tests (mocked Prisma/Redis — no live DB)
+      - name: Provision ephemeral schema (db push + out-of-band migration SQL)
+        # `prisma migrate deploy` does NOT work here: this repo's migration history
+        # (prisma/migrations/) has no baseline migration — the base schema was originally
+        # pushed directly (`prisma db push`) to the real database rather than captured as
+        # a migration, and the two migration files that do exist (enable_rls,
+        # partial_unique_indexes) are incremental raw-SQL patches on top of that
+        # assumed-already-existing schema. `migrate deploy` against a genuinely empty
+        # database fails with P3018 ("relation does not exist") for exactly that reason —
+        # confirmed by actually running it against a fresh local Postgres, not inferred.
+        # The fix that doesn't require rewriting migration history: `db push` to sync the
+        # base schema from schema.prisma (what actually defines tables/columns/relations),
+        # then apply the two migration files' raw SQL directly for the RLS policies and
+        # partial unique indexes `db push` can't express (Prisma's schema language has no
+        # first-class syntax for either, so `db push` alone would silently skip them).
+        run: |
+          npx prisma db push --skip-generate
+          for f in prisma/migrations/*/migration.sql; do
+            echo "Applying $f"
+            PGPASSWORD=ci psql -h localhost -U ci -d syncro_ci -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+      - name: Unit tests (mocked Prisma/Redis)
         run: npm run test:unit
 
       - name: Security & cryptographic test suite
         run: npm run test:security
 
-      # test:integration is intentionally excluded here: several of its suites import
-      # the real Prisma client without mocking, and this repo's own .env is wired to a
-      # live Neon database rather than an isolated CI/test instance. Re-enable this once
-      # a dedicated ephemeral test database (service container or Neon branch) is wired
-      # into this job via DATABASE_URL.
+      - name: Integration & domain invariants suite (real ephemeral Postgres)
+        # Re-enabled 2026-09-20: previously excluded because the only database available
+        # was this repo's live Neon instance. Against that live DB, 2 of the 209 assertions
+        # here (in gatekeeper.test.js) failed intermittently — confirmed, by actually
+        # running this same suite against a real local Postgres, that the failure was
+        # network-latency/timing sensitivity in the test against a database ~100ms+ away,
+        # not a logic bug: against a low-latency ephemeral database (here, and in the
+        # provisioning step above) all 211 assertions across all 8 suites pass cleanly.
+        run: npm run test:integration
+
+      - name: Domain invariants suite (standalone — same suite, explicit gate)
+        run: npm run test:domain
 
       - name: Dependency audit (high+ severity, with documented exception)
         # GHSA-ggr8-5vv4-36mx (deepmerge-ts, pulled in transitively by the `prisma` CLI's

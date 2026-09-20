@@ -61,14 +61,16 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Service Worker** — scoped to production environments for offline static shell caching, avoiding interception of Vite dev-server HMR modules.
 
 ### 6. Security & Cryptography: Syncro Shield
-* **100% Cloaked API Surface** — all internal backend API routes (`/api/workspaces`, `/api/projects`, `/api/tasks`, `/api/chat`, etc.) are hidden from DevTools and network observers behind a single cloaked endpoint: `POST /api/v2/shield/dispatch`.
-* **In-Transit Payload Encryption** — all HTTP requests, query parameters, headers, and responses are encrypted using authenticated hardware-accelerated **AES-256-GCM** with 32–96 bytes of pseudo-random noise jitter padding to defeat traffic-analysis attacks.
+* **Application-layer payload cloaking, not endpoint secrecy** — API routes are dispatched through a single encrypted gateway (`POST /api/v2/shield/dispatch`), so a passive DevTools Network-tab view or a misconfigured proxy log sees ciphertext, not plaintext endpoint names or bodies. This is *not* a claim that the endpoints are hidden from a motivated attacker — the client ships the decryption code, so anyone who reads it (or sets a breakpoint) can unwrap the same traffic. See [`ARCHITECTURE.md § Design Trade-offs & Honest Limitations`](./ARCHITECTURE.md#-design-trade-offs--honest-limitations) for what this actually defends against.
+* **In-Transit Payload Encryption** — request/response bodies are encrypted with **AES-256-GCM** (via the browser's native WebCrypto API) with 32–96 bytes of random noise padding to reduce ciphertext-length side-channel leakage.
 * **Ephemeral Key Agreement (ECDH P-256 + HKDF)** — client and server negotiate ephemeral session keys in volatile RAM; no static encryption keys are stored on disk or hardcoded in client bundles.
-* **Anti-Replay & Anti-Tamper Guard** — atomic nonces and 60-second timestamp windows enforced via **HMAC-SHA256** signatures (`x-shield-sig`, `x-shield-nonce`, `x-shield-timestamp`). Replays are rejected with `403 Forbidden`.
+* **Anti-Replay & Anti-Tamper Guard** — atomic nonces and 60-second timestamp windows enforced via **HMAC-SHA256** signatures (`x-shield-sig`, `x-shield-nonce`, `x-shield-timestamp`). Replays are rejected with `403 Forbidden`. This is the one property TLS alone doesn't give you for free at the application layer, and it's real regardless of how you feel about the rest of Shield.
 * **Field-Level Database Encryption at Rest** — sensitive chat messages, task comments, and 2FA credentials in PostgreSQL are encrypted via Prisma Client `$extends` extensions before disk write.
 * **Workspace Roles & Matrix** — pre-configured permission scopes for Owner, Admin, Manager, and Member.
-* **2FA Security** — email-based 6-digit verification code pipeline with dev-mode console output and `123456` bypass for automated testing.
+* **2FA Security** — email-based 6-digit verification code pipeline, code logged to the console in development so you can test without a real inbox. (A previous version of this had a hardcoded bypass code for dev/test convenience — removed after a security audit found it was a needless risk if `NODE_ENV` were ever misconfigured in production.)
 * **Cryptographic Audit Trail** — SHA-256 tamper-evident hash chaining across workspace mutations with Owner/Admin entity rollbacks.
+
+> Auth, CSRF, and the full list of what a recent internal security audit found and fixed live in [`SECURITY.md`](./SECURITY.md) — including things that were wrong and got corrected, not just a list of what's implemented.
 
 ---
 
@@ -81,13 +83,13 @@ The platform isolates data between workspace organizations, offloads async work 
 * **W3C Web Cryptography API** — native browser hardware-accelerated ECDH P-256 key exchange, HKDF-SHA256, AES-256-GCM, and HMAC-SHA256.
 * **Socket.io-client** — WebSocket client connection wrapper for real-time canvas, presence, and chat.
 
-### Backend, Event Engine & Enterprise Infrastructure
+### Backend & Event Engine
 * **Express 5** — REST API gateway router with synthetic in-memory cloaked dispatch pipeline (`req.app.handle`).
-* **Syncro Shield Cryptographic Engine** — zero-trust cloaked dispatcher, replay prevention with Redis nonces, and AES-256-GCM encryption.
+* **Syncro Shield Cryptographic Engine** — application-layer payload encryption with replay prevention via Redis nonces (see honest scope/limits above).
 * **Socket.IO Real-Time Engine** — modular WebSocket event handlers for Chat, Whiteboards, Retrospectives, Member Presence, and Emoji Reactions.
 * **Clean Hexagonal Architecture** — strict layer separation with `AppError` Operational Error hierarchy, `asyncHandler` controller isolation, and unified `ApiResponse` schema.
 * **Prisma ORM ($extends)** — type-safe PostgreSQL ORM configured with client extensions (`$extends`) supporting transparent field-level AES-256-GCM encryption at rest, soft-delete query interceptors, and slow query telemetry.
-* **Enterprise DB Service (`dbService.js`)** — transaction engine with exponential backoff retries for transient deadlocks (`40001`/`40P01`), low-overhead database health diagnostic probe (`SELECT 1`), and L2 Redis read-through caching.
+* **DB Service (`dbService.js`)** — transaction engine with exponential backoff retries for transient deadlocks (`40001`/`40P01`), low-overhead database health diagnostic probe (`SELECT 1`), and L2 Redis read-through caching.
 * **Request Correlation & Structured Logger** — `x-request-id` header tracking for distributed transaction tracing paired with a high-performance structured JSON telemetry logger.
 * **PostgreSQL (Neon)** — serverless relational database engine with composite multi-column indexing.
 * **Upstash Redis** — REST-based Redis client for caching and environment-aware rate limiting (`authLimiter`, `apiLimiter`).
@@ -95,16 +97,13 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Nodemailer** — SMTP transactional email transporter.
 
 ### Testing & Verification
-* **Enterprise CI Test Runner (`tests/runAllTests.js`)** — automated orchestrator running 8 comprehensive test suites with 100% pass rate:
-  1. `Architecture & CI Guard Suite` (`tests/architecture.test.js`) — 16 passed tests.
-  2. `Security & Cryptographic Suite` (`tests/security.test.js`) — 13 passed tests.
-  3. `Shield Zero-Trust Cryptographic Suite` (`tests/shield.test.js`) — 18 passed tests.
-  4. `Shield End-to-End Cloaked Gateway Suite` (`tests/shieldE2E.test.js`) — 11 passed tests.
-  5. `Transaction, Outbox & DLQ Suite` (`tests/transaction.test.js`) — 5 passed tests.
-  6. `Domain Invariants & Integration Test Suite` (`tests/domainInvariants.test.js`) — 93 passed tests.
-  7. `Gatekeeper & Super-Admin Policy Suite` (`tests/gatekeeper.test.js`) — 13 passed tests.
-  8. `Concurrency & Stampede Lock Suite` (`tests/concurrency.test.js`) — 13 passed tests.
-* **Playwright** — End-to-end multi-browser collaborative test suites (`auth.spec.js`, `chat.spec.js`, `tasks.spec.js`, `whiteboard.spec.js`, `workspace.spec.js`).
+
+Current, real numbers as of 2026-09-20 (re-run before you trust them further out than that — see CI badge above for what's actually gated on every push):
+
+* **Server unit tests** (`npm run test:unit`, mocked Prisma/Redis, `server/tests/*.test.js` via Vitest) — **60/60 passing**.
+* **Client unit tests** (`npm run test`, Vitest + React Testing Library) — **21/21 passing**.
+* **Server integration/domain suite** (`node tests/runAllTests.js`, orchestrates 8 suites — mostly logic simulation and mocked infra, not a live DB; see [`SECURITY.md`](./SECURITY.md) for which suites touch a real database) — **207/209 assertions passing across 7/8 suites**. The one failing suite is `gatekeeper.test.js` (2 of 13 assertions), a known Redis-cache-timing flake in a suite that queries a live database directly rather than a mock — not currently gated in CI for that reason (see CI workflow comments and `SECURITY.md` for the isolation gap this reflects).
+* **Playwright specs** (`e2e/*.spec.js`) exist for auth, chat, tasks, whiteboard, and workspace flows, but `@playwright/test` isn't currently a declared dependency and these aren't wired into any npm script or CI job — treat them as scaffolding for a flow you'd want covered, not as a suite that's verified passing right now.
 
 ---
 
@@ -240,9 +239,9 @@ erDiagram
 
 ## 🔌 API Design
 
-### Zero-Trust Shield Cloaked Gateway
+### Shield Cloaked Gateway (application-layer payload encryption — not endpoint secrecy; see [`ARCHITECTURE.md`](./ARCHITECTURE.md#-design-trade-offs--honest-limitations))
 * `POST /api/v2/shield/handshake` — Ephemeral ECDH P-256 key exchange establishing an authenticated AES-256-GCM session key derived via HKDF-SHA256 with 24-hour expiration.
-* `POST /api/v2/shield/dispatch` — Unified cloaked ingress gateway. Unpacks `{ iv, tag, ciphertext }`, enforces atomic anti-replay nonces & timestamps, verifies cryptographic HMAC signatures, and executes synthetic Express routing internally with zero exposed plaintext endpoints.
+* `POST /api/v2/shield/dispatch` — Unified cloaked ingress gateway. Unpacks `{ iv, tag, ciphertext }`, enforces atomic anti-replay nonces & timestamps, verifies cryptographic HMAC signatures, and executes synthetic Express routing internally. The wire format carries no plaintext endpoint names — but the client bundle ships the code to decrypt it, so this raises the bar for a passive observer, not a motivated one.
 
 ### Authentication Endpoints
 * `POST /api/auth/register` — creates user, hashes password, generates 2FA, and publishes `app/auth.registered`.

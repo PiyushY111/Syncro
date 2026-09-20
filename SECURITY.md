@@ -33,7 +33,7 @@ Sensitive columns (`User.googleAccessToken`, `User.googleRefreshToken`, `User.tw
 
 ## The Shield layer
 
-Syncro additionally runs an application-layer encrypted tunnel (`server/src/services/shieldEngine.js`, documented in full in [`ARCHITECTURE.md §7`](./ARCHITECTURE.md)) using ephemeral ECDH P-256 key agreement, HKDF-SHA256 key derivation, AES-256-GCM payload encryption, and HMAC-SHA256 request signing with an atomic replay-nonce guard.
+Syncro additionally runs an application-layer encrypted tunnel (`server/src/services/shieldEngine.js`, documented in full in [`ARCHITECTURE.md §7`](./ARCHITECTURE.md)) using ephemeral ECDH P-256 key agreement, HKDF-SHA256 key derivation, AES-256-GCM payload encryption, and HMAC-SHA256 request signing with an atomic replay-nonce guard. See [`ARCHITECTURE.md § Design Trade-offs & Honest Limitations`](./ARCHITECTURE.md#-design-trade-offs--honest-limitations) for the precise, falsifiable version of what this does and doesn't add over TLS, and why it exists in a project that doesn't strictly need it.
 
 **What it defends against**: a passive observer with access to the browser's DevTools/network tab, a malicious browser extension reading `fetch`/XHR traffic, or plaintext logging by a misconfigured reverse proxy/CDN sitting between TLS termination and the application. None of these are protected by TLS alone, since TLS only secures the wire between two trusted endpoints — it does nothing once either endpoint (or something with visibility inside the browser) is compromised or misconfigured.
 
@@ -48,8 +48,9 @@ Syncro additionally runs an application-layer encrypted tunnel (`server/src/serv
 
 ## Known gaps / follow-ups
 
-- **Test environment lacks database isolation.** `server/.env` (gitignored, never committed) points at a live Neon database rather than an isolated test instance. The `test:integration` suite (`server/tests/runAllTests.js`) is therefore deliberately **not** run in CI yet — most of its suites simulate their scenarios in-memory or mock Prisma/Redis, but `gatekeeper.test.js` does exercise the real Prisma client for one read. Recommended follow-up: provision a dedicated test database (a Neon branch or a CI Postgres service container) before re-enabling this suite in CI.
+- **Local dev's `.env` points at a live Neon database, not an isolated one.** This is normal for a solo project without a staging environment, but it means running `test:integration` locally (as opposed to in CI, see below) exercises the real database — `gatekeeper.test.js` does one real Prisma read as part of that suite. Worth knowing before running tests locally with `.env` in place.
 - Shield's in-memory replay-guard fallback (above) should be revisited if Shield is ever deployed multi-instance without Redis.
+- ~~Test environment lacks database isolation in CI~~ — **closed 2026-09-20**. CI now provisions an ephemeral `postgres:16` service container per run (`.github/workflows/ci.yml`) and runs the full `test:integration`/`test:domain` suites against it. This also resolved a real, previously-documented flake: 2 of 209 assertions in `gatekeeper.test.js` failed intermittently against the live Neon database (confirmed by re-running the identical suite against a local Postgres instance: 0 failures) — the failure was network-latency/timing sensitivity in the test, not a logic bug. See the CI workflow's "Provision ephemeral schema" step for why `prisma migrate deploy` doesn't work here (the migration history has no baseline) and what runs instead.
 
 ## Audit history
 
@@ -63,5 +64,15 @@ Syncro additionally runs an application-layer encrypted tunnel (`server/src/serv
 - **[Low, fixed]** `Content-Security-Policy` included `script-src 'unsafe-inline'`, undermining CSP's main XSS defense; the client bundle has no inline scripts, so it was dropped.
 - **[Low, fixed]** A hardcoded 2FA bypass code (`'123456'`, gated on `NODE_ENV !== 'production'`) was removed — the real per-login code is already logged in development, making the bypass redundant and a needless risk if `NODE_ENV` is ever misconfigured in a deployment.
 - **[Low, fixed]** `POST /api/auth/verify-login` and `POST /api/auth/resend-code` were missing the DTO validation layer every other auth route uses.
+- **[Caught in review, fixed before shipping]** The first CSRF design used a JS-readable cookie (classic double-submit). The app and API are on different subdomains (`syncro.piyushydv.com` / `api.syncro.piyushydv.com`), so a host-only cookie set by the API is invisible to `document.cookie` on the app's page — this would have 403'd every authenticated write in production while working fine in local dev, where cookie-domain quirks mask the bug. Redesigned to the anchor-cookie/synchronizer-token scheme described above before it ever shipped.
+- **[Caught in review, fixed before shipping]** The CSRF middleware was mounted at the router level (all HTTP methods), but the client only ever attaches the CSRF header on mutating requests — every `GET` would have 403'd. Caught via a live curl smoke test; fixed by scoping the check to state-changing methods, with a regression test added for exactly this case.
+- **[Low, fixed]** `POST /api/google-calendar/disconnect` was missed in the first CSRF-wiring pass (it's mounted outside the routers the other domains share) — closed.
 - 14 of 17 npm-audited CVEs across both packages resolved via `npm audit fix`; the remaining one is the documented Prisma CLI exception above.
 - A dedicated Shield-layer review (crypto primitives, replay guard, signature verification) found the implementation sound; see **The Shield layer** above for its two documented, accepted limitations.
+
+**2026-09-20 (same day, follow-up pass) — CI database isolation, and a documentation-accuracy pass on marketing language.**
+
+- Wired a real ephemeral `postgres:16` CI service container and re-enabled `test:integration`/`test:domain` (previously excluded — see **Known gaps / follow-ups** above for what changed and the flaky-test root cause it resolved).
+- Audited every place this project's docs claimed "Enterprise," "Zero-Trust," or "100% Cloaked" — replaced with precise, falsifiable claims, or cut where nothing backed them. Added [`ARCHITECTURE.md § Design Trade-offs & Honest Limitations`](./ARCHITECTURE.md#-design-trade-offs--honest-limitations), which states plainly what Shield does and does not add over TLS.
+- Found and fixed a live, runtime instance of the same issue (not just docs): the public, unauthenticated `/health` endpoint hardcoded `"driver": "Prisma Client (Enterprise)"` in its JSON response — a real deployed API returning an unfalsifiable label. Now just `"Prisma Client"`.
+- Replaced stale/aspirational test-count claims in `README.md` and `ARCHITECTURE.md` with real, current, re-run numbers (including one doc that claimed `100% Pass Rate` while actually referencing a suite with 2 known failures).

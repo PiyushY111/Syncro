@@ -1,4 +1,4 @@
-# 🏗️ Syncro Enterprise Architecture & Database Documentation
+# 🏗️ Syncro Architecture & Database Documentation
 
 Welcome to the comprehensive technical architecture specification for **Syncro**. This document provides an in-depth breakdown of the system design, domain-driven clean architecture, database infrastructure, caching strategies, real-time engines, and security mechanics powering the platform.
 
@@ -17,8 +17,8 @@ Welcome to the comprehensive technical architecture specification for **Syncro**
    - [3.5 Real-Time Database Health Monitoring](#35-real-time-database-health-monitoring)
    - [3.6 Soft Delete & Audit Logging Engine](#36-soft-delete--audit-logging-engine)
    - [3.7 L2 Redis Read-Through Caching Layer](#37-l2-redis-read-through-caching-layer)
-   - [3.8 Enterprise Multi-Tenant Seed Pipeline](#38-enterprise-multi-tenant-seed-pipeline)
-4. [Enterprise Cross-Cutting Concerns](#-enterprise-cross-cutting-concerns)
+   - [3.8 Multi-Tenant Seed Pipeline](#38-multi-tenant-seed-pipeline)
+4. [Cross-Cutting Concerns](#-cross-cutting-concerns)
    - [4.1 AppError Hierarchy](#41-apperror-hierarchy)
    - [4.2 Unified API Response Contract & Client Unwrapping](#42-unified-api-response-contract--client-unwrapping)
    - [4.3 Async Exception Isolation](#43-async-exception-isolation)
@@ -26,23 +26,24 @@ Welcome to the comprehensive technical architecture specification for **Syncro**
    - [4.5 DTO Request Validation Pipeline](#45-dto-request-validation-pipeline)
 5. [Real-Time Socket.IO & Event Bus Pipelines](#-real-time-socketio--event-bus-pipelines)
 6. [Automated Verification & Testing Architecture](#-automated-verification--testing-architecture)
-7. [Zero-Trust Cryptographic Cloaking: Syncro Shield Engine](#-zero-trust-cryptographic-cloaking-syncro-shield-engine)
+7. [Application-Layer Payload Cloaking: Syncro Shield Engine](#-application-layer-payload-cloaking-syncro-shield-engine)
    - [7.1 Architecture & Threat Model](#71-architecture--threat-model)
    - [7.2 Ephemeral ECDH P-256 Key Exchange & HKDF-SHA256 Derivation](#72-ephemeral-ecdh-p-256-key-exchange--hkdf-sha256-derivation)
    - [7.3 Authenticated Payload Encryption (AES-256-GCM) with Jitter Padding](#73-authenticated-payload-encryption-aes-256-gcm-with-jitter-padding)
    - [7.4 Unified Ingress Cloaked Gateway & Synthetic Express In-Memory Routing](#74-unified-ingress-cloaked-gateway--synthetic-express-in-memory-routing)
    - [7.5 Cryptographic Anti-Replay Guard & Atomic Nonce Verification](#75-cryptographic-anti-replay-guard--atomic-nonce-verification)
    - [7.6 Database Field-Level Data-at-Rest Encryption](#76-database-field-level-data-at-rest-encryption)
-8. [Route-Level Code-Splitting & Frontend Performance Architecture](#-route-level-code-splitting--frontend-performance-architecture)
-   - [8.1 Vite Dynamic Chunking with React.lazy() and Suspense](#81-vite-dynamic-chunking-with-reactlazy-and-suspense)
-   - [8.2 Production-Only PWA Service Worker Scoping](#82-production-only-pwa-service-worker-scoping)
-   - [8.3 Bundle Reduction & Cold Boot Metrics](#83-bundle-reduction--cold-boot-metrics)
+8. [Design Trade-offs & Honest Limitations](#-design-trade-offs--honest-limitations)
+9. [Route-Level Code-Splitting & Frontend Performance Architecture](#-route-level-code-splitting--frontend-performance-architecture)
+   - [9.1 Vite Dynamic Chunking with React.lazy() and Suspense](#91-vite-dynamic-chunking-with-reactlazy-and-suspense)
+   - [9.2 Production-Only PWA Service Worker Scoping](#92-production-only-pwa-service-worker-scoping)
+   - [9.3 Bundle Reduction & Cold Boot Metrics](#93-bundle-reduction--cold-boot-metrics)
 
 ---
 
 ## 🏛️ High-Level System Overview
 
-Syncro is built as a highly available, event-driven, multi-tenant enterprise application. The platform cleanly segregates client-side single page applications (SPA), real-time WebSocket state machines, REST gateway controllers, transactional event background processing, and relational database persistence layers.
+Syncro is an event-driven, multi-tenant web application. The platform cleanly segregates client-side single page applications (SPA), real-time WebSocket state machines, REST gateway controllers, transactional event background processing, and relational database persistence layers. It runs as a single instance per tier (one Render/Node process, one Neon Postgres, one Redis) — graceful shutdown and slow-query telemetry are implemented (§3.4, §3.5), but there's no multi-region failover or load-balanced redundancy, so "highly available" would overstate what's actually deployed.
 
 ```mermaid
 graph TD
@@ -59,7 +60,7 @@ graph TD
         Controller --> Services["Domain Services Layer"]
     end
 
-    subgraph CrossCutting ["Cross-Cutting Enterprise Systems"]
+    subgraph CrossCutting ["Cross-Cutting Concerns"]
         Controller --> ApiResponse["ApiResponse Contract Formatter"]
         Controller --> GlobalErr["errorMiddleware (Centralized Error Handler)"]
         GlobalErr --> AppError["AppError Class Hierarchy"]
@@ -129,7 +130,7 @@ server/
 │   └── ...                 # Retros, Epics, Sprints, Milestones, Meetings
 ├── prisma/                 # Relational Schema & Seed Generator
 │   ├── schema.prisma       # Prisma PostgreSQL models & composite indexes
-│   └── seed.js             # Enterprise multi-tenant mock data seed generator
+│   └── seed.js             # Multi-tenant mock data seed generator
 └── tests/                  # Automated Verification Suites
     ├── architecture.test.js# Clean Architecture & DTO test suite
     └── database.test.js    # Database health & transaction retry test suite
@@ -323,7 +324,7 @@ export const checkDatabaseHealth = async () => {
     return {
       status: 'HEALTHY',
       database: 'PostgreSQL',
-      driver: 'Prisma Client (Enterprise)',
+      driver: 'Prisma Client',
       latencyMs,
       timestamp: new Date().toISOString(),
       details: { ping: 'OK', slowQueryThresholdMs: 150 },
@@ -410,7 +411,7 @@ export const getCachedOrFetch = async (cacheKey, fetchFn, ttlSeconds = 300) => {
 
 ---
 
-### 3.8 Enterprise Multi-Tenant Seed Pipeline
+### 3.8 Multi-Tenant Seed Pipeline
 The seed pipeline (`server/prisma/seed.js`) provisions a production-ready mock environment for development, staging, and testing:
 - **Default System Accounts**: Admin (`admin@syncro.io`), Tech Lead (`lead@syncro.io`), Senior Engineer (`dev@syncro.io`) with hashed passwords.
 - **Enterprise Workspace**: `Syncro Enterprise Systems` slug: `syncro-enterprise` with custom RBAC roles.
@@ -428,7 +429,7 @@ npm run db:test
 
 ---
 
-## 🛡️ Enterprise Cross-Cutting Concerns
+## 🛡️ Cross-Cutting Concerns
 
 ### 4.1 AppError Hierarchy
 Operational exceptions extend the `AppError` base class (`server/utils/errors/appError.js`):
@@ -506,7 +507,7 @@ Syncro uses a dual event-processing system:
 
 ## 🧪 Automated Verification & Testing Architecture
 
-The codebase includes an enterprise automated test framework orchestrated by `node tests/runAllTests.js`:
+The suite counts below are real, re-run on 2026-09-20 (`node tests/runAllTests.js`, plus `npm run db:test` separately) — not aspirational figures. Re-run them yourself before citing a number further out than that; they will drift as the codebase does.
 
 ### 1. Clean Architecture Test Suite ([`server/tests/architecture.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/architecture.test.js))
 Run Command: `node tests/architecture.test.js`
@@ -519,27 +520,18 @@ Validates:
 
 **Result**: `16 Passed | 0 Failed`
 
-### 2. Database Infrastructure Test Suite ([`server/tests/database.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/database.test.js))
-Run Command: `npm run db:test`
-Validates:
-- Real-time `checkDatabaseHealth()` diagnostic ping (`SELECT 1`).
-- Soft-delete query interceptor filtering and `findUnique` delegate support.
-- Transaction engine rollback and error propagation.
-- L2 Redis read-through caching hits and misses.
-
-**Result**: `7 Passed | 0 Failed`
-
 ### 2. Security & Cryptographic Test Suite ([`server/tests/security.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/security.test.js))
 Run Command: `node tests/security.test.js`
 Validates:
 - AES-256-GCM field-level encryption and decryption.
 - Constant-time timing-safe comparisons for tokens and hashes.
-- Cryptographic SHA-256 2FA code hashing.
-- XSS input sanitization and password complexity rules.
+- Cryptographic SHA-256 2FA code hashing, XSS input sanitization, password complexity rules.
+- CSRF double-submit/synchronizer-token middleware (safe-method bypass, Bearer bypass, mismatch rejection).
+- CORS origin allowlist policy, auth-route DTO validation.
 
-**Result**: `13 Passed | 0 Failed`
+**Result**: `41 Passed | 0 Failed` (this suite grew from 27 to 41 assertions during the 2026-09-20 security audit — see [`SECURITY.md`](./SECURITY.md) for what was added and why)
 
-### 3. Shield Zero-Trust Cryptographic Suite ([`server/tests/shield.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/shield.test.js))
+### 3. Shield Cryptographic Primitives Suite ([`server/tests/shield.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/shield.test.js))
 Run Command: `node tests/shield.test.js`
 Validates:
 - Ephemeral ECDH P-256 key agreement and deterministic session generation.
@@ -548,7 +540,7 @@ Validates:
 - Anti-replay sliding window tracking and single-use nonce consumption.
 - HMAC-SHA256 signature verification and tamper detection.
 
-**Result**: `12 Passed | 0 Failed`
+**Result**: `18 Passed | 0 Failed`
 
 ### 4. Shield End-to-End Cloaked Gateway Suite ([`server/tests/shieldE2E.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/shieldE2E.test.js))
 Run Command: `node tests/shieldE2E.test.js`
@@ -559,7 +551,7 @@ Validates:
 - Clock skew rejection on expired or future timestamps outside the 5-minute window.
 - In-flight ciphertext tampering detection.
 
-**Result**: `8 Passed | 0 Failed`
+**Result**: `11 Passed | 0 Failed`
 
 ### 5. Transaction, Outbox & DLQ Suite ([`server/tests/transaction.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/transaction.test.js))
 Run Command: `node tests/transaction.test.js`
@@ -568,7 +560,7 @@ Validates:
 - Event outbox guaranteed-delivery pattern.
 - Dead letter queue (DLQ) retry policies for failed background jobs.
 
-**Result**: `9 Passed | 0 Failed`
+**Result**: `6 Passed | 0 Failed`
 
 ### 6. Domain Invariants & Business Logic Suite ([`server/tests/domainInvariants.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/domainInvariants.test.js))
 Run Command: `node tests/domainInvariants.test.js`
@@ -577,16 +569,16 @@ Validates:
 - Sprint state transitions (PLANNING -> ACTIVE -> COMPLETED).
 - Task blocking dependencies and circular reference detection.
 
-**Result**: `10 Passed | 0 Failed`
+**Result**: `93 Passed | 0 Failed`
 
 ### 7. Gatekeeper & Super-Admin Policy Suite ([`server/tests/gatekeeper.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/gatekeeper.test.js))
 Run Command: `node tests/gatekeeper.test.js`
 Validates:
-- RBAC role inheritance (OWNER, ADMIN, MEMBER, VIEWER).
+- RBAC role inheritance and super-admin elevation (env allowlist + DB/Redis-cached flag).
 - Fine-grained resource action policies (create, update, delete, audit).
 - Unauthorized mutation prevention on locked workspace entities.
 
-**Result**: `11 Passed | 0 Failed`
+**Result**: `11 Passed | 2 Failed` — the 2 failures are a known Redis-cache-timing flake (`should reject regular user with cached non-admin status`, `checkIsSuperAdmin returns true for cached superadmin status`), confirmed via `git stash` to pre-date the 2026-09-20 audit rather than being caused by it. This is the one suite in the orchestrator that queries the real Prisma client directly (a single read, no writes) rather than mocking it — see the "test environment lacks database isolation" note in [`SECURITY.md`](./SECURITY.md), which is also why this suite isn't currently gated in CI.
 
 ### 8. Concurrency & Stampede Lock Suite ([`server/tests/concurrency.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/concurrency.test.js))
 Run Command: `node tests/concurrency.test.js`
@@ -595,30 +587,29 @@ Validates:
 - Optimistic concurrency locking & version conflict checks (`409 Conflict`).
 - Transaction exponential backoff retries on transient PostgreSQL deadlocks (`40001`/`40P01`).
 
-**Result**: `7 Passed | 0 Failed`
+**Result**: `13 Passed | 0 Failed`
 
-### Supplementary Verification Suites
-- **Database Infrastructure Suite** ([`server/tests/database.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/database.test.js)): `npm run db:test` (7 Passed).
-- **Advanced Security & Audit Hash Chain Suite** ([`server/tests/advancedSecurity.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/advancedSecurity.test.js)): `node tests/advancedSecurity.test.js` (12 Passed).
+### Supplementary Verification Suite
+- **Database Infrastructure Suite** ([`server/tests/database.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/database.test.js)), run separately via `npm run db:test` (not part of the `runAllTests.js` orchestrator above): `8 Passed | 0 Failed`. This one does hit the real database (`checkDatabaseHealth()`, live soft-delete/cache-interceptor behavior).
 
-Orchestrated Run:
-```bash
-node tests/runAllTests.js
-# 8/8 Suites Passed | 86 Total Assertions | 100% Pass Rate
+Orchestrated run (`node tests/runAllTests.js`):
 ```
+7/8 suites passed | 207/209 assertions passed
+```
+Plus, run independently: server unit tests (`npm run test:unit`, mocked Prisma/Redis) **60/60**, client unit tests (`npm run test`) **21/21**. CI (`.github/workflows/ci.yml`) currently gates on the unit and security suites for both packages, not the full integration orchestrator above — see the workflow file's comments for exactly why, and the section below for what it would take to close that gap.
 
 ---
 
-## 🛡️ Zero-Trust Cryptographic Cloaking: Syncro Shield Engine
+## 🛡️ Application-Layer Payload Cloaking: Syncro Shield Engine
 
 ### 7.1 Architecture & Threat Model
 
-Traditional web architectures rely solely on transport layer TLS/HTTPS. While TLS secures data against passive ISP eavesdroppers, it exposes the entire application surface to:
-1. **Client-Side DevTools Inspection**: Attackers or curious users can inspect API endpoints, query structures, payload schemas, and sensitive parameters directly in browser developer tools.
-2. **Malicious Browser Extensions**: Injected extensions can monitor unencrypted `fetch` and `XMLHttpRequest` calls in the DOM.
-3. **Reverse-Proxy / CDN Plaintext Exposure**: Edge terminations or misconfigured load balancers can log sensitive query strings and JSON bodies in plaintext.
+Traditional web architectures rely solely on transport layer TLS/HTTPS. While TLS secures data against passive ISP eavesdroppers, it does nothing once traffic is past the TLS termination point, which leaves the payload exposed to:
+1. **Client-Side DevTools Inspection**: a passive observer can read API endpoints, query structures, payload schemas, and parameters directly in the browser's network tab, without doing anything more deliberate than opening it.
+2. **Malicious Browser Extensions**: extensions with `fetch`/`XMLHttpRequest` access can log traffic without deliberately reverse-engineering the app first.
+3. **Reverse-Proxy / CDN Plaintext Exposure**: edge terminations or misconfigured load balancers can log sensitive query strings and JSON bodies in plaintext.
 
-The **Syncro Shield Engine** solves this by establishing a zero-trust cryptographic tunnel directly between the frontend application and the backend kernel:
+The **Syncro Shield Engine** raises the cost of all three by establishing an application-layer encrypted channel between the frontend and the backend, on top of TLS. It is a meaningful improvement against a *passive* observer in each of those three positions — it is explicitly not a claim that endpoints are hidden from a *motivated* one, since the decryption logic ships in the client bundle. See [§8 Design Trade-offs & Honest Limitations](#-design-trade-offs--honest-limitations) for the precise, falsifiable version of this claim.
 
 ```mermaid
 sequenceDiagram
@@ -763,9 +754,42 @@ Beyond in-transit cloaking, sensitive columns in the PostgreSQL database are enc
 
 ---
 
+## 🧭 Design Trade-offs & Honest Limitations
+
+This section exists because most technical write-ups only describe what a system does, not what it *doesn't* do or why a given piece exists. Both matter more to an engineer evaluating this project than another paragraph of feature description.
+
+### What Shield actually adds beyond TLS
+
+TLS already gives you confidentiality and integrity on the wire between the browser and whichever server terminates the connection. Shield adds three things TLS does not, by itself:
+
+1. **Payload-level replay protection.** TLS protects a connection; it says nothing about whether the same authenticated request can be resubmitted. Shield's nonce + 60-second timestamp window (§7.5) rejects a captured-and-resent request even if the attacker has a valid, unexpired session — a property you'd otherwise have to build into individual route handlers.
+2. **Defense-in-depth if TLS is terminated somewhere untrustworthy.** If a CDN, reverse proxy, or load balancer between the browser and this app terminates TLS (common in real deployments) and is misconfigured to log request/response bodies, or is itself compromised, everything downstream of that termination point sees plaintext under TLS alone. Under Shield, that same intermediary sees only ciphertext, because the encryption happens above the HTTP layer, not just on the wire.
+3. **Protection against plaintext logging by well-intentioned but imperfect infrastructure.** The same point as above, minus the word "compromised" — access logs, APM tools, and debugging proxies routinely capture request bodies and query strings by default. Shield's payloads aren't there to capture.
+
+### What Shield does NOT add — and the specific overclaim to watch for
+
+**"Endpoint hiding" is not a real security boundary.** Earlier drafts of this project's docs described the Shield gateway as making API routes "100% cloaked" and "hidden from DevTools." That's true only for a passive observer glancing at the Network tab. It is not true for anyone with slightly more motivation, because:
+- The decryption code (`client/src/utils/shieldCrypto.js`) ships in the client bundle. Nothing about the client is secret — it's JavaScript running on hardware the attacker controls.
+- Anyone can set a breakpoint inside `decryptShieldPayload`, or just call the exported crypto functions from the browser console, and read every request/response in plaintext.
+- This is a general property of any client-side encryption scheme protecting a client the *user themselves* is allowed to inspect — it's not a Shield-specific weakness, it's a category limit. The same is true of certificate pinning bypass tooling, obfuscated JS "protection," or any scheme that assumes the client is a black box to its own user.
+
+A closer, honest statement of what Shield defends against: a passive network observer (DevTools, a browser extension without deliberate reverse-engineering effort, a proxy access log) — not an attacker who is willing to read `shieldCrypto.js`, which is public source code in this repository.
+
+**Active MITM at the TLS trust boundary is also out of scope.** An attacker who can already intercept the TLS session itself (a compromised CA, or a device with an attacker-installed root certificate) can intercept the ECDH handshake the same way. Closing that would require client certificate pinning, which isn't implemented here and is arguably not worth the operational cost for this application.
+
+**Operational limitation:** the anti-replay nonce store and session store fall back to an in-process `Map`/`Set` if Redis is unreachable (§7.5). That's correct for a single instance, but doesn't provide replay protection across horizontally scaled instances without Redis configured.
+
+### Why this was built anyway
+
+Syncro is a project-management CRUD app. None of its actual data (task titles, chat messages, project names) is sensitive enough on its own to justify an application-layer crypto tunnel on top of TLS — HTTPS plus the field-level encryption in §7.6 would be a completely reasonable stopping point for this app's real risk profile.
+
+It was built to work through ECDH key agreement, HKDF key derivation, authenticated encryption (AES-GCM), and HMAC-based anti-replay guards hands-on, end to end, rather than only reading about them — the kind of primitive combination that shows up in real protocol design (this is, structurally, a simplified analog of what Noise/TLS do), and that's easier to actually understand by implementing a working version than by reading a spec. It is not a claim that this CRUD app *needed* a bespoke crypto tunnel to be secure; the field-level encryption, auth/session model, and CSRF protection documented elsewhere in this file and in [`SECURITY.md`](./SECURITY.md) are what's actually load-bearing for this app's real threat model. Shield is additional, deliberately over-engineered-for-the-problem work, presented here as exactly that.
+
+---
+
 ## ⚡ Route-Level Code-Splitting & Frontend Performance Architecture
 
-### 8.1 Vite Dynamic Chunking with React.lazy() and Suspense
+### 9.1 Vite Dynamic Chunking with React.lazy() and Suspense
 
 In large enterprise SPAs, importing all route pages eagerly in `App.jsx` creates a monolithic JavaScript bundle. In development, this caused Vite to request over 500 individual ES modules simultaneously on boot, degrading startup performance.
 
@@ -805,7 +829,7 @@ export default function App() {
 
 ---
 
-### 8.2 Production-Only PWA Service Worker Scoping
+### 9.2 Production-Only PWA Service Worker Scoping
 
 Syncro includes an offline-first Progressive Web App (PWA) service worker (`client/public/service-worker.js`) that caches static assets and provides stale-while-revalidate caching for GET requests.
 
@@ -817,7 +841,7 @@ During development, active service worker fetch interception conflicts with Vite
 
 ---
 
-### 8.3 Bundle Reduction & Cold Boot Metrics
+### 9.3 Bundle Reduction & Cold Boot Metrics
 
 | Metric | Monolithic Eager Bundle | Dynamic Code-Splitting | Improvement |
 | :--- | :--- | :--- | :--- |
