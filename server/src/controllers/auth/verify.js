@@ -6,6 +6,7 @@ import { BadRequestError, NotFoundError, RateLimitError, UnauthorizedError } fro
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode, timingSafeCompare } from '../../utils/crypto.js';
+import { issueCsrfCookie, CSRF_COOKIE_NAME, csrfCookieOptions } from '../../middlewares/csrf.js';
 import logger from '../../utils/logger/logger.js';
 
 export const sanitizeUser = (user) => {
@@ -100,9 +101,8 @@ export const verifyLogin = asyncHandler(async (req, res) => {
 
   const submittedCodeHash = hashVerificationCode(code);
   const isMatchHashed = timingSafeCompare(user.twoFactorCode, submittedCodeHash);
-  const isMatchDev = process.env.NODE_ENV !== 'production' && code.trim() === '123456';
 
-  if (!isMatchHashed && !isMatchDev) {
+  if (!isMatchHashed) {
     const newFails = await redisCache.incrWithTtl(lockKey, 60);
     if (newFails >= 3) {
       throw new RateLimitError('Too many failed 2FA verification attempts. Account locked for 1 minute.', {
@@ -148,10 +148,12 @@ export const verifyLogin = asyncHandler(async (req, res) => {
 
   res.cookie('syncro_access_token', accessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('syncro_refresh_token', refreshToken, COOKIE_OPTIONS);
+  const csrfToken = issueCsrfCookie(res, COOKIE_OPTIONS.maxAge);
 
   return ApiResponse.success(res, {
     data: {
       token: accessToken,
+      csrfToken,
       user: sanitizeUser(updatedUser),
     },
     message: 'Logged in successfully',
@@ -239,10 +241,12 @@ export const refreshSession = asyncHandler(async (req, res) => {
 
   res.cookie('syncro_access_token', newAccessToken, ACCESS_COOKIE_OPTIONS);
   res.cookie('syncro_refresh_token', newRefreshToken, COOKIE_OPTIONS);
+  const csrfToken = issueCsrfCookie(res, COOKIE_OPTIONS.maxAge);
 
   return ApiResponse.success(res, {
     data: {
       token: newAccessToken,
+      csrfToken,
       user: sanitizeUser(user),
     },
     message: 'Token refreshed successfully',
@@ -280,6 +284,7 @@ export const logoutSession = asyncHandler(async (req, res) => {
 
   res.clearCookie('syncro_access_token', ACCESS_COOKIE_OPTIONS);
   res.clearCookie('syncro_refresh_token', COOKIE_OPTIONS);
+  res.clearCookie(CSRF_COOKIE_NAME, csrfCookieOptions(COOKIE_OPTIONS.maxAge));
   return ApiResponse.success(res, { message: 'Logged out successfully' });
 });
 

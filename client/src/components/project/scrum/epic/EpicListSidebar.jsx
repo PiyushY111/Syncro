@@ -1,19 +1,17 @@
 import React from 'react';
 import { useDispatch } from 'react-redux';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { updateTask } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 
 export default function EpicListSidebar({ project, tasks }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
     const epics = project?.epics || [];
     const unmappedTasks = tasks.filter(t => !t.epicId);
 
     const handleAssignEpic = async (taskId, epicId) => {
         try {
-            const { data } = await api.put(`/api/tasks/${taskId}`, { epicId: epicId || null }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${taskId}`, { epicId: epicId || null });
             dispatch(updateTask(data.task));
             toast.success(epicId ? 'Task linked to Epic' : 'Task unlinked');
         } catch (error) {

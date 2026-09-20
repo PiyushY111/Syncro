@@ -1,7 +1,10 @@
 import { createContext, useContext, useEffect, useState } from 'react';
-import api from '@/configs/api';
+import api, { setCsrfToken } from '@/configs/api';
 
-const AUTH_TOKEN_KEY = 'pm-auth-token';
+// Only non-sensitive display data is cached client-side, purely to avoid a
+// flash-of-unauthenticated-content on reload. The actual credential (the JWT)
+// lives only in the httpOnly session cookie the server sets — it is never
+// readable by JS, so it can't be exfiltrated by an XSS payload reading storage.
 const AUTH_USER_KEY = 'pm-auth-user';
 
 const AuthContext = createContext(null);
@@ -20,36 +23,28 @@ const readStoredUser = () => {
     }
 };
 
-const persistSession = (token, user) => {
-    localStorage.setItem(AUTH_TOKEN_KEY, token);
+const persistDisplayUser = (user) => {
     localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
 };
 
-const clearSession = () => {
-    localStorage.removeItem(AUTH_TOKEN_KEY);
+const clearDisplayUser = () => {
     localStorage.removeItem(AUTH_USER_KEY);
 };
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => readStoredUser());
-    const [token, setToken] = useState(() => localStorage.getItem(AUTH_TOKEN_KEY) || '');
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const bootstrap = async () => {
-            if (!token) {
-                setLoading(false);
-                return;
-            }
-
             try {
                 const { data } = await api.get('/api/auth/me');
                 const payload = data?.data || data;
                 setUser(payload.user);
-                persistSession(token, payload.user);
+                persistDisplayUser(payload.user);
+                setCsrfToken(payload.csrfToken);
             } catch {
-                clearSession();
-                setToken('');
+                clearDisplayUser();
                 setUser(null);
             } finally {
                 setLoading(false);
@@ -57,31 +52,30 @@ export const AuthProvider = ({ children }) => {
         };
 
         bootstrap();
-    }, [token]);
+    }, []);
 
-    const syncSession = (nextToken, nextUser) => {
-        setToken(nextToken);
+    const syncSession = (nextUser, csrfToken) => {
         setUser(nextUser);
-        persistSession(nextToken, nextUser);
+        persistDisplayUser(nextUser);
+        setCsrfToken(csrfToken);
     };
 
     const login = async (credentials) => {
         const { data } = await api.post('/api/auth/login', credentials);
         const payload = data?.data || data;
         if (payload?.requiresVerification) {
-            clearSession();
-            setToken('');
+            clearDisplayUser();
             setUser(null);
             return payload;
         }
-        syncSession(payload.token, payload.user);
+        syncSession(payload.user, payload.csrfToken);
         return payload;
     };
 
     const verifyLoginCode = async (email, code) => {
         const { data } = await api.post('/api/auth/verify-login', { email, code });
         const payload = data?.data || data;
-        syncSession(payload.token, payload.user);
+        syncSession(payload.user, payload.csrfToken);
         return payload.user;
     };
 
@@ -89,23 +83,22 @@ export const AuthProvider = ({ children }) => {
         const { data } = await api.post('/api/auth/register', payloadData);
         const payload = data?.data || data;
         if (payload?.requiresVerification) {
-            clearSession();
-            setToken('');
+            clearDisplayUser();
             setUser(null);
             return payload;
         }
-        syncSession(payload.token, payload.user);
+        syncSession(payload.user, payload.csrfToken);
         return payload;
     };
 
     const refreshUser = async () => {
-        if (!token) return null;
         try {
             const { data } = await api.get('/api/auth/me');
             const payload = data?.data || data;
             if (payload?.user) {
                 setUser(payload.user);
-                persistSession(token, payload.user);
+                persistDisplayUser(payload.user);
+                setCsrfToken(payload.csrfToken);
                 return payload.user;
             }
         } catch {
@@ -113,22 +106,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const logout = () => {
-        clearSession();
-        setToken('');
+    const logout = async () => {
+        try {
+            // Revokes the session server-side (blacklists the JTI) — logging out
+            // client-side only would leave the session usable by anyone holding the cookie/token.
+            await api.post('/api/auth/logout');
+        } catch {
+            // Best-effort: still clear local state even if the network call fails.
+        }
+        clearDisplayUser();
         setUser(null);
+        setCsrfToken(null);
     };
 
     const updateUser = (nextUser) => {
         setUser(nextUser);
-        localStorage.setItem(AUTH_USER_KEY, JSON.stringify(nextUser));
+        persistDisplayUser(nextUser);
     };
 
     return (
         <AuthContext.Provider
             value={{
                 user,
-                token,
                 loading,
                 isAuthenticated: Boolean(user),
                 isSuperAdmin: Boolean(user?.isSuperAdmin),

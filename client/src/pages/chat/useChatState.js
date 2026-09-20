@@ -326,7 +326,7 @@ export default function useChatState() {
                             (messagesCacheRef.current[activeChatKeyRef.current] || []).map(m => m.id === tempId ? confirmed : m);
                     }
                 }
-            } catch (err) {
+            } catch {
                 toast.error("Failed to send message");
                 setMessages(p => p.filter(m => m.id !== tempId));
             }

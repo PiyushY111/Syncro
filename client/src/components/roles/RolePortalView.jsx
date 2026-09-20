@@ -71,7 +71,7 @@ export default function RolePortalView() {
                 dispatch(updateWorkspace({ ...currentWorkspace, settings: res.data.settings }));
             }
             toast.success('Permissions updated');
-        } catch (err) {
+        } catch {
             toast.error('Failed to update permissions');
         } finally {
             setIsSaving(false);
@@ -97,7 +97,7 @@ export default function RolePortalView() {
             await api.delete(`/api/roles/workspace/${currentWorkspace.id}/custom-role/${roleKey}`);
             toast.success('Custom role deleted');
             fetchRoleData();
-        } catch (err) {
+        } catch {
             toast.error('Failed to delete custom role');
         }
     };
@@ -107,7 +107,7 @@ export default function RolePortalView() {
             await api.patch(`/api/roles/workspace/${currentWorkspace.id}/member`, { targetUserId, newRole });
             toast.success('Member role updated');
             fetchRoleData();
-        } catch (err) {
+        } catch {
             toast.error('Failed to update member role');
         }
     };

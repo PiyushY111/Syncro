@@ -18,7 +18,7 @@ export default function OwnerAuditControl() {
             try {
                 const res = await api.get(`/api/audit/workspace/${currentWorkspace.id}`);
                 setIsOwner(res.data.isOwner || false);
-            } catch (err) {
+            } catch {
                 setIsOwner(false);
             } finally {
                 setLoading(false);

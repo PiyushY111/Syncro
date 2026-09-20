@@ -1,9 +1,24 @@
 import jwt from "jsonwebtoken";
+import { parseCookie as parseCookies } from "cookie";
 import { prisma } from "../config/prisma.js";
+
+const extractTokenFromCookieHeader = (cookieHeader) => {
+    if (!cookieHeader) return null;
+    try {
+        const parsed = parseCookies(cookieHeader);
+        return parsed.syncro_access_token || null;
+    } catch {
+        return null;
+    }
+};
 
 export const socketAuthMiddleware = async (socket, next) => {
     try {
-        let token = socket.handshake.auth?.token ||
+        // Cookie is the primary transport now that the client no longer holds the JWT
+        // itself — fall back to the legacy auth/header/query token forms for any
+        // non-browser client that authenticates with a Bearer token directly.
+        let token = extractTokenFromCookieHeader(socket.handshake.headers?.cookie) ||
+                    socket.handshake.auth?.token ||
                     socket.handshake.headers?.authorization?.replace("Bearer ", "") ||
                     socket.handshake.query?.token;
 
@@ -11,8 +26,11 @@ export const socketAuthMiddleware = async (socket, next) => {
             return next(new Error("Authentication error: No token provided"));
         }
 
-        const secret = process.env.JWT_SECRET || "change_this_to_a_long_random_secret";
-        const decoded = jwt.verify(token, secret, { algorithms: ['HS256'] });
+        if (!process.env.JWT_SECRET) {
+            return next(new Error("Authentication error: Server misconfigured"));
+        }
+
+        const decoded = jwt.verify(token, process.env.JWT_SECRET, { algorithms: ['HS256'] });
 
         if (decoded.jti) {
             const { redisCache } = await import("../config/redis.js");

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 export default function PortfolioCard({ portfolio, onDelete }) {
     const navigate = useNavigate();
 
-    const { id, name, description, color, icon, projectCount, avgProgress, health, totalTasks, completedTasks } = portfolio;
+    const { id, name, description, color, projectCount, avgProgress, health } = portfolio;
 
     const healthBadge = {
         ON_TRACK: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20',

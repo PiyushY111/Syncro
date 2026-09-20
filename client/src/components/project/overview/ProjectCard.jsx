@@ -11,12 +11,6 @@ const statusBadgeVariant = {
     CANCELLED: "destructive",
 };
 
-const priorityVariant = {
-    HIGH: "destructive",
-    MEDIUM: "warning",
-    LOW: "secondary",
-};
-
 const ProjectCard = ({ project }) => {
     const progress = project.progress || 0;
 

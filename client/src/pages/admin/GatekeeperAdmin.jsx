@@ -60,7 +60,7 @@ export default function GatekeeperAdmin() {
     // All Users
     const [allUsers, setAllUsers] = useState([]);
     const [userSearch, setUserSearch] = useState('');
-    const [userStatusFilter, setUserStatusFilter] = useState('');
+    const [userStatusFilter] = useState('');
 
     const fetchOverviewAndSettings = useCallback(async () => {
         try {
@@ -68,7 +68,7 @@ export default function GatekeeperAdmin() {
             const payload = data?.data || data;
             if (payload.settings) setSettings(payload.settings);
             if (payload.stats) setStats(payload.stats);
-        } catch (err) {
+        } catch {
             toast.error('Failed to load gatekeeper settings');
         }
     }, []);
@@ -79,7 +79,7 @@ export default function GatekeeperAdmin() {
             const payload = data?.data || data;
             setPendingUsers(payload.pendingUsers || []);
             setPendingWorkspaces(payload.pendingWorkspaces || []);
-        } catch (err) {
+        } catch {
             toast.error('Failed to load pending requests');
         }
     }, []);
@@ -89,7 +89,7 @@ export default function GatekeeperAdmin() {
             const { data } = await api.get('/api/admin/vip-codes');
             const payload = data?.data || data;
             setVipCodes(payload.codes || []);
-        } catch (err) {
+        } catch {
             toast.error('Failed to load VIP invite codes');
         }
     }, []);
@@ -102,7 +102,7 @@ export default function GatekeeperAdmin() {
             const { data } = await api.get('/api/admin/users', { params });
             const payload = data?.data || data;
             setAllUsers(payload.users || []);
-        } catch (err) {
+        } catch {
             toast.error('Failed to load users directory');
         }
     }, [userSearch, userStatusFilter]);
@@ -236,7 +236,7 @@ export default function GatekeeperAdmin() {
             toast.success('VIP code revoked');
             fetchVipCodes();
             fetchOverviewAndSettings();
-        } catch (err) {
+        } catch {
             toast.error('Failed to revoke code');
         }
     };

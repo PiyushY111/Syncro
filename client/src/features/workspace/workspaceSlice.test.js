@@ -1,7 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect } from 'vitest';
 import reducer, {
   setWorkspaces,
-  setCurrentWorkspace,
   addWorkspace,
   deleteWorkspace,
 } from '../workspaceSlice.js';

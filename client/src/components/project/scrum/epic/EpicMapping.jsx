@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Plus, Layers } from 'lucide-react';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { addEpic } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 
@@ -10,7 +9,6 @@ import EpicCard from './EpicCard';
 import EpicListSidebar from './EpicListSidebar';
 
 export default function EpicMapping({ project, tasks }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
     const epics = project?.epics || [];
 
@@ -36,7 +34,7 @@ export default function EpicMapping({ project, tasks }) {
                 name: name.trim(),
                 description: description.trim(),
                 color
-            }, { headers: { Authorization: `Bearer ${token}` } });
+            });
 
             dispatch(addEpic({ projectId: project.id, epic: data.epic || data.data?.epic }));
             toast.success('Epic created successfully');

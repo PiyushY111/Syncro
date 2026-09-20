@@ -5,7 +5,6 @@ import { useSearchParams } from 'react-router-dom';
 import api from '@/configs/api';
 import { fetchWorkspaces } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/context/AuthContext';
 
 const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
 
@@ -13,7 +12,6 @@ const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
 
     const id = searchParams.get('id');
 
-    const { token } = useAuth();
     const dispatch = useDispatch()
 
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
@@ -29,9 +27,9 @@ const AddProjectMember = ({ isDialogOpen, setIsDialogOpen }) => {
         if (isAdding) return;
         setIsAdding(true)
         try {
-            await api.post(`/api/projects/${project.id}/addMember`, { email }, { headers: { Authorization: `Bearer ${token}` } })
+            await api.post(`/api/projects/${project.id}/addMember`, { email })
             setIsDialogOpen(false)
-            dispatch(fetchWorkspaces({ token }))
+            dispatch(fetchWorkspaces())
             toast.success("Member Added to the Project")
         } catch (error) {
             toast.error(error.response?.data?.message || error.message)

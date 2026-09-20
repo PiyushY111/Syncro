@@ -2,12 +2,10 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Users, Edit3 } from 'lucide-react';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { updateCapacity } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 
 export default function CapacityBalancing({ project, tasks, selectedSprint }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
     const members = project?.members || [];
 
@@ -20,7 +18,7 @@ export default function CapacityBalancing({ project, tasks, selectedSprint }) {
             const { data } = await api.put(`/api/sprints/${sprintId}/capacity`, {
                 userId,
                 capacity: parseInt(tempCapacity, 10)
-            }, { headers: { Authorization: `Bearer ${token}` } });
+            });
 
             dispatch(updateCapacity({
                 projectId: project.id,

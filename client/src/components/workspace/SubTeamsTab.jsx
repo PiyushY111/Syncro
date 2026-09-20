@@ -11,7 +11,6 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
     const [activeSubTeam, setActiveSubTeam] = useState(null);
-    const [selectedProjectId, setSelectedProjectId] = useState('');
     const [addingMemberId, setAddingMemberId] = useState('');
 
     const canManage = canManageSubTeams(currentUserRole, currentWorkspace);
@@ -44,7 +43,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
         if (!name.trim()) return;
 
         try {
-            const { data } = await api.post('/api/subteams', {
+            await api.post('/api/subteams', {
                 name: name.trim(),
                 description: description.trim(),
                 workspaceId: currentWorkspace.id
@@ -69,7 +68,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                 setActiveSubTeam(null);
             }
             fetchSubTeams();
-        } catch (error) {
+        } catch {
             toast.error("Failed to delete sub-team");
         }
     };
@@ -79,7 +78,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
             await api.put(`/api/subteams/${subTeamId}`, { projectId: projectId || null });
             toast.success("Project assignment updated");
             fetchSubTeams();
-        } catch (error) {
+        } catch {
             toast.error("Failed to assign project");
         }
     };
@@ -104,7 +103,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
             await api.delete(`/api/subteams/${subTeamId}/members/${userId}`);
             toast.success("Member removed from sub-team");
             fetchSubTeams();
-        } catch (error) {
+        } catch {
             toast.error("Failed to remove member");
         }
     };

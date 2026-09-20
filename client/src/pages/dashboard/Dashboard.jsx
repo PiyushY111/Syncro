@@ -4,7 +4,6 @@
 import { Plus, Search, CalendarDays, FolderKanban, LayoutDashboard, BarChart3, Clock, X, Command } from 'lucide-react';
 
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import StatsGrid from '@/components/dashboard/StatsGrid';
 import DashboardAnalytics from '@/components/dashboard/DashboardAnalytics';
 import ProjectOverview from '@/components/project/overview/ProjectOverview';
@@ -21,11 +20,10 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 const Dashboard = () => {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const currentWorkspace = useSelector((state) => state?.workspace?.currentWorkspace);
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [activeFilter, setActiveFilter] = useState("all");
+    const [activeFilter] = useState("all");
     const [searchTerm, setSearchTerm] = useState("");
     const [activeTab, setActiveTab] = useState("overview");
 

@@ -28,7 +28,7 @@ export default function EntityVersionTimeline({ entityType, entityId, canRollbac
             await api.post('/api/audit/rollback', { logId });
             toast.success('Rolled back version');
             fetchHistory();
-        } catch (err) {
+        } catch {
             toast.error('Rollback failed');
         }
     };

@@ -11,7 +11,9 @@ import {
   hashApiKey
 } from '../src/utils/crypto.js';
 import { sanitizeString } from '../src/middlewares/sanitize.js';
-import { validateRegister, validateForgotPassword, validateResetPassword } from '../src/validators/authValidators.js';
+import { validateRegister, validateForgotPassword, validateResetPassword, validateVerifyLogin, validateResendCode } from '../src/validators/authValidators.js';
+import { verifyCsrfToken, CSRF_COOKIE_NAME } from '../src/middlewares/csrf.js';
+import { isOriginAllowed } from '../src/config/corsPolicy.js';
 
 async function runSecurityTestSuite() {
   console.log('Starting Enterprise Security & Cryptographic Verification Test Suite...\n');
@@ -122,6 +124,61 @@ async function runSecurityTestSuite() {
     assert(apiKeyData.apiKey.startsWith('syncro_'), 'Generated API key has syncro_ prefix');
     assert(apiKeyData.keyHash.length === 64, 'Hashed API key is standard SHA-256 digest');
     assert(hashApiKey(apiKeyData.apiKey) === apiKeyData.keyHash, 'hashApiKey accurately derives identical hash from raw key');
+    console.log('');
+
+    // Test 9: CSRF Double-Submit Cookie Protection
+    console.log('Test 9: CSRF Double-Submit Cookie Protection');
+    const runCsrfMiddleware = (req) => {
+      let called = false;
+      let error = null;
+      const next = (err) => { called = true; error = err || null; };
+      verifyCsrfToken(req, {}, next);
+      return { called, error };
+    };
+
+    const noTokenResult = runCsrfMiddleware({ method: 'POST', headers: {}, cookies: {} });
+    assert(noTokenResult.called && noTokenResult.error, 'POST with no CSRF cookie or header is rejected');
+
+    const mismatchResult = runCsrfMiddleware({
+      method: 'DELETE',
+      headers: { 'x-csrf-token': 'attacker-guessed-value' },
+      cookies: { [CSRF_COOKIE_NAME]: 'real-session-token' },
+    });
+    assert(mismatchResult.called && mismatchResult.error, 'Mismatched CSRF cookie/header pair is rejected');
+
+    const matchResult = runCsrfMiddleware({
+      method: 'PUT',
+      headers: { 'x-csrf-token': 'matching-token-value' },
+      cookies: { [CSRF_COOKIE_NAME]: 'matching-token-value' },
+    });
+    assert(matchResult.called && !matchResult.error, 'Matching CSRF cookie/header pair passes');
+
+    const getBypassResult = runCsrfMiddleware({ method: 'GET', headers: {}, cookies: {} });
+    assert(getBypassResult.called && !getBypassResult.error, 'GET requests bypass CSRF check even with no token (safe/idempotent method)');
+
+    const bearerBypassResult = runCsrfMiddleware({
+      method: 'POST',
+      headers: { authorization: 'Bearer some.jwt.token' },
+      cookies: {},
+    });
+    assert(bearerBypassResult.called && !bearerBypassResult.error, 'Bearer-token requests bypass CSRF check (not driven by a browser session cookie)');
+    console.log('');
+
+    // Test 10: CORS Origin Allowlist Policy
+    console.log('Test 10: CORS Origin Allowlist Policy');
+    assert(isOriginAllowed('http://localhost:5173') === true, 'Known dev origin is allowed');
+    assert(isOriginAllowed('https://evil-phishing-site.com') === false, 'Unrelated arbitrary origin is rejected');
+    assert(isOriginAllowed('https://app.piyushydv.com') === true, 'Subdomain matching the configured suffix is allowed');
+    assert(isOriginAllowed(undefined) === true, 'Same-origin/server-to-server requests (no Origin header) are allowed');
+    console.log('');
+
+    // Test 11: Auth DTO Validation Coverage (verify-login / resend-code)
+    console.log('Test 11: Verification-Code Auth Route DTO Validation');
+    assert(validateVerifyLogin({ body: { email: 'user@syncro.dev', code: '123456' } }) === null, 'Valid 6-digit code passes verify-login validation');
+    assert(validateVerifyLogin({ body: { email: 'user@syncro.dev', code: 'abcdef' } }) !== null, 'Non-numeric code fails verify-login validation');
+    assert(validateVerifyLogin({ body: { email: 'not-an-email', code: '123456' } }) !== null, 'Invalid email fails verify-login validation');
+    assert(validateResendCode({ body: { email: 'user@syncro.dev' } }) === null, 'Valid email passes resend-code validation');
+    assert(validateResendCode({ body: {} }) !== null, 'Missing email fails resend-code validation');
     console.log('');
 
     console.log('----------------------------------------------------');

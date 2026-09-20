@@ -40,7 +40,7 @@ export default function PendingApprovalScreen() {
         setIsRedeeming(true);
         try {
             // Check if we can submit VIP code
-            const { data } = await api.post('/api/auth/profile', {
+            await api.post('/api/auth/profile', {
                 name: user?.name,
             });
             // We can also verify VIP via a quick endpoint or profile update if implemented

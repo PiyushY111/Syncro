@@ -3,6 +3,9 @@ import { prisma } from '../../config/prisma.js';
 import { NotFoundError, BadRequestError, UnauthorizedError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
+import { issueCsrfCookie } from '../../middlewares/csrf.js';
+
+const CSRF_COOKIE_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const me = asyncHandler(async (req, res) => {
   const user = await prisma.user.findUnique({
@@ -34,12 +37,17 @@ export const me = asyncHandler(async (req, res) => {
   const normalizedEmail = (user.email || '').toLowerCase().trim();
   const isSuperAdmin = Boolean(user.isSuperAdmin || superAdminEmails.includes(normalizedEmail));
 
+  // Re-issue the CSRF anchor so a page reload (which loses the in-memory copy the
+  // client held from login) restores CSRF capability without forcing a re-login.
+  const csrfToken = issueCsrfCookie(res, CSRF_COOKIE_MAX_AGE_MS);
+
   return ApiResponse.success(res, {
     data: {
       user: {
         ...user,
         isSuperAdmin,
       },
+      csrfToken,
     },
   });
 });

@@ -2,6 +2,8 @@
 
 Welcome to the comprehensive technical architecture specification for **Syncro**. This document provides an in-depth breakdown of the system design, domain-driven clean architecture, database infrastructure, caching strategies, real-time engines, and security mechanics powering the platform.
 
+> For the authentication/session model, CSRF, authorization, dependency-audit policy, and the running audit history, see [`SECURITY.md`](./SECURITY.md).
+
 ---
 
 ## 📑 Table of Contents

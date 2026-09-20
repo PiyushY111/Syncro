@@ -59,7 +59,7 @@ export default function ProjectCalendar({ tasks = [], projectId }) {
         }
     };
 
-    const handleViewInGantt = (task) => {
+    const handleViewInGantt = () => {
         setSearchParams({ id: activeProjectId, tab: 'gantt' });
     };
 

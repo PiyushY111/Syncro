@@ -39,7 +39,7 @@ export default function ProjectMilestones({ project, tasks }) {
             setIsModalOpen(false);
             setEditingMilestone(null);
             fetchMilestones();
-        } catch (err) {
+        } catch {
             toast.error('Failed to save milestone');
         }
     };
@@ -49,7 +49,7 @@ export default function ProjectMilestones({ project, tasks }) {
             await api.delete(`/api/milestones/${id}`);
             toast.success('Milestone deleted');
             fetchMilestones();
-        } catch (err) {
+        } catch {
             toast.error('Failed to delete milestone');
         }
     };
@@ -60,7 +60,7 @@ export default function ProjectMilestones({ project, tasks }) {
             toast.success('Task links updated');
             setLinkingMilestone(null);
             fetchMilestones();
-        } catch (err) {
+        } catch {
             toast.error('Failed to link tasks');
         }
     };

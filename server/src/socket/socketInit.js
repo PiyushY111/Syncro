@@ -2,6 +2,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { createAdapter } from "@socket.io/redis-adapter";
 import Redis from "ioredis";
 import { socketAuthMiddleware } from "./socketAuthMiddleware.js";
+import { isOriginAllowed } from "../config/corsPolicy.js";
 import { registerPresenceHandlers } from "./presenceHandler.js";
 import { registerMessageHandlers } from "./messageHandler.js";
 import { registerReactionHandlers } from "./reactionHandler.js";
@@ -14,7 +15,9 @@ let ioInstance = null;
 export const initSocketIO = (httpServer) => {
     ioInstance = new SocketIOServer(httpServer, {
         cors: {
-            origin: "*",
+            // Mirrors the HTTP CORS allowlist — a wildcard origin combined with
+            // credentials:true would let any site ride an authenticated socket session.
+            origin: (origin, callback) => callback(null, isOriginAllowed(origin)),
             methods: ["GET", "POST"],
             credentials: true
         },

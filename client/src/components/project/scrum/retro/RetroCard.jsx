@@ -3,15 +3,15 @@ import { ThumbsUp, Trash2 } from 'lucide-react';
 import api from '@/configs/api';
 import toast from 'react-hot-toast';
 
-export default function RetroCard({ item, sprintId, socket, user, token }) {
+export default function RetroCard({ item, sprintId, socket, user }) {
     const isOwner = item.authorId === user?.id;
     const hasVoted = item.votes?.some(v => v.userId === user?.id);
 
     const handleToggleVote = async () => {
         try {
-            await api.put(`/api/retros/items/${item.id}/vote`, {}, { headers: { Authorization: `Bearer ${token}` } });
+            await api.put(`/api/retros/items/${item.id}/vote`, {});
             socket.emit('retro:action', { sprintId });
-        } catch (error) {
+        } catch {
             toast.error('Failed to vote');
         }
     };
@@ -19,10 +19,10 @@ export default function RetroCard({ item, sprintId, socket, user, token }) {
     const handleDeleteCard = async () => {
         if (!window.confirm('Delete this card?')) return;
         try {
-            await api.delete(`/api/retros/items/${item.id}`, { headers: { Authorization: `Bearer ${token}` } });
+            await api.delete(`/api/retros/items/${item.id}`);
             socket.emit('retro:action', { sprintId });
             toast.success('Card deleted');
-        } catch (error) {
+        } catch {
             toast.error('Failed to delete card');
         }
     };

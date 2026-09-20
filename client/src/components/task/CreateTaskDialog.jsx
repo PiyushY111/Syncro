@@ -3,13 +3,11 @@ import { useDispatch, useSelector } from 'react-redux';
 import api from '@/configs/api';
 import { addTask } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/context/AuthContext';
 import TaskRecurrenceSelector from './selectors/TaskRecurrenceSelector';
 import TaskTypePrioritySelector from './selectors/TaskTypePrioritySelector';
 import TaskDatesSelector from './selectors/TaskDatesSelector';
 
 export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, projectId, initialDueDate = "" }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
     const project = currentWorkspace?.projects.find((p) => p.id === projectId);
@@ -40,8 +38,7 @@ export default function CreateTaskDialog({ showCreateTask, setShowCreateTask, pr
         if (isSubmitting) return;
         setIsSubmitting(true);
         try {
-            const { data } = await api.post('/api/tasks', { ...formData, workspaceId: currentWorkspace.id, projectId },
-                { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.post('/api/tasks', { ...formData, workspaceId: currentWorkspace.id, projectId });
             setShowCreateTask(false);
             resetForm();
             dispatch(addTask(data.task));

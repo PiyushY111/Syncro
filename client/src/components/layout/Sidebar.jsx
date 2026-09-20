@@ -42,7 +42,7 @@ const Sidebar = ({ isSidebarOpen, setIsSidebarOpen, onCreateWorkspace }) => {
             try {
                 const unread = JSON.parse(localStorage.getItem('unread_chats') || "[]");
                 setHasUnread(unread.length > 0);
-            } catch (err) {
+            } catch {
                 setHasUnread(false);
             }
         };

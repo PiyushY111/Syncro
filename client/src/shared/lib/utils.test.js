@@ -11,6 +11,7 @@ describe('cn utility', () => {
   });
 
   it('handles conditional falsy expressions', () => {
-    expect(cn('btn', false && 'btn-active', null, undefined, 'text-sm')).toBe('btn text-sm');
+    const isActive = false;
+    expect(cn('btn', isActive && 'btn-active', null, undefined, 'text-sm')).toBe('btn text-sm');
   });
 });

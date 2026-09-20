@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from 'react-redux';
 import { toast } from 'react-hot-toast';
 import api from '@/configs/api';
 import { addProject } from '@/features/workspaceSlice';
-import { useAuth } from '@/context/AuthContext';
 import TeamMembersSelector from '@/components/project/dialogs/TeamMembersSelector';
 import ProjectDatesLeadSelector from '@/components/project/dialogs/ProjectDatesLeadSelector';
 import {
@@ -20,7 +19,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 
 export default function CreateProjectDialog({ isDialogOpen, setIsDialogOpen }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
     const { currentWorkspace } = useSelector((state) => state.workspace);
 
@@ -36,7 +34,7 @@ export default function CreateProjectDialog({ isDialogOpen, setIsDialogOpen }) {
         try {
             if (!formData.team_lead) return toast.error("Please select a project lead.");
             setIsSubmitting(true);
-            const { data } = await api.post('/api/projects', { ...formData, workspaceId: currentWorkspace.id }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.post('/api/projects', { ...formData, workspaceId: currentWorkspace.id });
             dispatch(addProject(data.project));
             setIsDialogOpen(false);
             toast.success("Project created successfully!");

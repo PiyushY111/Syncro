@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
-import { format, isSameDay, isBefore, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
+import { addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
 import { useAuth } from '@/context/AuthContext';
 import api from '@/configs/api';
 import toast from 'react-hot-toast';
@@ -41,7 +41,7 @@ export default function SmartCalendar() {
 
     // Meetings Data
     const [meetings, setMeetings] = useState([]);
-    const [loadingMeetings, setLoadingMeetings] = useState(false);
+    const [, setLoadingMeetings] = useState(false);
 
     // Simulated Google Calendar Events state
     const [gcalEvents, setGcalEvents] = useState([]);
@@ -241,7 +241,7 @@ export default function SmartCalendar() {
     // RSVP Action handler
     const handleUpdateRsvp = async (meetingId, status) => {
         try {
-            const { data } = await api.patch(`/api/meetings/${meetingId}/rsvp`, { status });
+            await api.patch(`/api/meetings/${meetingId}/rsvp`, { status });
             toast.success(`RSVP updated: ${status.toLowerCase()}`);
             
             // Update meetings state

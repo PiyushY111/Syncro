@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 export default function AcceptWorkspaceInvite() {
     const [searchParams] = useSearchParams();
     const inviteToken = searchParams.get("token");
-    const { user, token, loading } = useAuth();
+    const { user, loading } = useAuth();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [status, setStatus] = useState("loading");
@@ -35,13 +35,12 @@ export default function AcceptWorkspaceInvite() {
                 setStatus("loading");
                 const { data } = await api.post(
                     "/api/workspaces/accept-invitation",
-                    { token: inviteToken },
-                    { headers: { Authorization: `Bearer ${token}` } }
+                    { token: inviteToken }
                 );
 
                 if (!isActive) return;
 
-                dispatch(fetchWorkspaces({ token }));
+                dispatch(fetchWorkspaces());
 
                 if (data?.workspaceId) {
                     dispatch(setCurrentWorkspace(data.workspaceId));
@@ -62,7 +61,7 @@ export default function AcceptWorkspaceInvite() {
         return () => {
             isActive = false;
         };
-    }, [loading, user, token, inviteToken, dispatch, navigate]);
+    }, [loading, user, inviteToken, dispatch, navigate]);
 
     if (loading || status === "loading") {
         return (

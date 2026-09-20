@@ -2,17 +2,15 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { User } from 'lucide-react';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { updateTask } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 
 export default function BacklogList({ backlogTasks, handleTaskSprintAssign, onDragStart }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
 
     const handleTaskEstimation = async (taskId, points) => {
         try {
-            const { data } = await api.put(`/api/tasks/${taskId}`, { storyPoints: points ? parseInt(points, 10) : null }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${taskId}`, { storyPoints: points ? parseInt(points, 10) : null });
             dispatch(updateTask(data.task));
             toast.success('Estimation updated');
         } catch (error) {

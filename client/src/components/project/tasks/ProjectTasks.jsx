@@ -4,12 +4,10 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { deleteTask, updateTask } from '@/features/workspaceSlice';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import TaskFilters from '@/components/project/tasks/TaskFilters';
 import TaskListView from '@/components/project/tasks/TaskListView';
 
 export default function ProjectTasks({ tasks, project }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [selectedTasks, setSelectedTasks] = useState([]);
@@ -48,9 +46,7 @@ export default function ProjectTasks({ tasks, project }) {
     const handleStatusChange = async (taskId, newStatus) => {
         try {
             toast.loading("Updating status...");
-            await api.put(`/api/tasks/${taskId}`, { status: newStatus },
-                { headers: { Authorization: `Bearer ${token}` } }
-            );
+            await api.put(`/api/tasks/${taskId}`, { status: newStatus });
             let updatedTask = structuredClone(tasks.find((t) => t.id === taskId));
             updatedTask.status = newStatus;
             dispatch(updateTask(updatedTask));
@@ -69,7 +65,7 @@ export default function ProjectTasks({ tasks, project }) {
             if (!confirm) return;
             toast.loading("Deleting tasks...");
 
-            await api.post('/api/tasks/delete', { tasksIds: selectedTasks }, { headers: { Authorization: `Bearer ${token}` } });
+            await api.post('/api/tasks/delete', { tasksIds: selectedTasks });
 
             dispatch(deleteTask(selectedTasks));
             setSelectedTasks([]);

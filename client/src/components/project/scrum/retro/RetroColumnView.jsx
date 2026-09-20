@@ -5,21 +5,21 @@ import toast from 'react-hot-toast';
 
 import RetroCard from './RetroCard';
 
-export default function RetroColumnView({ col, sprintId, socket, user, token }) {
+export default function RetroColumnView({ col, sprintId, socket, user }) {
     const [cardText, setCardText] = useState('');
 
     const handleAddCard = async (e) => {
         e.preventDefault();
         if (!cardText.trim()) return;
         try {
-            const { data } = await api.post(`/api/retros/columns/${col.id}/items`, {
+            await api.post(`/api/retros/columns/${col.id}/items`, {
                 content: cardText.trim()
-            }, { headers: { Authorization: `Bearer ${token}` } });
+            });
 
             socket.emit('retro:action', { sprintId });
             setCardText('');
             toast.success('Card added');
-        } catch (error) {
+        } catch {
             toast.error('Failed to add retro card');
         }
     };
@@ -51,7 +51,7 @@ export default function RetroColumnView({ col, sprintId, socket, user, token }) 
                     <p className="text-xs text-zinc-400 text-center py-12 italic">No notes added yet.</p>
                 ) : (
                     col.items?.map(item => (
-                        <RetroCard key={item.id} item={item} sprintId={sprintId} socket={socket} user={user} token={token} />
+                        <RetroCard key={item.id} item={item} sprintId={sprintId} socket={socket} user={user} />
                     ))
                 )}
             </div>

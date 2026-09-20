@@ -15,7 +15,7 @@ import { useGanttData } from './utils/useGanttData';
 import { getUserWorkspaceRole, canEditTask } from '@/utils/permissions';
 
 export default function ProjectGantt({ tasks = [], project }) {
-    const { token, user } = useAuth();
+    const { user } = useAuth();
     const dispatch = useDispatch();
     const [searchParams, setSearchParams] = useSearchParams();
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
@@ -93,7 +93,7 @@ export default function ProjectGantt({ tasks = [], project }) {
         if (!selectedTask) return;
         setIsUpdating(true);
         try {
-            const { data } = await api.put(`/api/tasks/${selectedTask.id}`, editingDates, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${selectedTask.id}`, editingDates);
             dispatch(updateTask(data.task));
             toast.success("Task schedule updated!");
             setSelectedTask(null);

@@ -6,7 +6,3 @@ export {
 export {
     updateTask
 } from './task/taskUpdate.js';
-
-export {
-    triggerRecurTask
-} from './task/taskRecurrence.js';

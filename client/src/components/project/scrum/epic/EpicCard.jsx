@@ -2,12 +2,10 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { Trash2 } from 'lucide-react';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { deleteEpic, updateTask } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 
 export default function EpicCard({ project, epic, tasks }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
 
     const epicTasks = tasks.filter(t => t.epicId === epic.id);
@@ -19,7 +17,7 @@ export default function EpicCard({ project, epic, tasks }) {
     const handleDeleteEpic = async (epicId) => {
         if (!window.confirm('Are you sure you want to delete this Epic? Tasks will be unlinked.')) return;
         try {
-            await api.delete(`/api/epics/${epicId}`, { headers: { Authorization: `Bearer ${token}` } });
+            await api.delete(`/api/epics/${epicId}`);
             dispatch(deleteEpic({ projectId: project.id, epicId }));
             toast.success('Epic deleted successfully');
         } catch (error) {
@@ -29,7 +27,7 @@ export default function EpicCard({ project, epic, tasks }) {
 
     const handleAssignEpic = async (taskId, epicId) => {
         try {
-            const { data } = await api.put(`/api/tasks/${taskId}`, { epicId: epicId || null }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${taskId}`, { epicId: epicId || null });
             dispatch(updateTask(data.task));
             toast.success(epicId ? 'Task linked to Epic' : 'Task unlinked');
         } catch (error) {

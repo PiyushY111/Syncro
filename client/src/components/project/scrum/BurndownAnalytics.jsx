@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { format, eachDayOfInterval, isAfter, isBefore, isSameDay, startOfDay } from 'date-fns';
+import { format, eachDayOfInterval, isAfter, startOfDay } from 'date-fns';
 import { AreaChart as ChartIcon, TrendingDown, Layers, Activity } from 'lucide-react';
 
 export default function BurndownAnalytics({ project, tasks }) {
@@ -20,7 +20,6 @@ export default function BurndownAnalytics({ project, tasks }) {
 
         return days.map((day, index) => {
             const dayStr = format(day, 'MMM dd');
-            const dayTime = day.getTime();
 
             // 1. Ideal Burndown
             const idealRemaining = Math.max(0, parseFloat((totalPoints - (totalPoints / (days.length - 1)) * index).toFixed(1)));

@@ -2,7 +2,7 @@ import { Search, Link2, Zap, Calendar as CalendarIcon, Target, Layers, ChevronLe
 import { format } from 'date-fns';
 
 export default function GanttHeader({
-    project, currentMonth, zoom, setZoom, searchQuery, setSearchQuery,
+    currentMonth, zoom, setZoom, searchQuery, setSearchQuery,
     showDependencies, setShowDependencies, highlightCriticalPath, setHighlightCriticalPath,
     groupByStatus, setGroupByStatus, onJumpToToday, onSwitchToCalendar,
     customStartDate, setCustomStartDate, customEndDate, setCustomEndDate,

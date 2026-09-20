@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 import RetroColumnView from './RetroColumnView';
 
 export default function SprintRetro({ project }) {
-    const { token, user } = useAuth();
+    const { user } = useAuth();
     const sprints = project?.sprints || [];
     const [selectedSprintId, setSelectedSprintId] = useState(sprints.find(s => s.status === 'ACTIVE')?.id || '');
     const [socket, setSocket] = useState(null);
@@ -18,11 +18,12 @@ export default function SprintRetro({ project }) {
     const activeSprints = sprints.filter(s => s.status === 'ACTIVE' || s.status === 'COMPLETED');
 
     useEffect(() => {
+        if (!user) return undefined;
         const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:5001';
-        const socketInstance = io(socketUrl, { auth: { token } });
+        const socketInstance = io(socketUrl, { withCredentials: true });
         setSocket(socketInstance);
         return () => { socketInstance.disconnect(); };
-    }, [token]);
+    }, [user]);
 
     useEffect(() => {
         if (!selectedSprintId || !socket) return;
@@ -31,9 +32,9 @@ export default function SprintRetro({ project }) {
         
         const loadRetroBoard = async () => {
             try {
-                const { data } = await api.get(`/api/retros/sprint/${selectedSprintId}`, { headers: { Authorization: `Bearer ${token}` } });
+                const { data } = await api.get(`/api/retros/sprint/${selectedSprintId}`);
                 setColumns(data.columns || []);
-            } catch (error) {
+            } catch {
                 toast.error('Failed to load Retrospective board');
             }
         };
@@ -52,7 +53,7 @@ export default function SprintRetro({ project }) {
             socket.off('retro:update');
             socket.off('retro:presence');
         };
-    }, [selectedSprintId, socket, token]);
+    }, [selectedSprintId, socket]);
 
     return (
         <div className="space-y-6 text-zinc-900 dark:text-white text-left">
@@ -83,7 +84,7 @@ export default function SprintRetro({ project }) {
             {selectedSprintId ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                     {columns.map(col => (
-                        <RetroColumnView key={col.id} col={col} sprintId={selectedSprintId} socket={socket} user={user} token={token} />
+                        <RetroColumnView key={col.id} col={col} sprintId={selectedSprintId} socket={socket} user={user} />
                     ))}
                 </div>
             ) : (

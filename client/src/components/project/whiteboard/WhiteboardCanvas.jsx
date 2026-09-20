@@ -9,7 +9,7 @@ import WhiteboardTaskList from './WhiteboardTaskList';
 import WhiteboardPageControls from '../whiteboardView/WhiteboardPageControls';
 import { ShareBoardModal } from '../whiteboardView/ShareBoardModal';
 
-export default function WhiteboardCanvas({ whiteboardId, projectId, tasks }) {
+export default function WhiteboardCanvas({ whiteboardId, tasks }) {
     const { socket } = useSocket();
     const canvasRef = useRef(null);
     const { pages, currentPageId, setCurrentPageId, nodes, setNodes, edges, setEdges, viewport, setViewport, drawings, setDrawings, cursors, saving, broadcast, pushHistory, undo, redo, history } = useWhiteboardSync(whiteboardId);

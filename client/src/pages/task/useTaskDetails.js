@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
-import { updateTask, addTask, deleteTask } from '@/features/workspaceSlice';
+import { updateTask, deleteTask } from '@/features/workspaceSlice';
 import api from '@/configs/api';
 import { useAuth } from '@/context/AuthContext';
 
@@ -12,7 +12,7 @@ export default function useTaskDetails() {
     const [searchParams] = useSearchParams();
     const projectId = searchParams.get("projectId");
     const taskId = searchParams.get("taskId");
-    const { user, token } = useAuth();
+    const { user } = useAuth();
 
     const { currentWorkspace } = useSelector((state) => state.workspace);
     const project = currentWorkspace?.projects?.find((p) => p.id === projectId) || null;
@@ -23,12 +23,12 @@ export default function useTaskDetails() {
     const [selectedPrereqId, setSelectedPrereqId] = useState("");
 
     const fetchComments = useCallback(async () => {
-        if (!taskId || !token) return;
+        if (!taskId || !user) return;
         try {
-            const { data } = await api.get(`/api/comments/${taskId}`, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.get(`/api/comments/${taskId}`);
             setComments(data.comments || []);
         } catch (error) { toast.error(error?.response?.data?.message || error.message); }
-    }, [taskId, token]);
+    }, [taskId, user]);
 
     useEffect(() => {
         if (taskId) {
@@ -54,7 +54,7 @@ export default function useTaskDetails() {
         setNewComment("");
 
         try {
-            const { data } = await api.post(`/api/comments`, { taskId: task.id, content: text }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.post(`/api/comments`, { taskId: task.id, content: text });
             if (data?.comment) {
                 setComments((prev) => prev.map(c => c.id === tempComment.id ? data.comment : c));
             }
@@ -71,7 +71,7 @@ export default function useTaskDetails() {
         dispatch(updateTask({ ...task, ...updatedFields }));
 
         try {
-            const { data } = await api.put(`/api/tasks/${task.id}`, updatedFields, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${task.id}`, updatedFields);
             if (data?.task) {
                 dispatch(updateTask(data.task));
             }
@@ -87,7 +87,7 @@ export default function useTaskDetails() {
         if (!confirm) return;
         try {
             toast.loading("Deleting task...");
-            await api.post('/api/tasks/delete', { tasksIds: [task.id] }, { headers: { Authorization: `Bearer ${token}` } });
+            await api.post('/api/tasks/delete', { tasksIds: [task.id] });
             dispatch(deleteTask([task.id]));
             toast.dismissAll(); toast.success("Task deleted successfully");
             navigate(`/projectsDetail?id=${projectId}&tab=tasks`);
@@ -99,7 +99,7 @@ export default function useTaskDetails() {
         const newDepIds = [...(task.dependencies || []).map(d => d.id), selectedPrereqId];
         try {
             toast.loading("Linking prerequisite...");
-            const { data } = await api.put(`/api/tasks/${task.id}`, { dependenciesIds: newDepIds }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${task.id}`, { dependenciesIds: newDepIds });
             dispatch(updateTask(data.task)); setSelectedPrereqId(""); toast.dismissAll(); toast.success("Prerequisite linked successfully");
         } catch (error) { toast.dismissAll(); toast.error(error.response?.data?.message || "Failed to link prerequisite"); }
     };
@@ -108,31 +108,24 @@ export default function useTaskDetails() {
         const newDepIds = (task.dependencies || []).filter(d => d.id !== prereqId).map(d => d.id);
         try {
             toast.loading("Removing prerequisite...");
-            const { data } = await api.put(`/api/tasks/${task.id}`, { dependenciesIds: newDepIds }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${task.id}`, { dependenciesIds: newDepIds });
             dispatch(updateTask(data.task)); toast.dismissAll(); toast.success("Prerequisite removed successfully");
         } catch (error) { toast.dismissAll(); toast.error(error.response?.data?.message || "Failed to remove prerequisite"); }
     };
 
     const handleUpdateRecurrence = async (isRecurring, recurrence) => {
         try {
-            const { data } = await api.put(`/api/tasks/${task.id}`, { isRecurring, recurrence }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${task.id}`, { isRecurring, recurrence });
             dispatch(updateTask(data.task)); toast.success("Recurrence settings updated");
         } catch (error) { toast.error(error.response?.data?.message || "Failed to update recurrence"); }
-    };
-
-    const handleTriggerRecurClone = async () => {
-        try {
-            const { data } = await api.post(`/api/tasks/${task.id}/recur-test`, {}, { headers: { Authorization: `Bearer ${token}` } });
-            dispatch(addTask(data.clonedTask)); dispatch(updateTask(data.parentTask)); toast.success("Recurrence clone generated successfully!");
-        } catch (error) { toast.error(error.response?.data?.message || "Failed to trigger clone"); }
     };
 
     const availablePrereqs = (project?.tasks || []).filter(t => t.id !== task?.id && !(task?.dependencies || []).some(d => d.id === t.id));
 
     return {
-        user, token, currentWorkspace, project, task,
+        user, currentWorkspace, project, task,
         comments, newComment, setNewComment, selectedPrereqId, setSelectedPrereqId, availablePrereqs,
         handleAddComment, handleUpdateTask, handleDeleteTask, handleLinkDependency, handleUnlinkDependency,
-        handleUpdateRecurrence, handleTriggerRecurClone
+        handleUpdateRecurrence
     };
 }

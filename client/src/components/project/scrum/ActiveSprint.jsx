@@ -2,14 +2,12 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { Play, CheckCircle, Calendar, Flag, User, AlertCircle, Kanban } from 'lucide-react';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { updateTask, updateSprint } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 import KanbanColumn from '@/components/project/kanban/KanbanColumn';
 import { format } from 'date-fns';
 
 export default function ActiveSprint({ project, tasks, navigate }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
 
     const activeSprint = project?.sprints?.find(s => s.status === 'ACTIVE');
@@ -26,7 +24,7 @@ export default function ActiveSprint({ project, tasks, navigate }) {
         if (!window.confirm(msg)) return;
 
         try {
-            const { data } = await api.put(`/api/sprints/${activeSprint.id}/complete`, {}, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/sprints/${activeSprint.id}/complete`, {});
             dispatch(updateSprint({ projectId: project.id, sprint: data.sprint }));
             
             // Reload/update the tasks that were unlinked from sprint in the Redux store
@@ -45,7 +43,7 @@ export default function ActiveSprint({ project, tasks, navigate }) {
 
     const handleStatusChange = async (taskId, newStatus) => {
         try {
-            await api.put(`/api/tasks/${taskId}`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
+            await api.put(`/api/tasks/${taskId}`, { status: newStatus });
             let updatedTask = structuredClone(activeTasks.find((t) => t.id === taskId));
             updatedTask.status = newStatus;
             dispatch(updateTask(updatedTask));

@@ -30,6 +30,25 @@ export const validateLogin = (req) => {
   return null;
 };
 
+export const validateVerifyLogin = (req) => {
+  const { email, code } = req.body || {};
+  if (!email || typeof email !== "string" || !/\S+@\S+\.\S+/.test(email)) {
+    return { error: { message: "A valid email address is required." } };
+  }
+  if (!code || typeof code !== "string" || !/^\d{6}$/.test(code.trim())) {
+    return { error: { message: "A valid 6-digit verification code is required." } };
+  }
+  return null;
+};
+
+export const validateResendCode = (req) => {
+  const { email } = req.body || {};
+  if (!email || typeof email !== "string" || !/\S+@\S+\.\S+/.test(email)) {
+    return { error: { message: "A valid email address is required." } };
+  }
+  return null;
+};
+
 export const validateForgotPassword = (req) => {
   const { email } = req.body || {};
   if (!email || typeof email !== "string" || !/\S+@\S+\.\S+/.test(email)) {
@@ -55,6 +74,8 @@ export const validateResetPassword = (req) => {
 export default {
   validateRegister,
   validateLogin,
+  validateVerifyLogin,
+  validateResendCode,
   validateForgotPassword,
   validateResetPassword,
 };

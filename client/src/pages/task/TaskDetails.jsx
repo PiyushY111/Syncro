@@ -10,7 +10,7 @@ export default function TaskDetails() {
         user, currentWorkspace, project, task,
         comments, newComment, setNewComment, selectedPrereqId, setSelectedPrereqId, availablePrereqs,
         handleAddComment, handleUpdateTask, handleDeleteTask, handleLinkDependency, handleUnlinkDependency,
-        handleUpdateRecurrence, handleTriggerRecurClone
+        handleUpdateRecurrence
     } = useTaskDetails();
 
     if (!currentWorkspace) return <div className="text-gray-500 dark:text-zinc-400 px-4 py-6">Loading workspace...</div>;
@@ -24,7 +24,7 @@ export default function TaskDetails() {
             <div className="w-full lg:w-1/2 flex flex-col gap-6">
                 <TaskInfoCard task={task} project={project} onUpdate={handleUpdateTask} onDelete={handleDeleteTask} />
                 <TaskPrerequisites task={task} availablePrereqs={availablePrereqs} selectedPrereqId={selectedPrereqId} setSelectedPrereqId={setSelectedPrereqId} handleLinkDependency={handleLinkDependency} handleUnlinkDependency={handleUnlinkDependency} />
-                <TaskRecurrenceSettings task={task} handleUpdateRecurrence={handleUpdateRecurrence} handleTriggerRecurClone={handleTriggerRecurClone} />
+                <TaskRecurrenceSettings task={task} handleUpdateRecurrence={handleUpdateRecurrence} />
                 <TaskProjectInfoCard project={project} />
             </div>
         </div>

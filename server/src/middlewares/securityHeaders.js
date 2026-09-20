@@ -12,7 +12,9 @@ export const configureSecurityHeaders = () => {
         contentSecurityPolicy: {
           directives: {
             defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'"],
+            // No inline <script> tags anywhere in the client bundle (Vite emits external files only) —
+            // 'unsafe-inline' would silently defeat CSP's main XSS defense, so it's intentionally omitted here.
+            scriptSrc: ["'self'"],
             styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
             fontSrc: ["'self'", 'https://fonts.gstatic.com'],
             imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
@@ -44,7 +46,7 @@ export const configureSecurityHeaders = () => {
     res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none';");
+    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; frame-ancestors 'none';");
     next();
   };
 };

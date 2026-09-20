@@ -11,7 +11,7 @@ import { getUserWorkspaceRole, ROLE_HIERARCHY } from '@/utils/permissions';
 const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
 
     const dispatch = useDispatch()
-    const { token, user: currentUser } = useAuth()
+    const { user: currentUser } = useAuth()
 
     const currentWorkspace = useSelector((state) => state.workspace?.currentWorkspace || null);
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, currentUser?.id);
@@ -36,13 +36,9 @@ const InviteMemberDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                 email: formData.email.trim(),
                 workspaceId: currentWorkspace?.id,
                 role: formData.role,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
             })
 
-            dispatch(fetchWorkspaces({ token }))
+            dispatch(fetchWorkspaces())
             toast.success("Invitation Sent Successfully")
             setIsDialogOpen(false)
         } catch (error) {

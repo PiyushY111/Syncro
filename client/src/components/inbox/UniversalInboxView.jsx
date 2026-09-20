@@ -31,7 +31,7 @@ export default function UniversalInboxView() {
 
         try {
             await api.patch(`/api/inbox/${id}/read`);
-        } catch (err) {
+        } catch {
             toast.error('Failed to mark read');
             fetchInbox();
         }
@@ -45,7 +45,7 @@ export default function UniversalInboxView() {
 
         try {
             await api.patch('/api/inbox/read-all');
-        } catch (err) {
+        } catch {
             toast.error('Failed to mark all read');
             fetchInbox();
         }
@@ -62,7 +62,7 @@ export default function UniversalInboxView() {
 
         try {
             await api.patch(`/api/inbox/${id}/archive`);
-        } catch (err) {
+        } catch {
             toast.error('Failed to archive');
             fetchInbox();
         }
@@ -73,7 +73,7 @@ export default function UniversalInboxView() {
             const res = await api.post('/api/inbox/action', { actionType, entityType, entityId, status });
             toast.success(res.data.message || 'Action executed');
             fetchInbox();
-        } catch (err) {
+        } catch {
             toast.error('Action failed');
         }
     };

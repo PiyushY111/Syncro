@@ -1,4 +1,4 @@
-import { format, isSameDay, isSameMonth, isBefore, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns';
+import { format, isSameDay, isSameMonth, startOfMonth, endOfMonth, startOfWeek, endOfWeek, eachDayOfInterval, addDays } from 'date-fns';
 import { Plus, Bug, Zap, Square, GitCommit, MessageSquare, CheckCircle2, User, Video, MapPin, Sparkles, Clock, CalendarDays, ExternalLink } from 'lucide-react';
 
 const typeIcons = {

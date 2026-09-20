@@ -5,6 +5,8 @@ import { serve } from 'inngest/express'
 
 import logger from './utils/logger/logger.js'
 import { protect } from './middlewares/authMiddleware.js'
+import { verifyCsrfToken } from './middlewares/csrf.js'
+import { isOriginAllowed } from './config/corsPolicy.js'
 import { requestIdMiddleware } from './middlewares/requestIdMiddleware.js'
 import { errorMiddleware } from './middlewares/errorMiddleware.js'
 import { metricsMiddleware, getPrometheusMetrics } from './middlewares/metricsMiddleware.js'
@@ -43,36 +45,9 @@ const app = express()
 app.use(configureSecurityHeaders())
 app.use(cookieParser())
 
-const allowedOrigins = [
-  ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(url => url.trim().replace(/\/$/, '')) : []),
-  'https://syncro.piyushydv.com',
-  'http://localhost:5173',
-  'http://127.0.0.1:5173',
-  'http://localhost:3000',
-  'http://127.0.0.1:3000',
-].filter(Boolean);
-
-const allowedOriginSuffixes = (process.env.ALLOWED_ORIGIN_SUFFIXES || '.piyushydv.com,piyushydv.com')
-  .split(',')
-  .map(s => s.trim().toLowerCase())
-  .filter(Boolean);
-
 const corsOptions = {
   origin: (origin, callback) => {
-    if (!origin) {
-      callback(null, true);
-      return;
-    }
-    const normalizedOrigin = origin.replace(/\/$/, '').toLowerCase();
-    const isAllowed =
-      allowedOrigins.includes(normalizedOrigin) ||
-      allowedOriginSuffixes.some(suffix => normalizedOrigin.endsWith(suffix));
-
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      callback(null, false);
-    }
+    callback(null, isOriginAllowed(origin));
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -81,6 +56,7 @@ const corsOptions = {
     'Authorization',
     'Accept',
     'X-Workspace-ID',
+    'x-csrf-token',
     'x-shield-session',
     'x-shield-timestamp',
     'x-shield-nonce',
@@ -110,24 +86,26 @@ app.use('/api/inngest', serve({ client: inngest, functions }));
 app.use('/api/auth', authRouter);
 
 // Domain Routes
-app.use('/api/workspaces', protect, workspaceRouter);
-app.use('/api/projects', protect, projectRouter);
-app.use('/api/tasks', protect, taskRouter);
-app.use('/api/comments', protect, commentRouter);
-app.use('/api/chat', protect, chatRouter);
-app.use('/api/subteams', protect, subTeamRouter);
-app.use('/api/meetings', protect, meetingRouter);
+// verifyCsrfToken guards state-changing cookie-authenticated requests (double-submit CSRF defense).
+// It's a no-op for Bearer-token callers, so it's safe to apply globally alongside `protect`.
+app.use('/api/workspaces', protect, verifyCsrfToken, workspaceRouter);
+app.use('/api/projects', protect, verifyCsrfToken, projectRouter);
+app.use('/api/tasks', protect, verifyCsrfToken, taskRouter);
+app.use('/api/comments', protect, verifyCsrfToken, commentRouter);
+app.use('/api/chat', protect, verifyCsrfToken, chatRouter);
+app.use('/api/subteams', protect, verifyCsrfToken, subTeamRouter);
+app.use('/api/meetings', protect, verifyCsrfToken, meetingRouter);
 app.use('/api/google-calendar', googleCalendarRouter);
-app.use('/api/milestones', protect, milestoneRouter);
-app.use('/api/portfolios', protect, portfolioRouter);
-app.use('/api/inbox', protect, inboxRouter);
-app.use('/api/roles', protect, roleRouter);
-app.use('/api/audit', protect, auditRouter);
-app.use('/api/whiteboards', protect, whiteboardRouter);
-app.use('/api/sprints', protect, sprintRouter);
-app.use('/api/epics', protect, epicRouter);
-app.use('/api/retros', protect, retroRouter);
-app.use('/api/admin', adminRouter);
+app.use('/api/milestones', protect, verifyCsrfToken, milestoneRouter);
+app.use('/api/portfolios', protect, verifyCsrfToken, portfolioRouter);
+app.use('/api/inbox', protect, verifyCsrfToken, inboxRouter);
+app.use('/api/roles', protect, verifyCsrfToken, roleRouter);
+app.use('/api/audit', protect, verifyCsrfToken, auditRouter);
+app.use('/api/whiteboards', protect, verifyCsrfToken, whiteboardRouter);
+app.use('/api/sprints', protect, verifyCsrfToken, sprintRouter);
+app.use('/api/epics', protect, verifyCsrfToken, epicRouter);
+app.use('/api/retros', protect, verifyCsrfToken, retroRouter);
+app.use('/api/admin', verifyCsrfToken, adminRouter);
 
 app.get('/', (req, res) => res.json({ message: "Server is live", status: "OK" }));
 

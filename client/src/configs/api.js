@@ -17,7 +17,17 @@ const MAX_RETRIES = 2;
 const api = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL || 'http://localhost:5001',
     timeout: 12000, // 12-second timeout protection against frozen sockets
+    withCredentials: true, // Send/receive the httpOnly session cookies on every request
 });
+
+// In-memory CSRF anchor token. The API and app are deployed on different subdomains
+// (api.syncro.piyushydv.com vs syncro.piyushydv.com), so the server-side CSRF cookie is
+// httpOnly and scoped to the API host only — `document.cookie` on the app's page can
+// never see it. The server instead hands us this value once, in the JSON body of
+// login/refresh/me responses (see AuthContext), and we hold it here in memory and
+// echo it back as a header on every mutating request.
+let csrfToken = null;
+export const setCsrfToken = (token) => { csrfToken = token || null; };
 
 // Helper: Generate a unique signature for deduplication and caching
 const getRequestSignature = (url, params, headers) => {
@@ -50,18 +60,20 @@ const getResourcePrefix = (url) => {
     return parts[0] ? `/${parts[0]}` : null;
 };
 
-// Request Interceptor: Attach Auth & Workspace Headers & Cloak via Shield Gateway
+// Request Interceptor: Attach Workspace/CSRF Headers & Cloak via Shield Gateway
+// Auth is carried by the httpOnly session cookie (sent automatically via withCredentials) —
+// the client never holds the JWT itself, so it can't be exfiltrated via an XSS payload reading localStorage.
 api.interceptors.request.use(async (config) => {
-    const token = localStorage.getItem('pm-auth-token');
-    if (token) {
-        config.headers = config.headers || {};
-        config.headers.Authorization = `Bearer ${token}`;
-    }
+    config.headers = config.headers || {};
 
     const currentWorkspaceId = localStorage.getItem('currentWorkspaceId');
     if (currentWorkspaceId && !config.headers['x-workspace-id']) {
-        config.headers = config.headers || {};
         config.headers['x-workspace-id'] = currentWorkspaceId;
+    }
+
+    const method = (config.method || 'get').toLowerCase();
+    if (['post', 'put', 'patch', 'delete'].includes(method) && csrfToken) {
+        config.headers['x-csrf-token'] = csrfToken;
     }
 
     // Shield Cloaking: Skip if URL is already a shield endpoint or health/ping or opt-out
@@ -132,7 +144,7 @@ api.interceptors.response.use(
         if (error.response?.data?.c) {
             try {
                 error.response.data = await shieldSession.uncloakResponse(error.response.data);
-            } catch {}
+            } catch { /* leave error payload as-is if it wasn't actually a shield envelope */ }
         }
 
         // Automatic session renegotiation if shield session expired or was rejected with 401

@@ -2,13 +2,11 @@ import React from 'react';
 import { useDispatch } from 'react-redux';
 import { Calendar, Play, Trash2 } from 'lucide-react';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { updateSprint, deleteSprint } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 
 export default function SprintBucket({ project, tasks, selectedSprint, selectedSprintId, setSelectedSprintId, activeSprint, handleTaskSprintAssign, onDragStart }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
     const sprints = project?.sprints || [];
 
@@ -17,7 +15,7 @@ export default function SprintBucket({ project, tasks, selectedSprint, selectedS
             return toast.error(`Sprint "${activeSprint.name}" is already active. Please complete it first.`);
         }
         try {
-            const { data } = await api.put(`/api/sprints/${sprintId}/start`, {}, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/sprints/${sprintId}/start`, {});
             dispatch(updateSprint({ projectId: project.id, sprint: data.sprint }));
             toast.success(`Sprint "${data.sprint.name}" is now active!`);
         } catch (error) {
@@ -28,7 +26,7 @@ export default function SprintBucket({ project, tasks, selectedSprint, selectedS
     const handleDeleteSprint = async (sprintId) => {
         if (!window.confirm('Delete this Sprint? Associated tasks will return to the backlog.')) return;
         try {
-            await api.delete(`/api/sprints/${sprintId}`, { headers: { Authorization: `Bearer ${token}` } });
+            await api.delete(`/api/sprints/${sprintId}`);
             dispatch(deleteSprint({ projectId: project.id, sprintId }));
             toast.success('Sprint deleted successfully');
             if (selectedSprintId === sprintId) setSelectedSprintId('');

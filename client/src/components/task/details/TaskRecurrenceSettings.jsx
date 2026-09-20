@@ -3,8 +3,7 @@ import { CalendarIcon } from 'lucide-react';
 
 export default function TaskRecurrenceSettings({
     task,
-    handleUpdateRecurrence,
-    handleTriggerRecurClone
+    handleUpdateRecurrence
 }) {
     return (
         <div className="p-5 rounded-md bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-800 flex flex-col gap-4 text-left">
@@ -48,15 +47,6 @@ export default function TaskRecurrenceSettings({
                         </select>
                     </div>
                 </div>
-
-                {task.isRecurring && (
-                    <button 
-                        onClick={handleTriggerRecurClone} 
-                        className="w-full mt-2 bg-gradient-to-br from-indigo-500 to-indigo-600 text-white text-xs py-2 rounded font-medium hover:opacity-90 transition cursor-pointer"
-                    >
-                        Trigger Recurrence Clone (Dev Test)
-                    </button>
-                )}
             </div>
         </div>
     );

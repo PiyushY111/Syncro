@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Plus, Flag } from 'lucide-react';
 import api from '@/configs/api';
-import { useAuth } from '@/context/AuthContext';
 import { addSprint, updateTask } from '@/features/workspaceSlice';
 import toast from 'react-hot-toast';
 
@@ -11,7 +10,6 @@ import SprintBucket from './SprintBucket';
 import CapacityBalancing from './CapacityBalancing';
 
 export default function BacklogPlanning({ project, tasks }) {
-    const { token } = useAuth();
     const dispatch = useDispatch();
 
     const sprints = project?.sprints || [];
@@ -37,7 +35,7 @@ export default function BacklogPlanning({ project, tasks }) {
                 goal: sprintGoal.trim(),
                 startDate,
                 endDate
-            }, { headers: { Authorization: `Bearer ${token}` } });
+            });
 
             dispatch(addSprint({ projectId: project.id, sprint: { ...data.sprint, capacities: [], tasks: [] } }));
             toast.success('Sprint created successfully');
@@ -54,7 +52,7 @@ export default function BacklogPlanning({ project, tasks }) {
 
     const handleTaskSprintAssign = async (taskId, targetSprintId) => {
         try {
-            const { data } = await api.put(`/api/tasks/${taskId}`, { sprintId: targetSprintId || null }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/tasks/${taskId}`, { sprintId: targetSprintId || null });
             dispatch(updateTask(data.task));
             toast.success(targetSprintId ? 'Task added to Sprint' : 'Task returned to Backlog');
         } catch (error) {

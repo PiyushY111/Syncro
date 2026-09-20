@@ -13,7 +13,7 @@ import { getUserWorkspaceRole, canEditProject, canDeleteProject } from '@/utils/
 export default function ProjectSettings({ project }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const { token, user } = useAuth();
+    const { user } = useAuth();
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
 
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, user?.id);
@@ -40,9 +40,9 @@ export default function ProjectSettings({ project }) {
         setIsSubmitting(true);
         toast.loading("Saving...");
         try {
-            const { data } = await api.put('/api/projects', formData, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put('/api/projects', formData);
             setIsDialogOpen(false);
-            dispatch(fetchWorkspaces({ token }));
+            dispatch(fetchWorkspaces());
             toast.dismissAll();
             toast.success(data.message);
         } catch (error) {
@@ -58,9 +58,9 @@ export default function ProjectSettings({ project }) {
         if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
         setIsDeleting(true);
         try {
-            await api.delete(`/api/projects/${project.id}`, { headers: { Authorization: `Bearer ${token}` } });
+            await api.delete(`/api/projects/${project.id}`);
             toast.success("Project deleted successfully");
-            dispatch(fetchWorkspaces({ token }));
+            dispatch(fetchWorkspaces());
             navigate('/projects');
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to delete project");

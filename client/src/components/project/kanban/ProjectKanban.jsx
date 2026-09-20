@@ -11,7 +11,7 @@ import AddKanbanColumn from '@/components/project/kanban/AddKanbanColumn';
 import { getUserWorkspaceRole, canManageProjectStages } from '@/utils/permissions';
 
 export default function ProjectKanban({ tasks, project }) {
-    const { token, user: currentUser } = useAuth();
+    const { user: currentUser } = useAuth();
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const currentWorkspace = useSelector((state) => state.workspace.currentWorkspace);
@@ -41,7 +41,7 @@ export default function ProjectKanban({ tasks, project }) {
 
         // 2. Background Server Synchronization with automatic rollback
         try {
-            await api.put(`/api/tasks/${taskId}`, { status: newStatus }, { headers: { Authorization: `Bearer ${token}` } });
+            await api.put(`/api/tasks/${taskId}`, { status: newStatus });
         } catch (error) {
             let rollbackTask = structuredClone(originalTask);
             rollbackTask.status = previousStatus;
@@ -56,7 +56,7 @@ export default function ProjectKanban({ tasks, project }) {
         const formattedStage = newColumnName.trim().toUpperCase().replace(/\s+/g, "_");
         if (stages.includes(formattedStage)) return toast.error("Column already exists!");
         try {
-            const { data } = await api.put(`/api/projects/${project.id}/stages`, { stages: [...stages, formattedStage] }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/projects/${project.id}/stages`, { stages: [...stages, formattedStage] });
             dispatch(updateProject(data.project));
             toast.success("Column added successfully");
             setNewColumnName("");
@@ -70,7 +70,7 @@ export default function ProjectKanban({ tasks, project }) {
         if (["TODO", "IN_PROGRESS", "DONE"].includes(stageId)) return toast.error("Cannot delete base columns");
         if (!window.confirm("Delete column? Tasks will be moved to 'To Do'.")) return;
         try {
-            const { data } = await api.put(`/api/projects/${project.id}/stages`, { stages: stages.filter(s => s !== stageId) }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/projects/${project.id}/stages`, { stages: stages.filter(s => s !== stageId) });
             dispatch(updateProject(data.project));
             toast.success("Column deleted successfully");
         } catch (error) {
@@ -96,7 +96,7 @@ export default function ProjectKanban({ tasks, project }) {
         const [movedCol] = updatedStages.splice(sourceIndex, 1);
         updatedStages.splice(targetIndex, 0, movedCol);
         try {
-            const { data } = await api.put(`/api/projects/${project.id}/stages`, { stages: updatedStages }, { headers: { Authorization: `Bearer ${token}` } });
+            const { data } = await api.put(`/api/projects/${project.id}/stages`, { stages: updatedStages });
             dispatch(updateProject(data.project));
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to reorder columns");
