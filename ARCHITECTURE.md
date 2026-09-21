@@ -241,11 +241,13 @@ export const prisma = basePrisma.$extends({
           args.where = args.where || {};
 
           if (operation === 'findUnique' || operation === 'findUniqueOrThrow') {
-            const modelName = model.charAt(0).toLowerCase() + model.slice(1);
-            const targetMethod = operation === 'findUnique' ? 'findFirst' : 'findFirstOrThrow';
+            // Reuses `query` (not basePrisma) so this still runs inside the
+            // caller's own $transaction when invoked via tx.model.findUnique(...);
+            // Prisma's findUnique accepts extra non-unique where filters
+            // alongside the unique key, so the same operation is reused as-is.
             const where = { ...args.where };
             if (where.deletedAt === undefined) where.deletedAt = null;
-            const rawResult = await basePrisma[modelName][targetMethod]({ ...args, where });
+            const rawResult = await query({ ...args, where });
             return decryptResults(model, rawResult);
           }
 

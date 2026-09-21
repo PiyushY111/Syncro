@@ -12,6 +12,7 @@
 
 [![CI](https://github.com/PiyushY111/Syncro/actions/workflows/ci.yml/badge.svg)](https://github.com/PiyushY111/Syncro/actions/workflows/ci.yml)
 [![Security Policy](https://img.shields.io/badge/security-policy-blue)](./SECURITY.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-green)](./LICENSE)
 
 ---
 
