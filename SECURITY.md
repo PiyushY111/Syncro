@@ -68,7 +68,39 @@ Syncro additionally runs an application-layer encrypted tunnel (`server/src/serv
 - **Local dev's `.env` points at a live Neon database _and_ a live Upstash Redis instance, not isolated ones.** This is normal for a solo project without a staging environment, but it means running `test:integration` locally with `.env` in place (as opposed to in CI, see below, which sets neither) exercises real, shared infrastructure — `gatekeeper.test.js` does one real Prisma read, and its super-admin-cache assertions write/read real keys (`user:is_superadmin:*`) on the live Redis. Worth knowing before running tests locally with `.env` in place; prefer overriding `DATABASE_URL`/`DIRECT_URL` to a local Postgres and leaving `UPSTASH_REDIS_REST_URL`/`TOKEN` unset, matching what CI does.
 - Shield's in-memory replay-guard fallback (above) should be revisited if Shield is ever deployed multi-instance without Redis.
 - ~~Test environment lacks database isolation in CI~~ — **closed 2026-09-20**. CI now provisions an ephemeral `postgres:16` service container per run (`.github/workflows/ci.yml`) and runs the full `test:integration`/`test:domain` suites against it.
-- ~~`gatekeeper.test.js` intermittently fails~~ — **closed 2026-09-21, and the original diagnosis was wrong.** This was previously attributed to "network-latency/timing sensitivity" against the live Neon database. It wasn't: the real cause was a genuine logic bug in `checkIsSuperAdmin` (`server/src/services/gatekeeperService.js`) and `requireSuperAdmin` (`server/src/middlewares/superAdminMiddleware.js`), both of which compared a cached value with `=== 'true'` / `=== 'false'` (string equality). That works against the in-memory Redis fallback (used in CI, since `UPSTASH_REDIS_REST_URL`/`TOKEN` are unset there), but breaks deterministically — not intermittently — whenever a real Upstash Redis client is configured: Upstash's client auto-deserializes any JSON-parseable stored value, so a stored `'true'`/`'false'` string comes back as an actual boolean, and `true === 'true'` is `false`. The practical impact was limited (the check silently fell through to a live DB read instead of granting or denying access incorrectly — no privilege escalation), but the caching was completely defeated whenever real Upstash was in play, and the test failures traced directly to it. Fixed by comparing against both the string and boolean forms. Verified by running `gatekeeper.test.js` against the live Upstash instance this repo's own `.env` points at: 2 of 13 assertions failed before the fix, 13/13 passed after, both runs against the real service (test keys cleaned up from that Redis instance immediately after). See the CI workflow's "Provision ephemeral schema" step for why `prisma migrate deploy` doesn't work here (the migration history has no baseline) and what runs instead.
+- ~~Migration history has no baseline, so `prisma migrate deploy` fails against an empty database~~ — **closed 2026-09-21.** See **Migration history baseline** below.
+- ~~`gatekeeper.test.js` intermittently fails~~ — **closed 2026-09-21, and the original diagnosis was wrong.** This was previously attributed to "network-latency/timing sensitivity" against the live Neon database. It wasn't: the real cause was a genuine logic bug in `checkIsSuperAdmin` (`server/src/services/gatekeeperService.js`) and `requireSuperAdmin` (`server/src/middlewares/superAdminMiddleware.js`), both of which compared a cached value with `=== 'true'` / `=== 'false'` (string equality). That works against the in-memory Redis fallback (used in CI, since `UPSTASH_REDIS_REST_URL`/`TOKEN` are unset there), but breaks deterministically — not intermittently — whenever a real Upstash Redis client is configured: Upstash's client auto-deserializes any JSON-parseable stored value, so a stored `'true'`/`'false'` string comes back as an actual boolean, and `true === 'true'` is `false`. The practical impact was limited (the check silently fell through to a live DB read instead of granting or denying access incorrectly — no privilege escalation), but the caching was completely defeated whenever real Upstash was in play, and the test failures traced directly to it. Fixed by comparing against both the string and boolean forms. Verified by running `gatekeeper.test.js` against the live Upstash instance this repo's own `.env` points at: 2 of 13 assertions failed before the fix, 13/13 passed after, both runs against the real service (test keys cleaned up from that Redis instance immediately after). CI provisions its ephemeral schema via `prisma migrate deploy` — see **Migration history baseline** below for the fix that made that possible.
+
+## Migration history baseline
+
+`prisma/migrations/` previously had no baseline migration — the base schema was originally pushed directly to the database via `prisma db push`, never captured as a migration, so `prisma migrate deploy` against a genuinely empty database failed with `P3018` ("relation does not exist"). CI routed around this with `db push` + applying the two existing migration files' raw SQL directly (see the old version of `.github/workflows/ci.yml`'s "Provision ephemeral schema" step).
+
+Fixed by generating a baseline migration from the current schema and adding the previously-missing `prisma/migrations/migration_lock.toml`:
+
+```bash
+npx prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script
+```
+
+placed at `prisma/migrations/20260815_baseline_schema/migration.sql` — named to sort before the two existing migrations (`20260816_enable_rls`, `20260816_partial_unique_indexes`). Verified against a fresh, empty local Postgres: `prisma migrate deploy` applies all three migrations cleanly, `prisma migrate status` reports "up to date," a diff between the resulting schema and `schema.prisma` is empty (zero drift), and the full `test:integration` suite (10/10 suites) passes against a database provisioned this way. CI now runs `npx prisma migrate deploy` directly instead of the `db push` + raw-SQL workaround.
+
+**This does not touch the live database.** The live database already has this exact schema (applied historically via `db push`, plus the RLS/index migrations applied at some point outside Prisma's migration tracking), so Prisma has no record of any of these three migrations being "applied" there. Running `prisma migrate deploy` against it as-is would try to re-run the baseline's `CREATE TABLE` statements and fail on already-existing tables. To mark the baseline as already applied in production **without running any migration SQL against it**, run manually, against the production `DATABASE_URL`/`DIRECT_URL` (never automated, never run by CI or by an agent):
+
+```bash
+cd server
+# First, confirm what Prisma currently thinks is applied:
+npx prisma migrate status
+
+# Mark each migration as already applied (this only writes a row to the
+# _prisma_migrations tracking table — it does NOT execute the migration's SQL):
+npx prisma migrate resolve --applied 20260815_baseline_schema
+npx prisma migrate resolve --applied 20260816_enable_rls
+npx prisma migrate resolve --applied 20260816_partial_unique_indexes
+
+# Confirm it's now clean:
+npx prisma migrate status   # should report "Database schema is up to date!"
+```
+
+Before running the `enable_rls`/`partial_unique_indexes` resolve commands, confirm those two migrations' SQL has actually already been applied to production (e.g. `SELECT * FROM pg_policies WHERE tablename = 'Project';` should show the tenant isolation policy, and the partial unique indexes should already exist) — if either hasn't been applied for real, resolve only the baseline and then run `prisma migrate deploy` normally so Prisma applies the remaining one(s) for real, rather than marking unapplied SQL as "applied."
 
 ## Audit history
 

@@ -59,26 +59,24 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
-      - name: Provision ephemeral schema (db push + out-of-band migration SQL)
-        # `prisma migrate deploy` does NOT work here: this repo's migration history
-        # (prisma/migrations/) has no baseline migration — the base schema was originally
-        # pushed directly (`prisma db push`) to the real database rather than captured as
-        # a migration, and the two migration files that do exist (enable_rls,
-        # partial_unique_indexes) are incremental raw-SQL patches on top of that
-        # assumed-already-existing schema. `migrate deploy` against a genuinely empty
-        # database fails with P3018 ("relation does not exist") for exactly that reason —
-        # confirmed by actually running it against a fresh local Postgres, not inferred.
-        # The fix that doesn't require rewriting migration history: `db push` to sync the
-        # base schema from schema.prisma (what actually defines tables/columns/relations),
-        # then apply the two migration files' raw SQL directly for the RLS policies and
-        # partial unique indexes `db push` can't express (Prisma's schema language has no
-        # first-class syntax for either, so `db push` alone would silently skip them).
-        run: |
-          npx prisma db push --skip-generate
-          for f in prisma/migrations/*/migration.sql; do
-            echo "Applying $f"
-            PGPASSWORD=ci psql -h localhost -U ci -d syncro_ci -v ON_ERROR_STOP=1 -f "$f"
-          done
+      - name: Provision ephemeral schema (prisma migrate deploy)
+        # Closed 2026-09-21: the migration history previously had no baseline
+        # (the base schema was originally pushed directly via `prisma db push`,
+        # never captured as a migration), so `migrate deploy` against a
+        # genuinely empty database failed with P3018 ("relation does not
+        # exist") — this is what the old `db push` + raw-SQL workaround here
+        # existed to route around. Added prisma/migrations/20260815_baseline_schema
+        # (generated via `prisma migrate diff --from-empty --to-schema-datamodel`)
+        # ordered before the two existing migrations, plus the previously-missing
+        # migrations/migration_lock.toml. Verified locally: `prisma migrate deploy`
+        # against a fresh empty Postgres applies all three migrations cleanly,
+        # `prisma migrate status` reports "up to date", and a diff between the
+        # migrated schema and schema.prisma is empty (zero drift) — and the full
+        # test:integration suite (10/10) passes against a database provisioned
+        # this way, not just db push. See SECURITY.md for the exact manual
+        # commands to run against the live database to mark this baseline as
+        # already-applied there (never run automatically or by this workflow).
+        run: npx prisma migrate deploy
 
       - name: Unit tests (mocked Prisma/Redis)
         run: npm run test:unit
