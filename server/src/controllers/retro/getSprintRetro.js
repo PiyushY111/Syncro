@@ -1,14 +1,19 @@
 import { prisma } from "../../config/prisma.js";
+import { hasProjectAccess } from "../../middlewares/projectAccessCheck.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { ForbiddenError } from "../../utils/errors/appError.js";
 
+// Returns the sprint's projectId if userId actually has access to that
+// project, otherwise null. Previously this only checked that the sprint
+// existed and never looked at userId at all, so any authenticated user
+// could view or initialize the retro board for any sprint in any workspace.
 const hasAccess = async (userId, sprintId) => {
     const sprint = await prisma.sprint.findUnique({
-        where: { id: sprintId },
-        include: { project: true }
+        where: { id: sprintId }
     });
     if (!sprint) return false;
-    return sprint.projectId;
+    const allowed = await hasProjectAccess(sprint.projectId, userId);
+    return allowed ? sprint.projectId : false;
 };
 
 export const initializeRetro = asyncHandler(async (req, res) => {

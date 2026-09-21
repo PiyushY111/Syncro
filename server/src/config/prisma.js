@@ -102,13 +102,20 @@ export const prisma = basePrisma.$extends({
         // 1. Soft-delete automatic filter interceptor
         if (model && SOFT_DELETE_MODELS.has(model)) {
           if (operation === 'findUnique' || operation === 'findUniqueOrThrow') {
-            const modelName = model.charAt(0).toLowerCase() + model.slice(1)
-            const targetMethod = operation === 'findUnique' ? 'findFirst' : 'findFirstOrThrow'
+            // Use `query` (not `basePrisma`) so this stays inside the caller's
+            // transaction when invoked via `tx.model.findUnique(...)` — the
+            // previous implementation called basePrisma directly, which runs
+            // on a separate connection outside any open transaction and so
+            // can't see that transaction's own uncommitted writes (e.g. a
+            // row created earlier in the same $transaction callback).
+            // Prisma's extended `where` on findUnique accepts additional
+            // non-unique filters alongside the unique key, so the same
+            // operation can be reused as-is instead of switching to findFirst.
             const where = { ...(args?.where || {}) }
             if (where.deletedAt === undefined) {
               where.deletedAt = null
             }
-            const result = await basePrisma[modelName][targetMethod]({ ...args, where })
+            const result = await query({ ...args, where })
             const duration = performance.now() - start
             if (duration >= SLOW_QUERY_THRESHOLD_MS) {
               logger.warn(

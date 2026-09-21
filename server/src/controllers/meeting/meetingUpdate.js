@@ -41,6 +41,26 @@ export const updateMeeting = asyncHandler(async (req, res) => {
         throw new BadRequestError('Meeting end time must be strictly after start time');
     }
 
+    if (projectId) {
+        const project = await prisma.project.findUnique({ where: { id: projectId }, select: { workspaceId: true } });
+        if (!project || project.workspaceId !== meeting.workspaceId) {
+            throw new NotFoundError('Project not found');
+        }
+    }
+
+    if (invitees && Array.isArray(invitees)) {
+        const otherInviteeIds = invitees.filter((guestId) => guestId !== meeting.creatorId);
+        if (otherInviteeIds.length > 0) {
+            const memberInvitees = await prisma.workspaceMember.findMany({
+                where: { workspaceId: meeting.workspaceId, userId: { in: otherInviteeIds } },
+                select: { userId: true }
+            });
+            if (memberInvitees.length !== new Set(otherInviteeIds).size) {
+                throw new BadRequestError('One or more invitees are not members of this workspace');
+            }
+        }
+    }
+
     const previousState = await prisma.meeting.findUnique({
         where: { id },
         include: { invites: true }

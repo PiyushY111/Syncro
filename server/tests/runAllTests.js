@@ -11,6 +11,7 @@ const testSuites = [
   { name: 'Gatekeeper & Super-Admin Policy Suite', file: 'tests/gatekeeper.test.js' },
   { name: 'Concurrency & Stampede Lock Suite', file: 'tests/concurrency.test.js' },
   { name: 'RLS Tenant Isolation Suite', file: 'tests/rlsIsolation.test.js' },
+  { name: 'Task Cross-Project Reference Suite', file: 'tests/taskForeignRefs.test.js' },
 ];
 
 async function runSuite(suite) {

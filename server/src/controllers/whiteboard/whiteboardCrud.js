@@ -91,6 +91,12 @@ export const createWhiteboard = asyncHandler(async (req, res) => {
     if (!canManage) {
         throw new ForbiddenError("You do not have permission to create whiteboards in this workspace");
     }
+    if (projectId) {
+        const project = await prisma.project.findUnique({ where: { id: projectId }, select: { workspaceId: true } });
+        if (!project || project.workspaceId !== workspaceId) {
+            throw new NotFoundError("Project not found");
+        }
+    }
     const whiteboard = await prisma.whiteboard.create({
         data: {
             workspaceId,

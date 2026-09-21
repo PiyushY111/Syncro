@@ -1,5 +1,5 @@
 import { prisma } from '../../config/prisma.js';
-import { wouldCreateCycle } from './taskHelpers.js';
+import { wouldCreateCycle, assertAssigneeBelongsToProject, assertTaskForeignRefsBelongToProject } from './taskHelpers.js';
 import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
 import { eventBus } from '../../services/eventBus.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
@@ -22,7 +22,7 @@ export const updateTask = asyncHandler(async (req, res) => {
         throw new NotFoundError("Task not found");
     }
     const userId = req.user.id;
-    const { assigneeId, status, dependenciesIds } = req.body;
+    const { assigneeId, status, dependenciesIds, sprintId, epicId, milestoneId } = req.body;
     const origin = req.get('origin');
 
     const project = await prisma.project.findUnique({
@@ -48,6 +48,15 @@ export const updateTask = asyncHandler(async (req, res) => {
     if (!canUpdate) {
         throw new ForbiddenError("You do not have permission to update this task");
     }
+
+    assertAssigneeBelongsToProject(project, assigneeId);
+    await assertTaskForeignRefsBelongToProject({
+        projectId: project.id,
+        sprintId,
+        epicId,
+        milestoneId,
+        dependenciesIds,
+    });
 
     if (dependenciesIds) {
         if (!Array.isArray(dependenciesIds)) {

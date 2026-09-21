@@ -15,6 +15,7 @@
     "test:security": "node tests/security.test.js",
     "test:concurrency": "node tests/concurrency.test.js",
     "test:rls": "node tests/rlsIsolation.test.js",
+    "test:task-refs": "node tests/taskForeignRefs.test.js",
     "db:seed": "node prisma/seed.js",
     "db:push": "npx prisma db push",
     "db:validate": "npx prisma validate",

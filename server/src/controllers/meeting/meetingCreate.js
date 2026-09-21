@@ -2,7 +2,7 @@ import { prisma } from '../../config/prisma.js';
 import { executeTransaction } from '../../services/db/dbService.js';
 import { eventBus } from '../../services/eventBus.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
-import { BadRequestError, ForbiddenError } from '../../utils/errors/appError.js';
+import { BadRequestError, NotFoundError, ForbiddenError } from '../../utils/errors/appError.js';
 
 // Create a meeting and send invites
 export const createMeeting = asyncHandler(async (req, res) => {
@@ -50,7 +50,25 @@ export const createMeeting = asyncHandler(async (req, res) => {
         throw new ForbiddenError('You are not a member of this workspace');
     }
 
+    if (projectId) {
+        const project = await prisma.project.findUnique({ where: { id: projectId }, select: { workspaceId: true } });
+        if (!project || project.workspaceId !== workspaceId) {
+            throw new NotFoundError('Project not found');
+        }
+    }
+
     const uniqueInvitees = Array.from(new Set([creatorId, ...(Array.isArray(invitees) ? invitees : [])]));
+
+    const otherInviteeIds = uniqueInvitees.filter((userId) => userId !== creatorId);
+    if (otherInviteeIds.length > 0) {
+        const memberInvitees = await prisma.workspaceMember.findMany({
+            where: { workspaceId, userId: { in: otherInviteeIds } },
+            select: { userId: true }
+        });
+        if (memberInvitees.length !== otherInviteeIds.length) {
+            throw new BadRequestError('One or more invitees are not members of this workspace');
+        }
+    }
 
     // Create the meeting and invites atomically inside a transaction
     const fullMeeting = await executeTransaction(async (tx) => {

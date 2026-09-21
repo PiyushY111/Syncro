@@ -62,6 +62,30 @@ export const sendMessage = asyncHandler(async (req, res) => {
         }
     }
 
+    if (parentId) {
+        const parent = await prisma.message.findUnique({ where: { id: parentId } });
+        if (!parent) {
+            throw new NotFoundError("Parent message not found");
+        }
+        // A reply must live in the same container as its parent — otherwise
+        // its content would surface to anyone who can view that parent's
+        // channel/DM thread, regardless of whether the replier could see it.
+        if (channelId) {
+            if (parent.channelId !== channelId) {
+                throw new BadRequestError("Reply must be in the same channel as the parent message");
+            }
+        } else if (recipientId) {
+            const parentInSameThread =
+                (parent.userId === userId && parent.recipientId === recipientId) ||
+                (parent.userId === recipientId && parent.recipientId === userId);
+            if (!parentInSameThread) {
+                throw new BadRequestError("Reply must be in the same conversation as the parent message");
+            }
+        } else {
+            throw new BadRequestError("A reply must specify the same channel or recipient as its parent message");
+        }
+    }
+
     const contentHash = crypto.createHash('sha256').update(content.trim()).digest('hex');
 
     const message = await prisma.message.create({

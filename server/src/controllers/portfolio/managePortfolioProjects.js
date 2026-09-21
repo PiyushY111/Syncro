@@ -1,8 +1,9 @@
 import { prisma } from "../../config/prisma.js";
 import { redisCache } from "../../config/redis.js";
 import { eventBus } from "../../services/eventBus.js";
+import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
-import { BadRequestError, NotFoundError } from "../../utils/errors/appError.js";
+import { BadRequestError, NotFoundError, ForbiddenError } from "../../utils/errors/appError.js";
 
 export const addProjectsToPortfolio = asyncHandler(async (req, res) => {
     const { id } = req.params;
@@ -15,6 +16,25 @@ export const addProjectsToPortfolio = asyncHandler(async (req, res) => {
     const portfolio = await prisma.portfolio.findUnique({ where: { id } });
     if (!portfolio) {
         throw new NotFoundError("Portfolio not found");
+    }
+
+    const isOwner = portfolio.ownerId === req.user.id;
+    const canManage = await hasWorkspacePermission(req.user.id, portfolio.workspaceId, "managePortfolios");
+    if (!isOwner && !canManage) {
+        throw new ForbiddenError("You do not have permission to manage this portfolio's projects");
+    }
+
+    // Every project added to a portfolio must belong to the portfolio's own
+    // workspace — otherwise a portfolio could be used to pull another
+    // workspace's project name/progress/tasks/milestones into view (see
+    // getPortfolioById, which returns that data to any workspace member).
+    const uniqueProjectIds = [...new Set(projectIds)];
+    const validProjects = await prisma.project.findMany({
+        where: { id: { in: uniqueProjectIds }, workspaceId: portfolio.workspaceId },
+        select: { id: true },
+    });
+    if (validProjects.length !== uniqueProjectIds.length) {
+        throw new NotFoundError("One or more projects not found");
     }
 
     const currentCount = await prisma.portfolioProject.count({ where: { portfolioId: id } });
@@ -59,6 +79,13 @@ export const removeProjectFromPortfolio = asyncHandler(async (req, res) => {
     if (!portfolio) {
         throw new NotFoundError("Portfolio not found");
     }
+
+    const isOwner = portfolio.ownerId === req.user.id;
+    const canManage = await hasWorkspacePermission(req.user.id, portfolio.workspaceId, "managePortfolios");
+    if (!isOwner && !canManage) {
+        throw new ForbiddenError("You do not have permission to manage this portfolio's projects");
+    }
+
     const previousState = { ...portfolio };
 
     await prisma.portfolioProject.deleteMany({

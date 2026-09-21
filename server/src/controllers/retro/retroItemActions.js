@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma.js";
 import { executeTransaction } from "../../services/db/dbService.js";
 import { eventBus } from "../../services/eventBus.js";
+import { hasProjectAccess } from "../../middlewares/projectAccessCheck.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { BadRequestError, NotFoundError, ForbiddenError } from "../../utils/errors/appError.js";
 
@@ -12,8 +13,14 @@ export const addRetroItem = asyncHandler(async (req, res) => {
         throw new BadRequestError("Content is required and cannot be empty");
     }
 
-    const column = await prisma.retroColumn.findUnique({ where: { id: columnId } });
+    const column = await prisma.retroColumn.findUnique({
+        where: { id: columnId },
+        include: { sprint: true }
+    });
     if (!column) throw new NotFoundError("Column not found");
+
+    const allowed = await hasProjectAccess(column.sprint.projectId, req.user.id);
+    if (!allowed) throw new ForbiddenError("Access denied");
 
     const item = await prisma.retroItem.create({
         data: { columnId, content: content.trim(), userId: req.user.id },
@@ -31,6 +38,15 @@ export const addRetroItem = asyncHandler(async (req, res) => {
 export const voteRetroItem = asyncHandler(async (req, res) => {
     const { itemId } = req.params;
     const userId = req.user.id;
+
+    const existingItem = await prisma.retroItem.findUnique({
+        where: { id: itemId },
+        include: { column: { include: { sprint: true } } }
+    });
+    if (!existingItem) throw new NotFoundError("Retro item not found");
+
+    const allowed = await hasProjectAccess(existingItem.column.sprint.projectId, userId);
+    if (!allowed) throw new ForbiddenError("Access denied");
 
     const { updatedItem, voteChange } = await executeTransaction(async (tx) => {
         const item = await tx.retroItem.findUnique({

@@ -3,6 +3,7 @@ import { redisCache } from '../../config/redis.js';
 import { eventBus } from '../../services/eventBus.js';
 import { executeTransaction } from '../../services/db/dbService.js';
 import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
+import { assertAssigneeBelongsToProject, assertTaskForeignRefsBelongToProject } from './taskHelpers.js';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
@@ -41,14 +42,8 @@ export const createTask = asyncHandler(async (req, res) => {
     throw new ForbiddenError("You do not have permission to create task for this project");
   }
 
-  const assigneeHasAccess =
-    project.team_lead === assigneeId ||
-    project.members.some((m) => m.userId === assigneeId) ||
-    project.subTeams.some((subTeam) => subTeam.members.some((m) => m.userId === assigneeId));
-
-  if (assigneeId && !assigneeHasAccess) {
-    throw new ForbiddenError("Assignee is not a member of this project");
-  }
+  assertAssigneeBelongsToProject(project, assigneeId);
+  await assertTaskForeignRefsBelongToProject({ projectId, sprintId, epicId, dependenciesIds });
 
   const taskWithAssignee = await executeTransaction(async (tx) => {
     const createdTask = await tx.task.create({

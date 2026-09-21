@@ -1,5 +1,5 @@
 import { prisma } from "../../config/prisma.js";
-import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
+import { hasWorkspacePermission, getUserWorkspaceRole } from "../role/checkPermissionHelper.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { BadRequestError, NotFoundError, ForbiddenError } from "../../utils/errors/appError.js";
 
@@ -24,6 +24,11 @@ export const updateCapacity = asyncHandler(async (req, res) => {
 
     const hasPermission = await canManageSprints(req.user.id, sprint.project.workspaceId);
     if (!hasPermission) throw new ForbiddenError("You do not have permission to manage capacity");
+
+    const { role: targetUserRole } = await getUserWorkspaceRole(userId, sprint.project.workspaceId);
+    if (!targetUserRole) {
+        throw new NotFoundError("User is not a member of this workspace");
+    }
 
     const sprintCapacity = await prisma.sprintCapacity.upsert({
         where: { sprintId_userId: { sprintId, userId } },
