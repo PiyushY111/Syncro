@@ -10,6 +10,7 @@ const testSuites = [
   { name: 'Domain Invariants & Business Logic Suite', file: 'tests/domainInvariants.test.js' },
   { name: 'Gatekeeper & Super-Admin Policy Suite', file: 'tests/gatekeeper.test.js' },
   { name: 'Concurrency & Stampede Lock Suite', file: 'tests/concurrency.test.js' },
+  { name: 'RLS Tenant Isolation Suite', file: 'tests/rlsIsolation.test.js' },
 ];
 
 async function runSuite(suite) {

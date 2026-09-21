@@ -31,6 +31,22 @@ Please do not open a public GitHub issue for a suspected vulnerability. Open a p
 
 Sensitive columns (`User.googleAccessToken`, `User.googleRefreshToken`, `User.twoFactorCode`, `Message.content`, `Comment.content`) are transparently encrypted with AES-256-GCM via a Prisma Client extension (`server/src/config/prisma.js`) — encrypted on every write, decrypted on every read, with a random IV and authentication tag per value. See [`ARCHITECTURE.md §3.3`](./ARCHITECTURE.md).
 
+## Database-level tenant isolation (Row Level Security) — declared, not active
+
+`prisma/migrations/20260816_enable_rls/migration.sql` enables Postgres Row Level Security on `Project`, `Channel`, and `Meeting`, with a policy scoping rows to `current_setting('app.current_workspace_id', true)`. Reading the migration in isolation could suggest the database itself enforces tenant isolation on these tables. It does not, today:
+
+- No application code ever calls `set_config('app.current_workspace_id', ...)` — confirmed by grepping the entire server for that setting and for `SET LOCAL`. The variable is never set, on any request path.
+- The application's Prisma connection (`server/src/config/prisma.js`) connects as the same Postgres role that owns these tables (or, in local/CI Postgres, a superuser). Postgres does not apply RLS policies to a table's owner — and never to a superuser — unless the table also has `FORCE ROW LEVEL SECURITY`, which this migration does not set.
+- Net effect: the policies are currently inert for the app's real traffic. Tenant isolation for `Project`, `Channel`, and `Meeting` is enforced entirely by application-layer authorization (`checkProjectAccessMiddleware`, `hasWorkspacePermission`, and the controller-level workspace/project membership checks described under **Authorization** above) — not by the database.
+
+`server/tests/rlsIsolation.test.js` (`npm run test:rls`, included in `test:integration`) verifies this precisely, against a throwaway local Postgres role with only `SELECT` granted (never the app's real role):
+
+- Scoped to workspace A via a transaction-local `set_config('app.current_workspace_id', <id>, true)` — the correct pattern over Prisma's pooled connections, since a bare `SET` would leak across pooled connections — the role sees only workspace A's rows, cannot read workspace B's project by id, and is symmetric for workspace B.
+- With the scope never set, the same non-owner role sees **zero** rows (fails closed) — proving the policies themselves are logically sound.
+- Querying as the table owner (what the app actually does) with no scope set returns rows from **both** tenants — proving today's real, unprotected behavior.
+
+Activating this for real would mean the app connecting as a non-owner role, adding `FORCE ROW LEVEL SECURITY`, and wrapping every `Project`/`Channel`/`Meeting` query in a transaction that sets the scope first — a cross-cutting change to DB role provisioning and every touching controller. That's deliberately not attempted here: doing it partially would be worse than the current honest gap, since a half-migrated app role would either break unrelated queries or silently leave some access paths unscoped. See **Known gaps / follow-ups** below.
+
 ## The Shield layer
 
 Syncro additionally runs an application-layer encrypted tunnel (`server/src/services/shieldEngine.js`, documented in full in [`ARCHITECTURE.md §7`](./ARCHITECTURE.md)) using ephemeral ECDH P-256 key agreement, HKDF-SHA256 key derivation, AES-256-GCM payload encryption, and HMAC-SHA256 request signing with an atomic replay-nonce guard. See [`ARCHITECTURE.md § Design Trade-offs & Honest Limitations`](./ARCHITECTURE.md#-design-trade-offs--honest-limitations) for the precise, falsifiable version of what this does and doesn't add over TLS, and why it exists in a project that doesn't strictly need it.
@@ -48,6 +64,7 @@ Syncro additionally runs an application-layer encrypted tunnel (`server/src/serv
 
 ## Known gaps / follow-ups
 
+- **Row Level Security is declared but not activated** — see **Database-level tenant isolation** above for the full detail. The migration's policies are correct in isolation (verified by `server/tests/rlsIsolation.test.js`), but the app never sets `app.current_workspace_id` and connects as a role RLS doesn't restrict, so they provide no protection today. Tenant isolation for `Project`/`Channel`/`Meeting` currently relies entirely on application-layer checks. Closing this gap for real requires a non-owner app DB role, `FORCE ROW LEVEL SECURITY`, and a transaction-scoped `set_config` wrapper around every access path for those three models — deferred as a deliberate, larger architecture change rather than half-implemented.
 - **Local dev's `.env` points at a live Neon database, not an isolated one.** This is normal for a solo project without a staging environment, but it means running `test:integration` locally (as opposed to in CI, see below) exercises the real database — `gatekeeper.test.js` does one real Prisma read as part of that suite. Worth knowing before running tests locally with `.env` in place.
 - Shield's in-memory replay-guard fallback (above) should be revisited if Shield is ever deployed multi-instance without Redis.
 - ~~Test environment lacks database isolation in CI~~ — **closed 2026-09-20**. CI now provisions an ephemeral `postgres:16` service container per run (`.github/workflows/ci.yml`) and runs the full `test:integration`/`test:domain` suites against it. This also resolved a real, previously-documented flake: 2 of 209 assertions in `gatekeeper.test.js` failed intermittently against the live Neon database (confirmed by re-running the identical suite against a local Postgres instance: 0 failures) — the failure was network-latency/timing sensitivity in the test, not a logic bug. See the CI workflow's "Provision ephemeral schema" step for why `prisma migrate deploy` doesn't work here (the migration history has no baseline) and what runs instead.

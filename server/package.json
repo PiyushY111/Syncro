@@ -14,6 +14,7 @@
     "test:domain": "node tests/domainInvariants.test.js",
     "test:security": "node tests/security.test.js",
     "test:concurrency": "node tests/concurrency.test.js",
+    "test:rls": "node tests/rlsIsolation.test.js",
     "db:seed": "node prisma/seed.js",
     "db:push": "npx prisma db push",
     "db:validate": "npx prisma validate",

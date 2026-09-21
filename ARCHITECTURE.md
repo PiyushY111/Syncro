@@ -141,7 +141,7 @@ server/
 ## 💾 Complete Database Architecture & Mechanics
 
 ### 3.1 Relational Data Models & Schema Design
-The database architecture uses **PostgreSQL** managed through **Prisma ORM**. The data model supports multi-tenant isolation, workspace RBAC, agile project management, real-time messaging, Gantt schedules, Kanban boards, and security auditing.
+The database architecture uses **PostgreSQL** managed through **Prisma ORM**. The data model supports multi-tenant isolation, workspace RBAC, agile project management, real-time messaging, Gantt schedules, Kanban boards, and security auditing. "Multi-tenant isolation" here describes the schema (every tenant-scoped table carries a `workspaceId`) and the application-layer authorization checks built on it — three tables also carry Postgres Row Level Security policies, but the application doesn't currently activate them; see [`SECURITY.md` § Database-level tenant isolation](./SECURITY.md#database-level-tenant-isolation-row-level-security--declared-not-active) for the precise, verified gap.
 
 Key Domain Entities:
 - **`User`**: System identity, encrypted auth credentials, 2FA security codes, and Google OAuth tokens.
