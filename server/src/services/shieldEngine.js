@@ -73,7 +73,7 @@ export const shieldEngine = {
                 SESSION_TTL_SECONDS
             );
         } catch (err) {
-            console.warn('[SHIELD WARN] Redis unavailable for session store, falling back to in-memory store:', err.message);
+            logger.warn('[SHIELD WARN] Redis unavailable for session store, falling back to in-memory store:', { error: err.message, sessionId });
             memorySessions.set(sessionId, sessionRecord);
         }
 
@@ -140,7 +140,7 @@ export const shieldEngine = {
                 return { valid: false, reason: 'Replay attack detected: duplicate nonce' };
             }
         } catch (err) {
-            console.warn('[SHIELD WARN] Redis unavailable for nonce verification, using in-memory guard:', err.message);
+            logger.warn('[SHIELD WARN] Redis unavailable for nonce verification, using in-memory guard:', { error: err.message, sessionId });
             if (memoryNonces.has(nonceKey)) {
                 return { valid: false, reason: 'Replay attack detected: duplicate nonce' };
             }

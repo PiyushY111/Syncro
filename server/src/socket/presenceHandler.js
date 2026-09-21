@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { redisCache } from "../config/redis.js";
+import logger from "../utils/logger/logger.js";
 
 export const registerPresenceHandlers = (io, socket) => {
     const userId = socket.user.id;
@@ -30,7 +31,7 @@ export const registerPresenceHandlers = (io, socket) => {
                 io.to(`workspace:${wsId}`).emit("presence:update", { userId, status: "online" });
             });
         } catch (err) {
-            console.error("Error auto-joining socket workspace rooms:", err);
+            logger.error("Error auto-joining socket workspace rooms:", { error: err.message, userId });
         }
     })();
 

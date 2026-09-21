@@ -35,7 +35,6 @@ if ('serviceWorker' in navigator) {
     if (import.meta.env.PROD) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('/service-worker.js')
-                .then((reg) => console.log('[ServiceWorker] Registered successfully on scope:', reg.scope))
                 .catch((err) => console.error('[ServiceWorker] Registration failed:', err));
         });
     } else {

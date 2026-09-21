@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { basePrisma } from "../config/prisma.js";
+import logger from "../utils/logger/logger.js";
 
 /**
  * Creates a tamper-evident, append-only audit log record chained via SHA-256 hashes.
@@ -70,7 +71,7 @@ export const logAuditEvent = async ({
 
         return logEntry;
     } catch (error) {
-        console.error("Error logging audit event:", error);
+        logger.error("Error logging audit event:", { error: error.message, userId, workspaceId, requestId: req?.headers?.["x-request-id"] });
         return null;
     }
 };
@@ -107,7 +108,7 @@ export const verifyAuditLogChain = async (workspaceId) => {
 
         return { isValid: true, totalLogs: logs.length };
     } catch (error) {
-        console.error("Error verifying audit log chain:", error);
+        logger.error("Error verifying audit log chain:", { error: error.message, workspaceId });
         return { isValid: false, totalLogs: 0, error: error.message };
     }
 };

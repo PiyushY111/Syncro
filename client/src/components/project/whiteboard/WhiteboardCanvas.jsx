@@ -61,7 +61,7 @@ export default function WhiteboardCanvas({ whiteboardId, tasks }) {
             }
         };
         window.addEventListener('keydown', handleKeyDown); return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [nodes, edges, drawings, pages, currentPageId, selectedNodeIds, history]);
+    }, [nodes, edges, drawings, pages, currentPageId, selectedNodeIds, history, broadcast, pushHistory, undo, redo, setNodes, setEdges]);
 
     const handleMouseMove = (e) => {
         const coords = getCoords(e); socket?.emit("whiteboard:cursor", { whiteboardId, x: coords.x, y: coords.y });

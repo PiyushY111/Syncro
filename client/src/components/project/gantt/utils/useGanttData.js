@@ -11,7 +11,7 @@ export function useGanttData(tasks, zoom, searchQuery, statusFilter, milestonesO
         let end = customEndDate ? endOfMonth(new Date(customEndDate)) : endOfMonth(addMonths(baseMonth, 6));
 
         return { startDateBound: start, timelineDays: eachDayOfInterval({ start, end }), columnWidth: colW };
-    }, [tasks, zoom, customStartDate, customEndDate, currentMonth]);
+    }, [zoom, customStartDate, customEndDate, currentMonth]);
 
     const filteredTasks = useMemo(() => {
         return tasks.filter(task => {

@@ -1,5 +1,6 @@
 import { redisCache } from '../config/redis.js';
 import { RateLimitError } from '../utils/errors/appError.js';
+import logger from '../utils/logger/logger.js';
 
 /**
  * Enterprise Rate Limiting Middleware for Auth endpoints.
@@ -37,7 +38,7 @@ export const createRateLimiter = (options = {}) => {
 
       next();
     } catch (err) {
-      console.warn('[RATE LIMITER ERROR]', err.message);
+      logger.warn('[RATE LIMITER ERROR]', { error: err.message, requestId: req.headers['x-request-id'] });
       // Fail open on rate limiter cache errors to preserve uptime
       next();
     }

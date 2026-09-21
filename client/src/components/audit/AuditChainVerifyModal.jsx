@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { ShieldCheck, ShieldAlert, X, RefreshCw, Hash, Lock, CheckCircle2 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '@/configs/api';
@@ -7,7 +7,7 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState(null);
 
-    const runVerification = async () => {
+    const runVerification = useCallback(async () => {
         if (!workspaceId) return;
         setLoading(true);
         try {
@@ -20,7 +20,7 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
         } finally {
             setLoading(false);
         }
-    };
+    }, [workspaceId]);
 
     useEffect(() => {
         if (isOpen) {
@@ -28,7 +28,7 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
         } else {
             setResult(null);
         }
-    }, [isOpen, workspaceId]);
+    }, [isOpen, workspaceId, runVerification]);
 
     if (!isOpen) return null;
 

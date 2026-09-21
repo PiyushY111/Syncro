@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { Users, Plus, Trash2, Folder, UserPlus, UserMinus, ChevronRight, Edit3 } from 'lucide-react';
 import api from '@/configs/api';
 import toast from 'react-hot-toast';
@@ -15,13 +15,22 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
 
     const canManage = canManageSubTeams(currentUserRole, currentWorkspace);
 
-    const fetchSubTeams = async () => {
+    // Read via a ref inside fetchSubTeams so the callback's identity only
+    // depends on the workspace (matching the original effect's trigger),
+    // without reading a stale activeSubTeam from a captured closure.
+    const activeSubTeamRef = useRef(activeSubTeam);
+    useEffect(() => {
+        activeSubTeamRef.current = activeSubTeam;
+    }, [activeSubTeam]);
+
+    const fetchSubTeams = useCallback(async () => {
         try {
             setLoading(true);
             const { data } = await api.get(`/api/subteams/workspace/${currentWorkspace.id}`);
             setSubTeams(data.subTeams || []);
-            if (activeSubTeam) {
-                const updatedActive = data.subTeams.find(s => s.id === activeSubTeam.id);
+            const current = activeSubTeamRef.current;
+            if (current) {
+                const updatedActive = data.subTeams.find(s => s.id === current.id);
                 setActiveSubTeam(updatedActive || null);
             }
         } catch (error) {
@@ -30,13 +39,13 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
         } finally {
             setLoading(false);
         }
-    };
+    }, [currentWorkspace?.id]);
 
     useEffect(() => {
         if (currentWorkspace?.id) {
             fetchSubTeams();
         }
-    }, [currentWorkspace?.id]);
+    }, [currentWorkspace?.id, fetchSubTeams]);
 
     const handleCreateSubTeam = async (e) => {
         e.preventDefault();

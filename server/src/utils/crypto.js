@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import logger from './logger/logger.js';
 
 const ALGORITHM = 'aes-256-gcm';
 const KEY_STRING = process.env.FIELD_ENCRYPTION_KEY || process.env.JWT_SECRET;
@@ -27,7 +28,7 @@ export const encryptField = (text) => {
     const authTag = cipher.getAuthTag().toString('hex');
     return `${iv.toString('hex')}:${authTag}:${encrypted}`;
   } catch (err) {
-    console.error('[ENCRYPTION ERROR]', err.message);
+    logger.error('[ENCRYPTION ERROR]', { error: err.message });
     throw new Error(`Field encryption failed: ${err.message}`);
   }
 };
@@ -54,7 +55,7 @@ export const decryptField = (encryptedText) => {
     decrypted += decipher.final('utf8');
     return decrypted;
   } catch (err) {
-    console.error('[DECRYPTION ERROR]', err.message);
+    logger.error('[DECRYPTION ERROR]', { error: err.message });
     return encryptedText;
   }
 };

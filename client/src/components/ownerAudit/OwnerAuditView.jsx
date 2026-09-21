@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import api from '@/configs/api';
 import OwnerSecurityAlerts from './OwnerSecurityAlerts';
@@ -15,7 +15,7 @@ export default function OwnerAuditView() {
     const [logs, setLogs] = useState([]);
     const [isPurgeOpen, setIsPurgeOpen] = useState(false);
 
-    const fetchLogs = async () => {
+    const fetchLogs = useCallback(async () => {
         if (!currentWorkspace?.id) return;
         try {
             const res = await api.get(`/api/audit/workspace/${currentWorkspace.id}`, { params: { limit: 100 } });
@@ -23,11 +23,11 @@ export default function OwnerAuditView() {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [currentWorkspace?.id]);
 
     useEffect(() => {
         fetchLogs();
-    }, [currentWorkspace?.id]);
+    }, [fetchLogs]);
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto text-xs">

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '@/configs/api';
 import { Clock, RotateCcw, ShieldCheck } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -7,7 +7,7 @@ export default function EntityVersionTimeline({ entityType, entityId, canRollbac
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const fetchHistory = async () => {
+    const fetchHistory = useCallback(async () => {
         if (!entityType || !entityId) return;
         try {
             const res = await api.get(`/api/audit/entity/${entityType}/${entityId}`);
@@ -17,11 +17,11 @@ export default function EntityVersionTimeline({ entityType, entityId, canRollbac
         } finally {
             setLoading(false);
         }
-    };
+    }, [entityType, entityId]);
 
     useEffect(() => {
         fetchHistory();
-    }, [entityType, entityId]);
+    }, [fetchHistory]);
 
     const handleRollback = async (logId) => {
         try {

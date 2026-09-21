@@ -1,5 +1,6 @@
 import { basePrisma } from '../config/prisma.js';
 import { eventBus } from './eventBus.js';
+import logger from '../utils/logger/logger.js';
 
 /**
  * Enqueues a side effect event into the transactional Outbox table within an existing database transaction.
@@ -50,7 +51,7 @@ export const dispatchOutboxEvents = async (batchSize = 50) => {
         });
         dispatched++;
       } catch (err) {
-        console.error(`[OUTBOX DISPATCH ERROR] Event ID: ${evt.id}`, err.message);
+        logger.error(`[OUTBOX DISPATCH ERROR] Event ID: ${evt.id}`, { error: err.message, eventType: evt.eventType });
         await basePrisma.outboxEvent.update({
           where: { id: evt.id },
           data: {
@@ -62,7 +63,7 @@ export const dispatchOutboxEvents = async (batchSize = 50) => {
 
     return { dispatched, total: pendingEvents.length };
   } catch (err) {
-    console.error('[OUTBOX POLLER CRASH]', err.message);
+    logger.error('[OUTBOX POLLER CRASH]', { error: err.message });
     return { dispatched: 0, error: err.message };
   }
 };

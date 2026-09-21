@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { parseCookie as parseCookies } from "cookie";
 import { prisma } from "../config/prisma.js";
+import logger from "../utils/logger/logger.js";
 
 const extractTokenFromCookieHeader = (cookieHeader) => {
     if (!cookieHeader) return null;
@@ -52,7 +53,7 @@ export const socketAuthMiddleware = async (socket, next) => {
         socket.user = user;
         next();
     } catch (err) {
-        console.error("[SOCKET AUTH ERROR]", err.message);
+        logger.error("[SOCKET AUTH ERROR]", { error: err.message });
         next(new Error("Authentication error: Invalid or expired token"));
     }
 };

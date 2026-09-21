@@ -5,6 +5,7 @@ import { eventBus } from "../../services/eventBus.js";
 import { BadRequestError, NotFoundError, ForbiddenError } from "../../utils/errors/appError.js";
 import { ApiResponse } from "../../utils/response/apiResponse.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
+import logger from "../../utils/logger/logger.js";
 
 export const createProject = asyncHandler(async (req, res) => {
   const userId = req.user.id;
@@ -96,7 +97,7 @@ export const createProject = asyncHandler(async (req, res) => {
         userAgent: req.headers["user-agent"],
       },
     })
-    .catch((err) => console.error("[createProject] Event publication error:", err));
+    .catch((err) => logger.error("[createProject] Event publication error:", { error: err.message, userId, requestId: req.headers["x-request-id"] }));
 
   return ApiResponse.created(res, {
     data: { project: projectWithMembers },

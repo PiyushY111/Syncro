@@ -4,6 +4,7 @@ import { eventBus } from '../services/eventBus.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/response/apiResponse.js';
 import { BadRequestError, NotFoundError, ForbiddenError } from '../utils/errors/appError.js';
+import logger from '../utils/logger/logger.js';
 
 /**
  * Shared authorization predicate to verify if a user has access to task comments.
@@ -80,7 +81,7 @@ export const addComment = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[addComment] Event publication error:', err));
+    }).catch(err => logger.error('[addComment] Event publication error:', { error: err.message, userId, requestId: req.headers['x-request-id'] }));
 
     return ApiResponse.created(res, {
         data: { comment: commentWithUser },

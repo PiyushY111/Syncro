@@ -21,7 +21,7 @@ export const fetchWorkspaces = createAsyncThunk('workspace/fetchWorkspaces', asy
         const payload = data?.data || data;
         return payload.workspaces || [];
     } catch (error) {
-        console.log(error?.response?.data?.message || error.message);
+        console.error(error?.response?.data?.message || error.message);
         return [];
     }
 });

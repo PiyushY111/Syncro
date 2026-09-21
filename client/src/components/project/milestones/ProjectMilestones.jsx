@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '@/configs/api';
 import toast from 'react-hot-toast';
 import MilestoneHeader from './MilestoneHeader';
@@ -14,18 +14,18 @@ export default function ProjectMilestones({ project, tasks }) {
     const [editingMilestone, setEditingMilestone] = useState(null);
     const [linkingMilestone, setLinkingMilestone] = useState(null);
 
-    const fetchMilestones = async () => {
+    const fetchMilestones = useCallback(async () => {
         try {
             const res = await api.get(`/api/milestones/project/${project.id}`);
             setMilestones(res.data.milestones || []);
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [project?.id]);
 
     useEffect(() => {
         if (project?.id) fetchMilestones();
-    }, [project?.id]);
+    }, [project?.id, fetchMilestones]);
 
     const handleSaveMilestone = async (data) => {
         try {

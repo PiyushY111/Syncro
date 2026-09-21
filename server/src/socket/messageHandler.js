@@ -3,6 +3,7 @@ import { prisma } from "../config/prisma.js";
 import { redisCache } from "../config/redis.js";
 import { eventBus } from "../services/eventBus.js";
 import { invalidateChannelMessageCache } from "../controllers/chat/getMessages.js";
+import logger from "../utils/logger/logger.js";
 
 export const registerMessageHandlers = (io, socket) => {
     socket.join(`user:${socket.user.id}`);
@@ -38,7 +39,7 @@ export const registerMessageHandlers = (io, socket) => {
                 socket.join(`channel:${ch.id}`);
             });
         } catch (err) {
-            console.error("Error auto-joining socket channels:", err);
+            logger.error("Error auto-joining socket channels:", { error: err.message, userId: socket.user.id });
         }
     })();
 
@@ -71,7 +72,7 @@ export const registerMessageHandlers = (io, socket) => {
 
             socket.join(`channel:${channelId}`);
         } catch (err) {
-            console.error("[SOCKET CHANNEL JOIN AUTH ERROR]", err.message);
+            logger.error("[SOCKET CHANNEL JOIN AUTH ERROR]", { error: err.message, userId: socket.user.id, channelId });
         }
     });
 
@@ -181,10 +182,10 @@ export const registerMessageHandlers = (io, socket) => {
                 channelId: channelId || null,
                 recipientId: recipientId || null,
                 senderName: socket.user.name
-            }).catch(e => console.warn("[EVENTBUS CHAT MSG SENT NON-BLOCKING ERR]", e.message));
+            }).catch(e => logger.warn("[EVENTBUS CHAT MSG SENT NON-BLOCKING ERR]", { error: e.message, userId: socket.user.id }));
 
         } catch (error) {
-            console.error("[SOCKET MESSAGE SEND ERROR]", error);
+            logger.error("[SOCKET MESSAGE SEND ERROR]", { error: error.message, userId: socket.user.id });
             socket.emit("message:error", { message: "Failed to send message" });
         }
     });
@@ -225,10 +226,10 @@ export const registerMessageHandlers = (io, socket) => {
                 messageId,
                 channelId: targetChannelId || null,
                 recipientId: message.recipientId
-            }).catch(e => console.warn("[EVENTBUS CHAT MSG DELETED NON-BLOCKING ERR]", e.message));
+            }).catch(e => logger.warn("[EVENTBUS CHAT MSG DELETED NON-BLOCKING ERR]", { error: e.message, userId: socket.user.id }));
 
         } catch (error) {
-            console.error("[SOCKET MESSAGE DELETE ERROR]", error);
+            logger.error("[SOCKET MESSAGE DELETE ERROR]", { error: error.message, userId: socket.user.id });
         }
     });
 };

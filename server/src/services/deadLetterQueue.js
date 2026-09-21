@@ -1,5 +1,6 @@
 import { basePrisma } from '../config/prisma.js';
 import { eventBus } from './eventBus.js';
+import logger from '../utils/logger/logger.js';
 
 /**
  * Records an exhausted background job failure into the Dead-Letter Queue table.
@@ -14,10 +15,10 @@ export const recordFailedJob = async ({ jobId, eventName, payload, error }) => {
         error: typeof error === 'string' ? error : error?.message || JSON.stringify(error),
       },
     });
-    console.warn(`[DEAD LETTER QUEUE] Recorded failed job ${jobId} (${eventName})`);
+    logger.warn(`[DEAD LETTER QUEUE] Recorded failed job ${jobId} (${eventName})`);
     return record;
   } catch (err) {
-    console.error('[DLQ RECORD ERROR]', err.message);
+    logger.error('[DLQ RECORD ERROR]', { error: err.message, jobId, eventName });
   }
 };
 

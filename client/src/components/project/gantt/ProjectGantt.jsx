@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { differenceInDays, format, addMonths, subMonths } from 'date-fns';
 import api from '@/configs/api';
@@ -49,12 +49,12 @@ export default function ProjectGantt({ tasks = [], project }) {
 
     const handleScroll = (e) => { if (taskListRef.current && e.target === chartBodyRef.current) taskListRef.current.scrollTop = e.target.scrollTop; };
 
-    const scrollToDate = (targetDate) => {
+    const scrollToDate = useCallback((targetDate) => {
         if (chartBodyRef.current && startDateBound && targetDate) {
             const offset = differenceInDays(targetDate, startDateBound);
             chartBodyRef.current.scrollLeft = Math.max(0, offset * columnWidth - 200);
         }
-    };
+    }, [startDateBound, columnWidth]);
 
     const handleSelectDate = (date) => {
         setSelectedDate(date);
@@ -112,9 +112,19 @@ export default function ProjectGantt({ tasks = [], project }) {
         }
     }, [dateParam]);
 
+    // Re-apply scroll to whichever date is currently selected whenever the
+    // chart's own geometry changes (columnWidth/startDateBound) — not when
+    // selectedDate itself changes, since selecting a date already triggers
+    // scrollToDate directly from handleSelectDate/handleJumpToToday. Reading
+    // selectedDate via a ref keeps that behavior while satisfying the linter.
+    const selectedDateRef = useRef(selectedDate);
     useEffect(() => {
-        if (selectedDate) scrollToDate(selectedDate);
-    }, [startDateBound, columnWidth]);
+        selectedDateRef.current = selectedDate;
+    }, [selectedDate]);
+
+    useEffect(() => {
+        if (selectedDateRef.current) scrollToDate(selectedDateRef.current);
+    }, [scrollToDate]);
 
     useEffect(() => {
         if (!isResizingTasks) return undefined;

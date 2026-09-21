@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import api from '@/configs/api';
 import toast from 'react-hot-toast';
 import InboxHeader from './InboxHeader';
@@ -10,7 +10,7 @@ export default function UniversalInboxView() {
     const [filter, setFilter] = useState('ALL');
     const [search, setSearch] = useState('');
 
-    const fetchInbox = async () => {
+    const fetchInbox = useCallback(async () => {
         try {
             const res = await api.get(`/api/inbox?filter=${filter}&search=${encodeURIComponent(search)}`);
             setNotifications(res.data.notifications || []);
@@ -18,11 +18,11 @@ export default function UniversalInboxView() {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [filter, search]);
 
     useEffect(() => {
         fetchInbox();
-    }, [filter, search]);
+    }, [fetchInbox]);
 
     const handleMarkRead = async (id) => {
         // Optimistic UI update (0ms)

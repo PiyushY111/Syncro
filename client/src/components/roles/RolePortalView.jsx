@@ -1,7 +1,7 @@
 /**
  * Role-Based Access Control (RBAC) Portal View Component
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 import { useSelector, useDispatch } from 'react-redux';
 import { updateWorkspace } from '@/features/workspaceSlice';
@@ -27,7 +27,7 @@ export default function RolePortalView() {
     const [isSaving, setIsSaving] = useState(false);
     const [isCustomModalOpen, setIsCustomModalOpen] = useState(false);
 
-    const fetchRoleData = async () => {
+    const fetchRoleData = useCallback(async () => {
         if (!currentWorkspace?.id) return;
         try {
             const res = await api.get(`/api/roles/workspace/${currentWorkspace.id}`);
@@ -40,11 +40,11 @@ export default function RolePortalView() {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [currentWorkspace?.id]);
 
     useEffect(() => {
         fetchRoleData();
-    }, [currentWorkspace?.id]);
+    }, [fetchRoleData]);
 
     const handleToggleFeature = async (role, featureKey, value) => {
         const updatedMatrix = {

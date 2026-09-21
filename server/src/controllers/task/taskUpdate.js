@@ -1,5 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { wouldCreateCycle, assertAssigneeBelongsToProject, assertTaskForeignRefsBelongToProject } from './taskHelpers.js';
+import logger from '../../utils/logger/logger.js';
 import { hasWorkspacePermission } from '../role/checkPermissionHelper.js';
 import { eventBus } from '../../services/eventBus.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
@@ -158,7 +159,7 @@ export const updateTask = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[updateTask] Event publishing error:', err));
+    }).catch(err => logger.error('[updateTask] Event publishing error:', { error: err.message, userId, requestId: req.headers['x-request-id'] }));
 
     return ApiResponse.success(res, {
         data: { task: taskWithAssignee },

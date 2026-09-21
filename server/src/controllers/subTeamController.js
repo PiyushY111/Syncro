@@ -4,6 +4,7 @@ import { eventBus } from '../services/eventBus.js';
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiResponse } from '../utils/response/apiResponse.js';
 import { BadRequestError, NotFoundError, ForbiddenError, ConflictError } from '../utils/errors/appError.js';
+import logger from '../utils/logger/logger.js';
 
 // 1. Create a sub-team
 export const createSubTeam = asyncHandler(async (req, res) => {
@@ -53,7 +54,7 @@ export const createSubTeam = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[createSubTeam] Event publication error:', err));
+    }).catch(err => logger.error('[createSubTeam] Event publication error:', { error: err.message, userId, requestId: req.headers["x-request-id"] }));
 
     return ApiResponse.created(res, {
         data: { subTeam },
@@ -158,7 +159,7 @@ export const updateSubTeam = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[updateSubTeam] Event publication error:', err));
+    }).catch(err => logger.error('[updateSubTeam] Event publication error:', { error: err.message, userId, requestId: req.headers["x-request-id"] }));
 
     return ApiResponse.success(res, {
         data: { subTeam: updated },
@@ -207,7 +208,7 @@ export const deleteSubTeam = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[deleteSubTeam] Event publication error:', err));
+    }).catch(err => logger.error('[deleteSubTeam] Event publication error:', { error: err.message, userId, requestId: req.headers["x-request-id"] }));
 
     return ApiResponse.success(res, {
         message: "Sub-team deleted successfully"
@@ -268,7 +269,7 @@ export const addSubTeamMember = asyncHandler(async (req, res) => {
                 ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
                 userAgent: req.headers["user-agent"]
             }
-        }).catch(err => console.error('[addSubTeamMember] Event publication error:', err));
+        }).catch(err => logger.error('[addSubTeamMember] Event publication error:', { error: err.message, userId: adminUserId, requestId: req.headers["x-request-id"] }));
 
         return ApiResponse.created(res, {
             data: { membership },
@@ -326,7 +327,7 @@ export const removeSubTeamMember = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[removeSubTeamMember] Event publication error:', err));
+    }).catch(err => logger.error('[removeSubTeamMember] Event publication error:', { error: err.message, userId: adminUserId, requestId: req.headers["x-request-id"] }));
 
     return ApiResponse.success(res, {
         message: "Member removed from sub-team successfully"

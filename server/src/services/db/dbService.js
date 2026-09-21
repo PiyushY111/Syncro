@@ -1,6 +1,7 @@
 import { prisma, basePrisma } from "../../config/prisma.js";
 import { redisCache } from "../../config/redis.js";
 import { logAuditEvent } from "../auditLogger.js";
+import logger from "../../utils/logger/logger.js";
 
 /**
  * Executes a transactional database operation with exponential backoff retries for transient deadlock/serialization failures.
@@ -37,7 +38,7 @@ export const executeTransaction = async (actionFn, options = {}) => {
 
       if (isTransient && attempt < maxRetries) {
         const backoffMs = Math.pow(2, attempt) * 100 + Math.floor(Math.random() * 50);
-        console.warn(
+        logger.warn(
           `[TRANSACTION RETRY] Attempt ${attempt}/${maxRetries} failed due to transient error (${error.code || error.message}). Retrying in ${backoffMs}ms...`
         );
         await new Promise((resolve) => setTimeout(resolve, backoffMs));
@@ -148,7 +149,7 @@ export const getCachedOrFetch = async (cacheKey, fetchFn, ttlSeconds = 300) => {
       return typeof cached === "string" ? JSON.parse(cached) : cached;
     }
   } catch (err) {
-    console.warn(`[CACHE READ ERROR] Key: ${cacheKey}`, err.message);
+    logger.warn(`[CACHE READ ERROR] Key: ${cacheKey}`, { error: err.message });
   }
 
   const lockKey = `lock:${cacheKey}`;
@@ -174,7 +175,7 @@ export const getCachedOrFetch = async (cacheKey, fetchFn, ttlSeconds = 300) => {
       try {
         await redisCache.set(cacheKey, JSON.stringify(freshData), ttlSeconds);
       } catch (err) {
-        console.warn(`[CACHE WRITE ERROR] Key: ${cacheKey}`, err.message);
+        logger.warn(`[CACHE WRITE ERROR] Key: ${cacheKey}`, { error: err.message });
       }
     }
 

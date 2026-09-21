@@ -87,14 +87,16 @@ export default function useChatState() {
         return () => localStorage.removeItem('active_chat_id');
     }, [activeChannel?.id, activeDM?.id]);
 
-    // Fetch channels with SWR caching
+    // Fetch channels with SWR caching. Only re-fetches on workspace change —
+    // reads activeChatKeyRef (rather than activeChannel/activeDM directly)
+    // so selecting a channel/DM doesn't re-trigger this fetch.
     useEffect(() => {
         if (!currentWorkspace?.id) return;
         api.get(`/api/chat/workspaces/${currentWorkspace.id}/channels`, { cacheTtl: 30000 })
             .then(({ data }) => {
                 const fetchedChannels = data.channels || [];
                 setChannels(fetchedChannels);
-                if (fetchedChannels.length > 0 && !activeChannel && !activeDM) {
+                if (fetchedChannels.length > 0 && !activeChatKeyRef.current) {
                     setActiveChannel(fetchedChannels[0]);
                 }
             })
@@ -260,7 +262,7 @@ export default function useChatState() {
             socket.off("typing:display", onTyping);
             socket.off("direct:cleared", onDirectCleared);
         };
-    }, [socket, activeChannel?.id, activeDM?.id, currentUser?.id]);
+    }, [socket, activeChannel?.id, activeDM, currentUser?.id]);
 
     // Search query with debounced SWR
     useEffect(() => {

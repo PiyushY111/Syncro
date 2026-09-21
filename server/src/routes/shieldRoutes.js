@@ -9,6 +9,7 @@ import express from 'express';
 import http from 'http';
 import { shieldEngine } from '../services/shieldEngine.js';
 import { apiLimiter, authLimiter } from '../middlewares/rateLimiter.js';
+import logger from '../utils/logger/logger.js';
 
 const router = express.Router();
 
@@ -29,7 +30,7 @@ router.post('/handshake', authLimiter, async (req, res) => {
         const result = await shieldEngine.handleHandshake(clientPublicKey);
         return res.status(200).json(result);
     } catch (err) {
-        console.error('[SHIELD HANDSHAKE ERROR]', err.message);
+        logger.error('[SHIELD HANDSHAKE ERROR]', { error: err.message, requestId: req.headers['x-request-id'] });
         return res.status(500).json({ message: 'Shield handshake failed' });
     }
 });
@@ -75,7 +76,7 @@ router.post('/dispatch', apiLimiter, async (req, res) => {
         try {
             command = shieldEngine.decryptPayload(ciphertext, session.encKey);
         } catch (decErr) {
-            console.error('[SHIELD DECRYPTION ERROR]', decErr.message);
+            logger.error('[SHIELD DECRYPTION ERROR]', { error: decErr.message, sessionId, requestId: req.headers['x-request-id'] });
             return res.status(400).json({ message: 'Ciphertext decryption or authentication tag verification failed.' });
         }
 
@@ -238,7 +239,7 @@ router.post('/dispatch', apiLimiter, async (req, res) => {
             c: encryptedResponse
         });
     } catch (err) {
-        console.error('[SHIELD DISPATCH ERROR]', err);
+        logger.error('[SHIELD DISPATCH ERROR]', { error: err.message, requestId: req.headers['x-request-id'] });
         return res.status(500).json({ message: 'Internal shield dispatch error' });
     }
 });

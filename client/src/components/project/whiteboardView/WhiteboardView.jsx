@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Presentation, Plus, ArrowLeft, Trash2 } from 'lucide-react';
 import api from '@/configs/api';
 import WhiteboardCanvas from '../whiteboard/WhiteboardCanvas';
@@ -12,16 +12,24 @@ export default function WhiteboardView({ projectId, tasks }) {
     const [isCreateOpen, setIsCreateOpen] = useState(false);
     const [boardToDelete, setBoardToDelete] = useState(null);
 
-    const loadBoards = async () => {
+    // Read via a ref so loadBoards' identity only depends on projectId
+    // (matching the original effect's trigger) without reading a stale
+    // activeBoardId from a captured closure.
+    const activeBoardIdRef = useRef(activeBoardId);
+    useEffect(() => {
+        activeBoardIdRef.current = activeBoardId;
+    }, [activeBoardId]);
+
+    const loadBoards = useCallback(async () => {
         try {
             const { data } = await api.get(`/api/whiteboards/project/${projectId}`);
             setBoards(data);
-            if (data.length === 1 && !activeBoardId) setActiveBoardId(data[0].id);
+            if (data.length === 1 && !activeBoardIdRef.current) setActiveBoardId(data[0].id);
         } catch (err) { console.error("Failed to load whiteboards", err); }
         finally { setLoading(false); }
-    };
+    }, [projectId]);
 
-    useEffect(() => { loadBoards(); }, [projectId]);
+    useEffect(() => { loadBoards(); }, [loadBoards]);
 
     const submitCreateBoard = async (name) => {
         try {

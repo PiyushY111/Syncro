@@ -1,4 +1,5 @@
 import { prisma } from '../config/prisma.js';
+import logger from '../utils/logger/logger.js';
 
 export const hasProjectAccess = async (projectId, userId) => {
     try {
@@ -44,7 +45,7 @@ export const hasProjectAccess = async (projectId, userId) => {
 
         return false;
     } catch (err) {
-        console.error("[PROJECT ACCESS CHECK ERROR]", err);
+        logger.error("[PROJECT ACCESS CHECK ERROR]", { error: err.message, userId, projectId });
         return false;
     }
 };

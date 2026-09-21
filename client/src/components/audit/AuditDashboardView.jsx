@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import api from '@/configs/api';
 import AuditLogHeader from './AuditLogHeader';
@@ -19,7 +19,7 @@ export default function AuditDashboardView() {
     const [selectedLog, setSelectedLog] = useState(null);
     const [isDiffOpen, setIsDiffOpen] = useState(false);
 
-    const fetchAuditLogs = async () => {
+    const fetchAuditLogs = useCallback(async () => {
         if (!currentWorkspace?.id) return;
         try {
             const res = await api.get(`/api/audit/workspace/${currentWorkspace.id}`, {
@@ -32,11 +32,11 @@ export default function AuditDashboardView() {
         } catch (err) {
             console.error(err);
         }
-    };
+    }, [currentWorkspace?.id, entityFilter, severityFilter, search]);
 
     useEffect(() => {
         fetchAuditLogs();
-    }, [currentWorkspace?.id, entityFilter, severityFilter, search]);
+    }, [fetchAuditLogs]);
 
     return (
         <div className="space-y-5 max-w-6xl mx-auto">

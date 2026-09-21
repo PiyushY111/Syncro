@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from 'date-fns';
@@ -49,10 +49,10 @@ export default function SmartCalendar() {
 
     const today = useMemo(() => new Date(), []);
     const workspaceId = currentWorkspace?.id;
-    const projects = currentWorkspace?.projects || [];
+    const projects = useMemo(() => currentWorkspace?.projects || [], [currentWorkspace?.projects]);
 
     // Fetch workspace meetings
-    const fetchMeetings = async () => {
+    const fetchMeetings = useCallback(async () => {
         if (!workspaceId) return;
         setLoadingMeetings(true);
         try {
@@ -64,7 +64,7 @@ export default function SmartCalendar() {
         } finally {
             setLoadingMeetings(false);
         }
-    };
+    }, [workspaceId]);
 
     // Handle OAuth Callback redirect query parameter
     useEffect(() => {
@@ -80,7 +80,7 @@ export default function SmartCalendar() {
 
     useEffect(() => {
         fetchMeetings();
-    }, [workspaceId]);
+    }, [fetchMeetings]);
 
     // Google Calendar Events fetcher (fetches real GCal events if connected, with fallback)
     useEffect(() => {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { useSearchParams } from 'react-router-dom';
 import { Presentation, Plus, ArrowLeft, Trash2, Folder, Star } from 'lucide-react';
@@ -23,15 +23,15 @@ export default function WhiteboardsPage() {
     const currentUserRole = getUserWorkspaceRole(currentWorkspace, user?.id);
     const canManage = canManageWhiteboards(currentUserRole, currentWorkspace);
 
-    const loadBoards = () => {
+    const loadBoards = useCallback(() => {
         if (!currentWorkspace?.id) return;
         api.get(`/api/whiteboards/workspace/${currentWorkspace.id}`)
             .then(({ data }) => setBoards(data))
             .catch(err => console.error("Load failed", err))
             .finally(() => setLoading(false));
-    };
+    }, [currentWorkspace?.id]);
 
-    useEffect(() => { loadBoards(); }, [currentWorkspace?.id]);
+    useEffect(() => { loadBoards(); }, [loadBoards]);
 
     useEffect(() => {
         if (boards.length > 0 && boardId) {

@@ -6,6 +6,7 @@ import { executeTransaction, getCachedOrFetch } from '../../services/db/dbServic
 import { BadRequestError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
+import logger from '../../utils/logger/logger.js';
 import {
   resolveWorkspaceCreationPolicy,
   notifySuperAdminOfPendingRequest,
@@ -74,7 +75,7 @@ export const createWorkspace = asyncHandler(async (req, res) => {
         userAgent: req.headers['user-agent'],
       },
     })
-    .catch((err) => console.error('[createWorkspace] Event publication error:', err));
+    .catch((err) => logger.error('[createWorkspace] Event publication error:', { error: err.message, userId, requestId: req.headers['x-request-id'] }));
 
   try {
     await redisCache.del(`user:workspaces:${userId}`);

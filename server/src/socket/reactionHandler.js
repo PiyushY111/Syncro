@@ -1,5 +1,6 @@
 import { prisma } from "../config/prisma.js";
 import { invalidateChannelMessageCache } from "../controllers/chat/getMessages.js";
+import logger from "../utils/logger/logger.js";
 
 export const registerReactionHandlers = (io, socket) => {
     socket.on("reaction:add", async ({ messageId, emoji, channelId }) => {
@@ -37,7 +38,7 @@ export const registerReactionHandlers = (io, socket) => {
                 await invalidateChannelMessageCache(targetChannelId);
             }
         } catch (error) {
-            console.error("[SOCKET REACTION ADD ERROR]", error);
+            logger.error("[SOCKET REACTION ADD ERROR]", { error: error.message, userId: socket.user.id, messageId });
         }
     });
 
@@ -75,7 +76,7 @@ export const registerReactionHandlers = (io, socket) => {
                 await invalidateChannelMessageCache(targetChannelId);
             }
         } catch (error) {
-            console.error("[SOCKET REACTION REMOVE ERROR]", error);
+            logger.error("[SOCKET REACTION REMOVE ERROR]", { error: error.message, userId: socket.user.id, messageId });
         }
     });
 };

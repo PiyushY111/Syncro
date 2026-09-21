@@ -2,6 +2,7 @@ import { prisma } from '../config/prisma.js';
 import { redisCache } from '../config/redis.js';
 import sendEmail from '../config/nodemailer.js';
 import { BadRequestError, NotFoundError } from '../utils/errors/appError.js';
+import logger from '../utils/logger/logger.js';
 
 const SETTINGS_KEY = 'gatekeeper_config';
 const CACHE_KEY = 'platform:settings:gatekeeper';
@@ -352,7 +353,7 @@ export const notifySuperAdminOfPendingRequest = async ({ type, title, details })
   try {
     await sendEmail({ to: superAdminEmail, subject, html }).catch(() => {});
   } catch (err) {
-    console.error('[notifySuperAdminOfPendingRequest] Email failed:', err.message);
+    logger.error('[notifySuperAdminOfPendingRequest] Email failed:', { error: err.message, to: superAdminEmail });
   }
 };
 
@@ -387,6 +388,6 @@ export const sendApprovalConfirmationEmail = async ({ to, userName, type, entity
   try {
     await sendEmail({ to, subject, html }).catch(() => {});
   } catch (err) {
-    console.error('[sendApprovalConfirmationEmail] Email failed:', err.message);
+    logger.error('[sendApprovalConfirmationEmail] Email failed:', { error: err.message, to });
   }
 };

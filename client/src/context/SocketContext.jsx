@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "./AuthContext";
 
@@ -10,6 +10,22 @@ export const SocketProvider = ({ children }) => {
     const [onlineUsers, setOnlineUsers] = useState([]);
     const [isConnected, setIsConnected] = useState(false);
 
+    // The message:received handler below is registered once per socket
+    // connection (effect keyed on user?.id) and lives for that connection's
+    // whole lifetime, so it must read the *current* user via a ref rather
+    // than closing over the `user` value from when the socket was created —
+    // otherwise a display-name change wouldn't be reflected in the
+    // self-mention check below until the next reconnect.
+    const userRef = useRef(user);
+    useEffect(() => {
+        userRef.current = user;
+    }, [user]);
+
+    // Intentionally keyed on user?.id only below: this effect owns the
+    // actual socket connection lifecycle, so including the full `user`
+    // object would reconnect the socket on every unrelated profile field
+    // change, and including `socket` (which this effect itself sets via
+    // setSocket) would reconnect forever.
     useEffect(() => {
         if (!user) {
             if (socket) socket.disconnect();
@@ -29,7 +45,6 @@ export const SocketProvider = ({ children }) => {
         });
 
         socketInstance.on("connect", () => {
-            console.log("[SOCKET CONNECTED] Ultra-low latency active");
             setIsConnected(true);
         });
 
@@ -44,7 +59,8 @@ export const SocketProvider = ({ children }) => {
         socketInstance.on("message:received", (msg) => {
             const activeChatId = localStorage.getItem('active_chat_id');
             const targetId = msg.channelId || msg.userId || msg.senderId;
-            if (targetId && targetId !== activeChatId && msg.userId !== user?.id) {
+            const currentUser = userRef.current;
+            if (targetId && targetId !== activeChatId && msg.userId !== currentUser?.id) {
                 // Add to standard unread chats
                 const key = 'unread_chats';
                 let unread = [];
@@ -55,7 +71,7 @@ export const SocketProvider = ({ children }) => {
                 }
 
                 // Check for @mention (case-insensitive, matches first name / first word followed by word boundary)
-                const firstName = user?.name ? user.name.trim().toLowerCase().split(/\s+/)[0] : '';
+                const firstName = currentUser?.name ? currentUser.name.trim().toLowerCase().split(/\s+/)[0] : '';
                 const isMention = msg.content && firstName && new RegExp(`@${firstName.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')}\\b`, 'i').test(msg.content);
                 if (isMention) {
                     const mentionKey = 'unread_mentions';
@@ -76,6 +92,7 @@ export const SocketProvider = ({ children }) => {
         return () => {
             socketInstance.disconnect();
         };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user?.id]);
 
     return (

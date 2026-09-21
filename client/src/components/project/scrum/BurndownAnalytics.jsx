@@ -5,7 +5,10 @@ import { AreaChart as ChartIcon, TrendingDown, Layers, Activity } from 'lucide-r
 
 export default function BurndownAnalytics({ project, tasks }) {
     const activeSprint = project?.sprints?.find(s => s.status === 'ACTIVE') || project?.sprints?.find(s => s.status === 'COMPLETED');
-    const sprintTasks = activeSprint ? tasks.filter(t => t.sprintId === activeSprint.id) : [];
+    const sprintTasks = useMemo(
+        () => (activeSprint ? tasks.filter(t => t.sprintId === activeSprint.id) : []),
+        [activeSprint, tasks]
+    );
 
     const chartData = useMemo(() => {
         if (!activeSprint || sprintTasks.length === 0) return [];

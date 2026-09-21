@@ -4,6 +4,7 @@ import { hasWorkspacePermission } from "../role/checkPermissionHelper.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import { ApiResponse } from "../../utils/response/apiResponse.js";
 import { BadRequestError, NotFoundError, ForbiddenError } from "../../utils/errors/appError.js";
+import logger from "../../utils/logger/logger.js";
 
 const canManageEpics = async (userId, workspaceId) => {
     return await hasWorkspacePermission(userId, workspaceId, "editTasks");
@@ -47,7 +48,7 @@ export const updateEpic = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[updateEpic] Event publication error:', err));
+    }).catch(err => logger.error('[updateEpic] Event publication error:', { error: err.message, userId: req.user.id, requestId: req.headers['x-request-id'] }));
 
     return ApiResponse.success(res, {
         data: { epic: updatedEpic },
@@ -89,7 +90,7 @@ export const deleteEpic = asyncHandler(async (req, res) => {
             ipAddress: req.headers["x-forwarded-for"] || req.socket.remoteAddress,
             userAgent: req.headers["user-agent"]
         }
-    }).catch(err => console.error('[deleteEpic] Event publication error:', err));
+    }).catch(err => logger.error('[deleteEpic] Event publication error:', { error: err.message, userId: req.user.id, requestId: req.headers['x-request-id'] }));
 
     return ApiResponse.success(res, {
         message: "Epic deleted successfully"

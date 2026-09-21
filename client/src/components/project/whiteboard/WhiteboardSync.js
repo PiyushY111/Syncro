@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSocket } from '@/context/SocketContext';
 import toast from 'react-hot-toast';
 import api from '@/configs/api';
@@ -92,17 +92,17 @@ export default function useWhiteboardSync(whiteboardId) {
         return () => clearTimeout(timer);
     }, [nodes, edges, viewport, drawings, pages, currentPageId, whiteboardId, version]);
 
-    const broadcast = (newNodes, newEdges, newDrawings, newPages) => {
+    const broadcast = useCallback((newNodes, newEdges, newDrawings, newPages) => {
         const activePages = newPages || pages.map(p => p.id === currentPageId ? { ...p, nodes: newNodes || nodes, edges: newEdges || edges, drawings: newDrawings || drawings } : p);
         socket?.emit("whiteboard:update", { whiteboardId, pages: activePages, currentPageId });
         if (newPages) setPages(newPages);
-    };
+    }, [pages, currentPageId, nodes, edges, drawings, socket, whiteboardId]);
 
-    const pushHistory = (state) => {
+    const pushHistory = useCallback((state) => {
         setHistory(prev => ({ past: [...prev.past.slice(-30), JSON.parse(JSON.stringify(state))], future: [] }));
-    };
+    }, []);
 
-    const undo = () => {
+    const undo = useCallback(() => {
         if (history.past.length === 0) return;
         const prev = history.past[history.past.length - 1];
         const current = pages.map(p => p.id === currentPageId ? { ...p, nodes, edges, drawings } : p);
@@ -110,9 +110,9 @@ export default function useWhiteboardSync(whiteboardId) {
         const active = prev.find(p => p.id === currentPageId) || prev[0];
         setNodes(active.nodes || []); setEdges(active.edges || []); setDrawings(active.drawings || []);
         broadcast(active.nodes, active.edges, active.drawings, prev);
-    };
+    }, [history, pages, currentPageId, nodes, edges, drawings, broadcast]);
 
-    const redo = () => {
+    const redo = useCallback(() => {
         if (history.future.length === 0) return;
         const next = history.future[0];
         const current = pages.map(p => p.id === currentPageId ? { ...p, nodes, edges, drawings } : p);
@@ -120,7 +120,7 @@ export default function useWhiteboardSync(whiteboardId) {
         const active = next.find(p => p.id === currentPageId) || next[0];
         setNodes(active.nodes || []); setEdges(active.edges || []); setDrawings(active.drawings || []);
         broadcast(active.nodes, active.edges, active.drawings, next);
-    };
+    }, [history, pages, currentPageId, nodes, edges, drawings, broadcast]);
 
     return {
         pages, setPages, currentPageId, setCurrentPageId,
