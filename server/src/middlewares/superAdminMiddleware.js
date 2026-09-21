@@ -33,10 +33,14 @@ export const requireSuperAdmin = async (req, res, next) => {
     const cacheKey = `user:is_superadmin:${userId}`;
     const cachedAdmin = await redisCache.get(cacheKey);
 
-    if (cachedAdmin === 'true') {
+    // See gatekeeperService.checkIsSuperAdmin for why both the string and
+    // boolean forms are checked here (Upstash auto-deserializes a stored
+    // 'true'/'false' string back into a real boolean; the in-memory
+    // fallback does not).
+    if (cachedAdmin === 'true' || cachedAdmin === true) {
       req.user.isSuperAdmin = true;
       return next();
-    } else if (cachedAdmin === 'false') {
+    } else if (cachedAdmin === 'false' || cachedAdmin === false) {
       throw new ForbiddenError('Super-Admin access privileges required');
     }
 

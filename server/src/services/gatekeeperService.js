@@ -158,8 +158,12 @@ export const checkIsSuperAdmin = async (user) => {
     try {
       const cacheKey = `user:is_superadmin:${user.id}`;
       const cached = await redisCache.get(cacheKey);
-      if (cached === 'true') return true;
-      if (cached === 'false') return false;
+      // The in-memory fallback returns exactly what was stored ('true'/'false'
+      // strings), but the real Upstash REST client auto-deserializes
+      // JSON-parseable values, so a stored 'true'/'false' string comes back
+      // as an actual boolean. Compare against both representations.
+      if (cached === 'true' || cached === true) return true;
+      if (cached === 'false' || cached === false) return false;
 
       const dbUser = await prisma.user.findUnique({
         where: { id: user.id },

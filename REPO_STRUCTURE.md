@@ -277,26 +277,28 @@ server/
 │   ├── socketAuthMiddleware.js# WebSocket JWT connection authentication
 │   ├── socketInit.js          # Socket.IO server setup & handler router
 │   └── whiteboardHandler.js   # Real-time vector whiteboard & cursor position broadcast
-├── tests/                     # Automated Test Suites
-│   ├── advancedSecurity.test.js# Cryptographic hash chains, security headers, & input sanitization tests
-│   ├── architecture.test.js   # Enterprise AppError, ApiResponse, DTO validation tests (16 passed)
-│   ├── auth.test.js           # Authentication & 2FA endpoint tests
-│   ├── chat.test.js           # Messaging & channel endpoint tests
-│   ├── concurrency.test.js    # Distributed stampede locking & transaction retry tests (7 passed)
-│   ├── database.test.js       # DB connection health, transaction retries, soft delete tests (7 passed)
-│   ├── domainInvariants.test.js# Domain business rules, sprint lifecycles & task dependencies (10 passed)
-│   ├── gatekeeper.test.js     # RBAC roles & super-admin policy tests (11 passed)
-│   ├── inbox.test.js          # Inbox notification tests
-│   ├── permissions.test.js    # Role matrix & permission enforcement tests
-│   ├── rateLimit2FA.test.js   # 2FA rate limiting and security tests
-│   ├── redis.test.js          # Redis caching & versioning tests
-│   ├── runAllTests.js         # Enterprise test suite orchestrator (8 suites)
-│   ├── security.test.js       # AES-256-GCM encryption & constant-time comparison tests (13 passed)
-│   ├── shield.test.js         # Shield zero-trust cryptographic unit tests (12 passed)
-│   ├── shieldE2E.test.js      # Shield end-to-end handshake & synthetic cloaked dispatch tests (8 passed)
-│   ├── stress5k.test.js       # 5,000 concurrent user load benchmark
-│   ├── transaction.test.js    # Outbox pattern & Dead-Letter Queue (DLQ) tests (9 passed)
-│   └── workspace.test.js      # Workspace management & onboarding tests
+├── tests/                     # Automated Test Suites — two groups: Vitest unit tests (mocked, run via `npm run test:unit`) and standalone node-script suites (orchestrated by runAllTests.js / `npm run test:integration`, real local Postgres)
+│   ├── architecture.test.js   # [node script] Enterprise AppError, ApiResponse, DTO validation tests (16 passed)
+│   ├── auth.test.js           # [Vitest] Authentication & 2FA endpoint tests
+│   ├── chat.test.js           # [Vitest] Messaging & channel endpoint tests
+│   ├── comment.test.js        # [Vitest] Task comment access control & CRUD tests
+│   ├── concurrency.test.js    # [node script] Distributed stampede locking & transaction retry tests (13 passed)
+│   ├── database.test.js       # [node script, run separately via `npm run db:test`] DB connection health, transaction retries, soft delete tests (8 passed)
+│   ├── domainInvariants.test.js# [node script] Domain business rules, sprint lifecycles & task dependencies (93 passed)
+│   ├── epic.test.js           # [Vitest] Epic CRUD & project-scoping tests
+│   ├── gatekeeper.test.js     # [node script] RBAC roles & super-admin policy tests (13 passed)
+│   ├── inbox.test.js          # [Vitest] Inbox notification tests
+│   ├── permissions.test.js    # [Vitest] Role matrix & permission enforcement tests
+│   ├── rateLimit2FA.test.js   # [Vitest] 2FA rate limiting and security tests
+│   ├── redis.test.js          # [Vitest] Redis caching & versioning tests
+│   ├── rlsIsolation.test.js   # [node script, local Postgres only] Row-level-security tenant isolation proof (7 passed)
+│   ├── runAllTests.js         # Node-script test suite orchestrator (10 suites)
+│   ├── security.test.js       # [node script] AES-256-GCM encryption & constant-time comparison tests (41 passed)
+│   ├── shield.test.js         # [node script] Shield zero-trust cryptographic unit tests (18 passed)
+│   ├── shieldE2E.test.js      # [node script] Shield end-to-end handshake & synthetic cloaked dispatch tests (11 passed)
+│   ├── taskForeignRefs.test.js# [node script, local Postgres only] Task cross-project reference validation (11 passed)
+│   ├── transaction.test.js    # [node script] Outbox pattern & Dead-Letter Queue (DLQ) tests (6 passed)
+│   └── workspace.test.js      # [Vitest] Workspace management & onboarding tests
 ├── utils/                     # Enterprise cross-cutting utilities
 │   ├── errors/                # Operational Error Class Hierarchy
 │   │   └── appError.js        # AppError base class & status-code-specific subclasses

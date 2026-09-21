@@ -54,7 +54,7 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Sub-teams & Role Matrix** — assign workspace members to sub-teams and custom role permissions.
 
 ### 5. Performance & Dynamic Code-Splitting
-* **Route-Level Code-Splitting (`React.lazy` + `Suspense`)** — dynamic on-demand loading of all 25 page routes; slashes initial production bundle size by 65% (down from 1.63 MB to 566 kB) and eliminates unbundled dev module network congestion.
+* **Route-Level Code-Splitting (`React.lazy` + `Suspense`)** — dynamic on-demand loading of page routes; the main chunk from a fresh `npm run build` is 567 kB (185 kB gzipped), with each route (Chat, Calendar, Whiteboards, Dashboard, etc.) loading as its own on-demand chunk instead of being bundled into the initial load — see [`ARCHITECTURE.md` §9.3](./ARCHITECTURE.md#93-bundle-reduction--cold-boot-metrics) for the full per-chunk breakdown.
 * **In-Flight Request Deduplication** — prevents concurrent components from triggering duplicate network requests for the same resource.
 * **Stale-While-Revalidate (SWR) Caching** — delivers instantaneous 0ms UI transitions from memory cache while revalidating data quietly in the background.
 * **Optimized Database Queries** — selective database projections and sub-query indexing deliver millisecond workspace retrieval.
@@ -106,12 +106,13 @@ Shield is additional, deliberately over-engineered-for-the-problem work (see [`A
 
 ### Testing & Verification
 
-Current, real numbers as of 2026-09-20 (re-run before you trust them further out than that — see CI badge above for what's actually gated on every push):
+Current, real numbers as of 2026-09-21, re-run against a local Postgres instance the same way CI provisions one (`prisma db push` + the raw migration SQL — see the CI workflow's "Provision ephemeral schema" step) with `UPSTASH_REDIS_REST_URL`/`TOKEN` unset so Redis falls back to the in-process `Map`, exactly like CI. Re-run before you trust them further out than that — see the CI badge above for what's gated on every push.
 
 * **Server unit tests** (`npm run test:unit`, mocked Prisma/Redis, `server/tests/*.test.js` via Vitest) — **60/60 passing**.
 * **Client unit tests** (`npm run test`, Vitest + React Testing Library) — **21/21 passing**.
-* **Server integration/domain suite** (`node tests/runAllTests.js`, orchestrates 8 suites — mostly logic simulation and mocked infra, not a live DB; see [`SECURITY.md`](./SECURITY.md) for which suites touch a real database) — **207/209 assertions passing across 7/8 suites**. The one failing suite is `gatekeeper.test.js` (2 of 13 assertions), a known Redis-cache-timing flake in a suite that queries a live database directly rather than a mock — not currently gated in CI for that reason (see CI workflow comments and `SECURITY.md` for the isolation gap this reflects).
-* **Playwright specs** (`e2e/*.spec.js`) exist for auth, chat, tasks, whiteboard, and workspace flows, but `@playwright/test` isn't currently a declared dependency and these aren't wired into any npm script or CI job — treat them as scaffolding for a flow you'd want covered, not as a suite that's verified passing right now.
+* **Server integration/domain suite** (`node tests/runAllTests.js`, 10 suites — mostly logic simulation and mocked infra, plus two suites that spin up real Postgres fixtures against a local database; see [`SECURITY.md`](./SECURITY.md) for which suites touch a real database) — **229/229 assertions passing across 10/10 suites**, all gated in CI. This includes `gatekeeper.test.js` (13/13): a previous version of this README attributed its intermittent failures to "Redis-cache-timing" against a live database. That diagnosis was wrong — the actual cause was a real bug (now fixed, see `SECURITY.md` § Audit history): two cached-boolean checks compared `=== 'true'`/`'false'` as strings, which breaks specifically when a real Upstash Redis is configured, because Upstash's client auto-deserializes a stored `'true'`/`'false'` string back into an actual boolean. It's deterministic, not a timing flake, and reproduces every time against real Upstash (confirmed by re-running this exact suite against the live Redis this repo's own `.env` points at, both before and after the fix) — the in-memory fallback used in CI and in the numbers above never triggered it, which is why it looked CI-clean while still failing locally.
+* **Server database suite** (`npm run db:test`, hits a real Postgres directly for health-check/soft-delete/cache-interceptor behavior) — **8/8 passing**.
+* **Playwright specs** (`e2e/*.spec.js`) exist for auth, chat, tasks, whiteboard, and workspace flows, but `@playwright/test` isn't currently a declared dependency, they assume specific seeded test users and a running dev server, and they aren't wired into any npm script or CI job. They weren't run as part of this pass (running them properly needs a seeded database and a live client+server, which is more setup than this doc pass covers) — treat them as scaffolding for a flow you'd want covered, not as a suite verified passing right now.
 
 ---
 

@@ -511,7 +511,7 @@ Syncro uses a dual event-processing system:
 
 ## 🧪 Automated Verification & Testing Architecture
 
-The suite counts below are real, re-run on 2026-09-20 (`node tests/runAllTests.js`, plus `npm run db:test` separately) — not aspirational figures. Re-run them yourself before citing a number further out than that; they will drift as the codebase does.
+The suite counts below are real, re-run on 2026-09-21 (`node tests/runAllTests.js`, plus `npm run db:test` separately) against a local Postgres with `UPSTASH_REDIS_REST_URL`/`TOKEN` unset — the same posture CI runs in — not aspirational figures. Re-run them yourself before citing a number further out than that; they will drift as the codebase does.
 
 ### 1. Clean Architecture Test Suite ([`server/tests/architecture.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/architecture.test.js))
 Run Command: `node tests/architecture.test.js`
@@ -582,7 +582,7 @@ Validates:
 - Fine-grained resource action policies (create, update, delete, audit).
 - Unauthorized mutation prevention on locked workspace entities.
 
-**Result**: `11 Passed | 2 Failed` — the 2 failures are a known Redis-cache-timing flake (`should reject regular user with cached non-admin status`, `checkIsSuperAdmin returns true for cached superadmin status`), confirmed via `git stash` to pre-date the 2026-09-20 audit rather than being caused by it. This is the one suite in the orchestrator that queries the real Prisma client directly (a single read, no writes) rather than mocking it — see the "test environment lacks database isolation" note in [`SECURITY.md`](./SECURITY.md), which is also why this suite isn't currently gated in CI.
+**Result**: `13 Passed | 0 Failed`. Previously documented here as `11 Passed | 2 Failed` with the 2 failures attributed to a "Redis-cache-timing flake." That diagnosis was wrong — the actual cause was a real, deterministic bug (fixed 2026-09-21, see [`SECURITY.md`](./SECURITY.md) § Audit history): `checkIsSuperAdmin`/`requireSuperAdmin` compared a cached value with `=== 'true'`/`'false'` string equality, which breaks specifically when a real Upstash Redis client is configured (it auto-deserializes a stored boolean-looking string back into an actual boolean) — not a timing issue, and not intermittent. It failed every time against real Upstash and never failed against the in-memory fallback CI uses, which is why "confirmed via `git stash`" against CI's own environment never reproduced it. This suite is now gated in CI along with the rest of the orchestrator (see below).
 
 ### 8. Concurrency & Stampede Lock Suite ([`server/tests/concurrency.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/concurrency.test.js))
 Run Command: `node tests/concurrency.test.js`
@@ -593,14 +593,29 @@ Validates:
 
 **Result**: `13 Passed | 0 Failed`
 
+### 9. RLS Tenant Isolation Suite ([`server/tests/rlsIsolation.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/rlsIsolation.test.js))
+Run Command: `node tests/rlsIsolation.test.js` (`npm run test:rls`)
+Validates, against a throwaway non-owner Postgres role on a local database:
+- A workspace-scoped `set_config('app.current_workspace_id', ..., true)` read sees only that workspace's `Project`/`Channel`/`Meeting` rows, including a direct point lookup of another tenant's row.
+- The same non-owner role sees zero rows when the scope is never set (fails closed).
+- The app's actual unscoped owner connection sees every tenant's rows — the receipt for the RLS gap documented in [`SECURITY.md`](./SECURITY.md) § Database-level tenant isolation.
+
+**Result**: `7 Passed | 0 Failed`. Refuses to run against anything but a local Postgres.
+
+### 10. Task Cross-Project Reference Suite ([`server/tests/taskForeignRefs.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/taskForeignRefs.test.js))
+Run Command: `node tests/taskForeignRefs.test.js` (`npm run test:task-refs`)
+Validates the real `createTask`/`updateTask` controllers reject a `sprintId`/`epicId`/`milestoneId`/`dependenciesIds`/`assigneeId` that belongs to a different project than the task, while same-project references still succeed.
+
+**Result**: `11 Passed | 0 Failed`. Refuses to run against anything but a local Postgres.
+
 ### Supplementary Verification Suite
 - **Database Infrastructure Suite** ([`server/tests/database.test.js`](file:///Users/piyush./Desktop/Syncro/server/tests/database.test.js)), run separately via `npm run db:test` (not part of the `runAllTests.js` orchestrator above): `8 Passed | 0 Failed`. This one does hit the real database (`checkDatabaseHealth()`, live soft-delete/cache-interceptor behavior).
 
 Orchestrated run (`node tests/runAllTests.js`):
 ```
-7/8 suites passed | 207/209 assertions passed
+10/10 suites passed | 229/229 assertions passed
 ```
-Plus, run independently: server unit tests (`npm run test:unit`, mocked Prisma/Redis) **60/60**, client unit tests (`npm run test`) **21/21**. CI (`.github/workflows/ci.yml`) currently gates on the unit and security suites for both packages, not the full integration orchestrator above — see the workflow file's comments for exactly why, and the section below for what it would take to close that gap.
+Plus, run independently: server unit tests (`npm run test:unit`, mocked Prisma/Redis) **60/60**, client unit tests (`npm run test`) **21/21**. CI (`.github/workflows/ci.yml`) gates on all of the above for both packages — unit, security, the full integration orchestrator, and the domain suite standalone — plus a dependency audit and a secret scan; see the workflow file itself for the exact steps.
 
 ---
 
@@ -847,13 +862,17 @@ During development, active service worker fetch interception conflicts with Vite
 
 ### 9.3 Bundle Reduction & Cold Boot Metrics
 
-| Metric | Monolithic Eager Bundle | Dynamic Code-Splitting | Improvement |
-| :--- | :--- | :--- | :--- |
-| **Initial Vendor Bundle** | 1,629 kB | 566 kB | **65.2% Reduction** |
-| **Initial Dev HTTP Requests** | 504 requests | ~30 requests | **94.0% Reduction** |
-| **Chat Route Chunk** | Monolithic (in main) | 63.3 kB | On-demand load |
-| **Calendar Route Chunk** | Monolithic (in main) | 54.1 kB | On-demand load |
-| **Whiteboard Route Chunk** | Monolithic (in main) | 43.8 kB | On-demand load |
-| **Dashboard Route Chunk** | Monolithic (in main) | 39.2 kB | On-demand load |
-| **Sprint / Retro Route Chunk**| Monolithic (in main) | 28.5 kB | On-demand load |
+Fresh numbers from `npm run build` (client), re-run 2026-09-21 — this table previously cited a "1,629 kB -> 566 kB" before/after comparison against a pre-code-splitting monolithic build; that baseline predates this pass and wasn't re-verified here (verifying it would mean reverting the route-level `React.lazy` splitting itself), so it's dropped rather than restated as fact. The numbers below are the current, actually-measured output:
+
+| Chunk | Raw size | Gzip |
+| :--- | :--- | :--- |
+| **Main chunk** (`index-*.js` — app shell, always loaded) | 567.1 kB | 184.7 kB |
+| **Charting library chunk** (`PieChart-*.js`, loaded where charts are used) | 356.8 kB | 100.3 kB |
+| **Project Details** (hosts sprints/epics/retro/kanban/gantt as sub-views) | 190.1 kB | 45.1 kB |
+| **Chat** | 67.3 kB | 16.2 kB |
+| **Smart Calendar** | 54.5 kB | 12.5 kB |
+| **Whiteboards** | 44.0 kB | 12.5 kB |
+| **Dashboard** | 39.3 kB | 9.6 kB |
+
+Every route chunk above (except the main chunk, which is the app shell all routes depend on) loads on-demand via `React.lazy` — see §9.1. The main chunk and the charting-library chunk are both over Vite's 500 kB warning threshold; splitting the charting library out of the main bundle specifically (it's currently a separate on-demand chunk already, so this is about further slimming the main chunk itself) is tracked as a follow-up, not done in this pass — see the "Code quality cleanup" note in `SECURITY.md` § Audit history.
 
