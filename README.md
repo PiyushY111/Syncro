@@ -60,17 +60,24 @@ The platform isolates data between workspace organizations, offloads async work 
 * **Redis Caching** — workspace lists, role checks, and notification inbox feeds are cached in Redis with L2 read-through fallback.
 * **Service Worker** — scoped to production environments for offline static shell caching, avoiding interception of Vite dev-server HMR modules.
 
-### 6. Security & Cryptography: Syncro Shield
-* **Application-layer payload cloaking, not endpoint secrecy** — API routes are dispatched through a single encrypted gateway (`POST /api/v2/shield/dispatch`), so a passive DevTools Network-tab view or a misconfigured proxy log sees ciphertext, not plaintext endpoint names or bodies. This is *not* a claim that the endpoints are hidden from a motivated attacker — the client ships the decryption code, so anyone who reads it (or sets a breakpoint) can unwrap the same traffic. See [`ARCHITECTURE.md § Design Trade-offs & Honest Limitations`](./ARCHITECTURE.md#-design-trade-offs--honest-limitations) for what this actually defends against.
-* **In-Transit Payload Encryption** — request/response bodies are encrypted with **AES-256-GCM** (via the browser's native WebCrypto API) with 32–96 bytes of random noise padding to reduce ciphertext-length side-channel leakage.
-* **Ephemeral Key Agreement (ECDH P-256 + HKDF)** — client and server negotiate ephemeral session keys in volatile RAM; no static encryption keys are stored on disk or hardcoded in client bundles.
-* **Anti-Replay & Anti-Tamper Guard** — atomic nonces and 60-second timestamp windows enforced via **HMAC-SHA256** signatures (`x-shield-sig`, `x-shield-nonce`, `x-shield-timestamp`). Replays are rejected with `403 Forbidden`. This is the one property TLS alone doesn't give you for free at the application layer, and it's real regardless of how you feel about the rest of Shield.
+### 6. Security & Cryptography
 * **Field-Level Database Encryption at Rest** — sensitive chat messages, task comments, and 2FA credentials in PostgreSQL are encrypted via Prisma Client `$extends` extensions before disk write.
 * **Workspace Roles & Matrix** — pre-configured permission scopes for Owner, Admin, Manager, and Member.
 * **2FA Security** — email-based 6-digit verification code pipeline, code logged to the console in development so you can test without a real inbox. (A previous version of this had a hardcoded bypass code for dev/test convenience — removed after a security audit found it was a needless risk if `NODE_ENV` were ever misconfigured in production.)
 * **Cryptographic Audit Trail** — SHA-256 tamper-evident hash chaining across workspace mutations with Owner/Admin entity rollbacks.
 
 > Auth, CSRF, and the full list of what a recent internal security audit found and fixed live in [`SECURITY.md`](./SECURITY.md) — including things that were wrong and got corrected, not just a list of what's implemented.
+
+---
+
+## 🧪 Experimental / Defense-in-Depth: Syncro Shield
+
+Shield is additional, deliberately over-engineered-for-the-problem work (see [`ARCHITECTURE.md` § Design Trade-offs & Honest Limitations](./ARCHITECTURE.md#-design-trade-offs--honest-limitations) for why it exists at all) — it sits alongside the actual headline features above, not among them, because its real-world value for this app's threat model is modest next to TLS, auth, and the field-level encryption already covered under **Security & Cryptography**.
+
+* **Application-layer payload cloaking, not endpoint secrecy** — API routes are dispatched through a single encrypted gateway (`POST /api/v2/shield/dispatch`), so a passive DevTools Network-tab view or a misconfigured proxy log sees ciphertext, not plaintext endpoint names or bodies. This is *not* a claim that the endpoints are hidden from a motivated attacker — the client ships the decryption code, so anyone who reads it (or sets a breakpoint) can unwrap the same traffic. See [`ARCHITECTURE.md § Design Trade-offs & Honest Limitations`](./ARCHITECTURE.md#-design-trade-offs--honest-limitations) for what this actually defends against.
+* **In-Transit Payload Encryption** — request/response bodies are encrypted with **AES-256-GCM** (via the browser's native WebCrypto API) with 32–96 bytes of random noise padding to reduce ciphertext-length side-channel leakage.
+* **Ephemeral Key Agreement (ECDH P-256 + HKDF)** — client and server negotiate ephemeral session keys in volatile RAM; no static encryption keys are stored on disk or hardcoded in client bundles. The handshake itself is unauthenticated (the server's ephemeral public key isn't signed or pinned), so this doesn't defend against an active MITM beyond whatever TLS already provides — see `ARCHITECTURE.md` for the precise scope.
+* **Anti-Replay & Anti-Tamper Guard** — atomic nonces and 60-second timestamp windows enforced via **HMAC-SHA256** signatures (`x-shield-sig`, `x-shield-nonce`, `x-shield-timestamp`). Replays are rejected with `403 Forbidden`. This is the one property TLS alone doesn't give you for free at the application layer, and it's real regardless of how you feel about the rest of Shield.
 
 ---
 

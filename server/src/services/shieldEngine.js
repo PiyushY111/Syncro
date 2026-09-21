@@ -7,6 +7,7 @@
 
 import crypto from 'crypto';
 import { redisCache } from '../config/redis.js';
+import logger from '../utils/logger/logger.js';
 
 const SESSION_TTL_SECONDS = 24 * 60 * 60; // 24 hours
 const NONCE_TTL_SECONDS = 90; // 90 seconds
@@ -98,7 +99,9 @@ export const shieldEngine = {
                     authKey: Buffer.from(parsed.authKeyHex, 'hex')
                 };
             }
-        } catch {}
+        } catch (err) {
+            logger.warn('[SHIELD WARN] Redis read failed while fetching session, falling back to in-memory store:', { error: err.message });
+        }
 
         if (memorySessions.has(sessionId)) {
             const mem = memorySessions.get(sessionId);

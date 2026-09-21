@@ -1,6 +1,6 @@
 import { prisma } from '../../config/prisma.js';
 import { eventBus } from '../../services/eventBus.js';
-import { getUserWorkspaceRole } from '../role/checkPermissionHelper.js';
+import { getUserWorkspaceRole, hasWorkspacePermission } from '../role/checkPermissionHelper.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
 import { NotFoundError, ForbiddenError, BadRequestError, ConflictError } from '../../utils/errors/appError.js';
 
@@ -22,6 +22,19 @@ export const saveWhiteboard = asyncHandler(async (req, res) => {
     if (!role) {
         throw new ForbiddenError('Access denied: not a member of this workspace');
     }
+
+    // A workspace member alone isn't enough to edit — a VIEWER-role member
+    // (manageWhiteboards: false in defaultPermissions) can currently save
+    // over anyone's whiteboard content, same gap as the socket broadcast
+    // path in src/socket/whiteboardHandler.js.
+    const isCreator = board.creatorId === req.user.id;
+    const canManage = board.workspaceId
+        ? await hasWorkspacePermission(req.user.id, board.workspaceId, 'manageWhiteboards')
+        : false;
+    if (!isCreator && !canManage) {
+        throw new ForbiddenError('You do not have permission to edit this whiteboard');
+    }
+
     if (board.isPrivate && board.creatorId !== req.user.id) {
         const shared = typeof board.sharedEmails === 'string' ? JSON.parse(board.sharedEmails) : (board.sharedEmails || []);
         if (!(Array.isArray(shared) && shared.includes(req.user.email))) {

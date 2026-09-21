@@ -1,6 +1,12 @@
 import { prisma } from "../config/prisma.js";
+import { hasWorkspacePermission } from "../controllers/role/checkPermissionHelper.js";
+import logger from "../utils/logger/logger.js";
 
 const lastCursorEmits = new Map();
+// Cache of whether a given socket may broadcast whiteboard:update, computed
+// once at join time (same trust-the-room-membership model this file already
+// uses) rather than re-checked on every high-frequency update event.
+const editPermissionBySocketWhiteboard = new Map();
 
 export const registerWhiteboardHandlers = (io, socket) => {
     // Join whiteboard room with authorization check
@@ -30,9 +36,17 @@ export const registerWhiteboardHandlers = (io, socket) => {
                 return socket.emit("whiteboard:error", { message: "Access denied to whiteboard" });
             }
 
+            // A VIEWER-role workspace member can join (read) but must not be
+            // able to broadcast edits — same manageWhiteboards permission the
+            // REST save endpoint enforces (see whiteboardSave.js).
+            const canManage = whiteboard.workspaceId
+                ? await hasWorkspacePermission(socket.user.id, whiteboard.workspaceId, 'manageWhiteboards')
+                : false;
+            editPermissionBySocketWhiteboard.set(`${socket.id}:${whiteboardId}`, isCreator || canManage);
+
             socket.join(`whiteboard:${whiteboardId}`);
         } catch (err) {
-            console.error("[WHITEBOARD JOIN ERROR]", err.message);
+            logger.error("[WHITEBOARD JOIN ERROR]", { error: err.message });
         }
     });
 
@@ -40,12 +54,19 @@ export const registerWhiteboardHandlers = (io, socket) => {
     socket.on("whiteboard:leave", (whiteboardId) => {
         if (whiteboardId) {
             socket.leave(`whiteboard:${whiteboardId}`);
+            editPermissionBySocketWhiteboard.delete(`${socket.id}:${whiteboardId}`);
         }
     });
 
-    // Sync elements/drawings/updates
+    // Sync elements/drawings/updates. Last-write-wins: whichever update
+    // reaches other clients last overwrites their local state — there is no
+    // CRDT/OT merge, so concurrent edits to the same page can silently drop
+    // each other's changes (see README/ARCHITECTURE for this documented).
     socket.on("whiteboard:update", ({ whiteboardId, pages, currentPageId }) => {
         if (whiteboardId && socket.rooms.has(`whiteboard:${whiteboardId}`)) {
+            if (!editPermissionBySocketWhiteboard.get(`${socket.id}:${whiteboardId}`)) {
+                return socket.emit("whiteboard:error", { message: "You do not have permission to edit this whiteboard" });
+            }
             socket.to(`whiteboard:${whiteboardId}`).emit("whiteboard:updated", {
                 pages,
                 currentPageId
@@ -73,5 +94,10 @@ export const registerWhiteboardHandlers = (io, socket) => {
 
     socket.on("disconnect", () => {
         lastCursorEmits.delete(socket.id);
+        for (const key of editPermissionBySocketWhiteboard.keys()) {
+            if (key.startsWith(`${socket.id}:`)) {
+                editPermissionBySocketWhiteboard.delete(key);
+            }
+        }
     });
 };
