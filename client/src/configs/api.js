@@ -1,5 +1,6 @@
 import axios from 'axios';
 import shieldSession from '../utils/shieldSession.js';
+import { AUTH_EXPIRED_EVENT, createSingleFlight, shouldAttemptRefresh } from './sessionRefresh.js';
 
 // In-flight request deduplication store (single-flight cache)
 const inFlightRequests = new Map();
@@ -16,7 +17,7 @@ const MAX_RETRIES = 2;
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_BASE_URL || 'http://localhost:5001',
-    timeout: 12000, // 12-second timeout protection against frozen sockets
+    timeout: 30000, // Above the server's 25s Shield dispatch limit so the server reports a real 504 first
     withCredentials: true, // Send/receive the httpOnly session cookies on every request
 });
 
@@ -28,6 +29,24 @@ const api = axios.create({
 // echo it back as a header on every mutating request.
 let csrfToken = null;
 export const setCsrfToken = (token) => { csrfToken = token || null; };
+
+// Renews the 15-minute access cookie from the 7-day refresh cookie. Single-flight: refresh tokens
+// rotate on use, so two parallel refreshes would revoke each other and log the user out.
+const refreshSession = createSingleFlight(async () => {
+    const { data } = await api.post('/api/auth/refresh', {}, { _skipAuthRefresh: true });
+    const payload = data?.data || data;
+    setCsrfToken(payload?.csrfToken);
+    return payload;
+});
+
+const restoreOriginalRequest = (config) => {
+    if (config._originalUrl) {
+        config.url = config._originalUrl;
+        config.method = config._originalMethod;
+        config.params = config._originalParams;
+    }
+    return config;
+};
 
 // Helper: Generate a unique signature for deduplication and caching
 const getRequestSignature = (url, params, headers) => {
@@ -150,12 +169,20 @@ api.interceptors.response.use(
         // Automatic session renegotiation if shield session expired or was rejected with 401
         if (error.response?.status === 401 && error.response?.data?.message?.includes('re-handshake')) {
             shieldSession.reset();
-            if (config._originalUrl) {
-                config.url = config._originalUrl;
-                config.method = config._originalMethod;
-                config.params = config._originalParams;
+            return api(restoreOriginalRequest(config));
+        }
+
+        // Expired access cookie: renew silently and replay once. The server rejected the request in
+        // its auth check, before doing any work, so replaying a POST/PUT is safe.
+        if (shouldAttemptRefresh(error)) {
+            try {
+                await refreshSession();
+            } catch {
+                window.dispatchEvent(new Event(AUTH_EXPIRED_EVENT));
+                return Promise.reject(error);
             }
-            return api(config);
+            config._authRetried = true;
+            return api(restoreOriginalRequest(config));
         }
 
         const method = (config._originalMethod || config.method || 'get').toLowerCase();
@@ -171,12 +198,7 @@ api.interceptors.response.use(
                 config._retryCount += 1;
                 const delay = Math.pow(2, config._retryCount) * 200 + Math.floor(Math.random() * 100);
                 await new Promise((resolve) => setTimeout(resolve, delay));
-                if (config._originalUrl) {
-                    config.url = config._originalUrl;
-                    config.method = config._originalMethod;
-                    config.params = config._originalParams;
-                }
-                return api(config);
+                return api(restoreOriginalRequest(config));
             }
         }
 
