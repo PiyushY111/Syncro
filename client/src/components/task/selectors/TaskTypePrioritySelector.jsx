@@ -8,7 +8,7 @@ export default function TaskTypePrioritySelector({
         <div className="grid grid-cols-2 gap-4 text-left">
             <div className="space-y-1">
                 <label className="text-sm font-medium">Type</label>
-                <select value={type} onChange={(e) => onChangeType(e.target.value)} className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" >
+                <select value={type} onChange={(e) => onChangeType(e.target.value)} className="w-full rounded dark:bg-white/[0.03] border border-slate-900/10 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" >
                     <option value="BUG">Bug</option>
                     <option value="FEATURE">Feature</option>
                     <option value="TASK">Task</option>
@@ -19,7 +19,7 @@ export default function TaskTypePrioritySelector({
 
             <div className="space-y-1">
                 <label className="text-sm font-medium">Priority</label>
-                <select value={priority} onChange={(e) => onChangePriority(e.target.value)} className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" >
+                <select value={priority} onChange={(e) => onChangePriority(e.target.value)} className="w-full rounded dark:bg-white/[0.03] border border-slate-900/10 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1" >
                     <option value="LOW">Low</option>
                     <option value="MEDIUM">Medium</option>
                     <option value="HIGH">High</option>

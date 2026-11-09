@@ -5,13 +5,13 @@ export default function TaskRecurrenceSelector({
     onChangeRecurrence
 }) {
     return (
-        <div className="space-y-2 border-t border-zinc-200 dark:border-zinc-800 pt-3 text-left">
+        <div className="space-y-2 border-t border-slate-900/[0.07] dark:border-white/[0.07] pt-3 text-left">
             <label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
                 <input
                     type="checkbox"
                     checked={isRecurring}
                     onChange={(e) => onChangeRecurring(e.target.checked)}
-                    className="rounded text-blue-500 accent-blue-500"
+                    className="rounded text-brand dark:text-violet-300 accent-blue-500"
                 />
                 <span>Is this a recurring task?</span>
             </label>
@@ -22,7 +22,7 @@ export default function TaskRecurrenceSelector({
                     <select
                         value={recurrence}
                         onChange={(e) => onChangeRecurrence(e.target.value)}
-                        className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm focus:outline-none"
+                        className="w-full rounded dark:bg-white/[0.03] border border-slate-900/10 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm focus:outline-none"
                     >
                         <option value="NONE">Select Recurrence...</option>
                         <option value="DAILY">Daily</option>

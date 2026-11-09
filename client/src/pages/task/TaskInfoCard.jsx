@@ -62,7 +62,7 @@ export default function TaskInfoCard({ task, project, onUpdate, onDelete }) {
     };
 
     return (
-        <div className="p-6 rounded-lg bg-white dark:bg-zinc-900 border border-gray-300 dark:border-zinc-800 text-left transition-all shadow-sm">
+        <div className="sx-glass p-6 rounded-2xl text-left transition-all">
             {isEditing ? (
                 <TaskInfoCardEdit
                     editData={editData}

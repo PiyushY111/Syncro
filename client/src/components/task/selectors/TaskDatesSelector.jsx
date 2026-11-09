@@ -11,7 +11,7 @@ export default function TaskDatesSelector({ start_date, due_date, onChangeStartD
                         type="date"
                         value={start_date}
                         onChange={(e) => onChangeStartDate(e.target.value)}
-                        className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1"
+                        className="w-full rounded dark:bg-white/[0.03] border border-slate-900/10 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1"
                     />
                 </div>
             </div>
@@ -25,7 +25,7 @@ export default function TaskDatesSelector({ start_date, due_date, onChangeStartD
                         value={due_date}
                         onChange={(e) => onChangeDueDate(e.target.value)}
                         min={start_date || new Date().toISOString().split('T')[0]}
-                        className="w-full rounded dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1"
+                        className="w-full rounded dark:bg-white/[0.03] border border-slate-900/10 dark:border-white/10 px-3 py-2 text-zinc-900 dark:text-zinc-200 text-sm mt-1"
                     />
                 </div>
             </div>
