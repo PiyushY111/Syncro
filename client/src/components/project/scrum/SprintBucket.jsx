@@ -36,10 +36,10 @@ export default function SprintBucket({ project, tasks, selectedSprint, selectedS
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900/40 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col h-[500px]">
-            <div className="flex items-center justify-between pb-3 border-b border-zinc-150 dark:border-zinc-800 mb-4">
+        <div className="sx-glass p-4 rounded-2xl flex flex-col h-[500px]">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-900/[0.05] dark:border-white/[0.07] mb-4">
                 <h3 className="font-bold text-sm">Sprint Planner</h3>
-                <select value={selectedSprintId} onChange={(e) => setSelectedSprintId(e.target.value)} className="text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1 cursor-pointer">
+                <select value={selectedSprintId} onChange={(e) => setSelectedSprintId(e.target.value)} className="text-xs bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded px-2 py-1 cursor-pointer">
                     <option value="" disabled>Select planned sprint...</option>
                     {sprints.filter(s => s.status === 'PLANNED').map(s => (
                         <option key={s.id} value={s.id}>{s.name}</option>
@@ -49,7 +49,7 @@ export default function SprintBucket({ project, tasks, selectedSprint, selectedS
 
             {selectedSprint ? (
                 <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleTaskSprintAssign(e.dataTransfer.getData('text/task-id'), selectedSprint.id)} className="flex-1 flex flex-col">
-                    <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-lg border border-zinc-150 dark:border-zinc-850 text-xs mb-4 space-y-2">
+                    <div className="bg-slate-500/[0.05] dark:bg-white/[0.02] p-3 rounded-lg border border-slate-900/[0.05] dark:border-white/[0.07] text-xs mb-4 space-y-2">
                         <div className="flex justify-between items-center">
                             <span className="font-bold">{selectedSprint.name}</span>
                             <div className="flex gap-2">
@@ -70,15 +70,15 @@ export default function SprintBucket({ project, tasks, selectedSprint, selectedS
 
                     <div className="flex-1 overflow-y-auto space-y-2 max-h-[300px] pr-1">
                         {tasks.filter(t => t.sprintId === selectedSprint.id).length === 0 ? (
-                            <div className="text-center py-12 border border-dashed border-zinc-250 dark:border-zinc-800 rounded bg-zinc-50/50 dark:bg-zinc-950/20 text-zinc-450">
+                            <div className="text-center py-12 border border-dashed border-slate-900/10 dark:border-white/[0.07] rounded bg-slate-500/[0.05] dark:bg-white/[0.02] text-zinc-450">
                                 <p className="text-xs">Drag backlog tasks here to plan this sprint.</p>
                             </div>
                         ) : (
                             tasks.filter(t => t.sprintId === selectedSprint.id).map(task => (
-                                <div key={task.id} draggable onDragStart={(e) => onDragStart(e, task.id)} className="bg-zinc-50 dark:bg-zinc-950 p-2.5 rounded border border-zinc-200 dark:border-zinc-850 cursor-grab hover:border-zinc-300 transition-all text-xs flex justify-between items-center">
+                                <div key={task.id} draggable onDragStart={(e) => onDragStart(e, task.id)} className="bg-slate-500/[0.05] dark:bg-white/[0.02] p-2.5 rounded border border-slate-900/[0.07] dark:border-white/[0.07] cursor-grab hover:border-zinc-300 transition-all text-xs flex justify-between items-center">
                                     <span className="truncate max-w-[70%] font-medium">{task.title}</span>
                                     <div className="flex items-center gap-2">
-                                        <span className="text-[10px] bg-zinc-200 dark:bg-zinc-800 px-1.5 py-0.5 rounded font-bold">{task.storyPoints || 0} SP</span>
+                                        <span className="text-[10px] bg-zinc-200 dark:bg-white/[0.06] px-1.5 py-0.5 rounded font-bold">{task.storyPoints || 0} SP</span>
                                         <button onClick={() => handleTaskSprintAssign(task.id, null)} className="text-[10px] text-zinc-400 hover:text-red-500 font-semibold cursor-pointer">Remove</button>
                                     </div>
                                 </div>

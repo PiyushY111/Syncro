@@ -9,7 +9,7 @@ export default function TaskDiscussion({
     user
 }) {
     return (
-        <div className="p-5 rounded-md border border-gray-300 dark:border-zinc-800 flex flex-col lg:h-[80vh] text-left">
+        <div className="p-5 rounded-md border border-slate-900/10 dark:border-white/[0.07] flex flex-col lg:h-[80vh] text-left">
             <h2 className="text-base font-semibold flex items-center gap-2 mb-4 text-gray-900 dark:text-white">
                 <MessageCircle className="size-5" /> Task Discussion ({comments.length})
             </h2>
@@ -22,7 +22,7 @@ export default function TaskDiscussion({
                             const isOwnComment = commentUser?.id === user?.id;
 
                             return (
-                                <div key={comment.id} className={`sm:max-w-4/5 dark:bg-gradient-to-br dark:from-zinc-800 dark:to-zinc-900 border border-gray-300 dark:border-zinc-700 p-3 rounded-md ${isOwnComment ? "ml-auto" : "mr-auto"}`} >
+                                <div key={comment.id} className={`sm:max-w-4/5 dark:bg-gradient-to-br dark:from-zinc-800 dark:to-zinc-900 border border-slate-900/10 dark:border-white/10 p-3 rounded-md ${isOwnComment ? "ml-auto" : "mr-auto"}`} >
                                     <div className="flex items-center gap-2 mb-1 text-sm text-gray-500 dark:text-zinc-400">
                                         <img src={commentUser.image || ""} alt="avatar" className="size-5 rounded-full" />
                                         <span className="font-medium text-gray-900 dark:text-white">{commentUser.name || "Unknown user"}</span>
@@ -46,10 +46,10 @@ export default function TaskDiscussion({
                     value={newComment}
                     onChange={(e) => setNewComment(e.target.value)}
                     placeholder="Write a comment..."
-                    className="w-full dark:bg-zinc-800 border border-gray-300 dark:border-zinc-700 rounded-md p-2 text-sm text-gray-900 dark:text-zinc-200 resize-none focus:outline-none focus:ring-1 focus:ring-blue-600"
+                    className="w-full dark:bg-white/[0.06] border border-slate-900/10 dark:border-white/10 rounded-md p-2 text-sm text-gray-900 dark:text-zinc-200 resize-none focus:outline-none focus:ring-1 focus:ring-brand/25"
                     rows={3}
                 />
-                <button onClick={handleAddComment} className="bg-gradient-to-l from-blue-500 to-blue-600 transition-colors text-white text-sm px-5 py-2 rounded cursor-pointer font-medium" >
+                <button onClick={handleAddComment} className="bg-gradient-to-l from-[#7c5cff] to-brand transition-colors text-white text-sm px-5 py-2 rounded cursor-pointer font-medium" >
                     Post
                 </button>
             </div>

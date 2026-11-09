@@ -8,8 +8,8 @@ export default function TaskInfoCardView({ task, onEdit, onDelete, onMarkAsDone 
                 <div className="space-y-1">
                     <h1 className="text-xl font-bold text-gray-900 dark:text-zinc-100 tracking-tight leading-snug">{task.title}</h1>
                     <div className="flex flex-wrap gap-2 pt-1.5">
-                        <span className="px-2.5 py-0.5 rounded-full bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-300 text-xs font-semibold tracking-wide border border-zinc-200 dark:border-zinc-700/60 uppercase">{task.status.replace(/_/g, " ").toLowerCase()}</span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-blue-800 dark:text-blue-300 text-xs font-semibold tracking-wide border border-blue-150 dark:border-blue-900/60 uppercase">{task.type}</span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-300 text-xs font-semibold tracking-wide border border-slate-900/[0.07] dark:border-white/10 uppercase">{task.status.replace(/_/g, " ").toLowerCase()}</span>
+                        <span className="px-2.5 py-0.5 rounded-full bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300 text-xs font-semibold tracking-wide border border-blue-150 dark:border-brand/30 uppercase">{task.type}</span>
                         <span className="px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-xs font-semibold tracking-wide border border-emerald-150 dark:border-emerald-900/60 uppercase">{task.priority}</span>
                     </div>
                 </div>
@@ -27,7 +27,7 @@ export default function TaskInfoCardView({ task, onEdit, onDelete, onMarkAsDone 
                     )}
                     <button
                         onClick={onEdit}
-                        className="p-1.5 rounded-md border border-gray-300 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                        className="p-1.5 rounded-md border border-slate-900/10 dark:border-white/[0.07] text-zinc-600 dark:text-zinc-400 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                         title="Edit Task"
                     >
                         <Edit3 className="size-4" />
@@ -48,7 +48,7 @@ export default function TaskInfoCardView({ task, onEdit, onDelete, onMarkAsDone 
                 <p className="text-sm text-zinc-400 dark:text-zinc-500 italic mb-6">No description provided.</p>
             )}
 
-            <hr className="border-zinc-200 dark:border-zinc-800 my-4" />
+            <hr className="border-slate-900/[0.07] dark:border-white/[0.07] my-4" />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-zinc-700 dark:text-zinc-300">
                 <div className="flex items-center gap-3">
@@ -57,7 +57,7 @@ export default function TaskInfoCardView({ task, onEdit, onDelete, onMarkAsDone 
                         {task.assignee?.image ? (
                             <img src={task.assignee.image} className="size-6 rounded-full object-cover" alt="avatar" />
                         ) : (
-                            <div className="size-6 rounded-full bg-indigo-600 text-white flex items-center justify-center text-xs font-semibold">
+                            <div className="size-6 rounded-full bg-brand text-white flex items-center justify-center text-xs font-semibold">
                                 {task.assignee?.name?.charAt(0).toUpperCase() || "?"}
                             </div>
                         )}

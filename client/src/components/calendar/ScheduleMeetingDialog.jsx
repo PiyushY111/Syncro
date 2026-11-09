@@ -121,18 +121,18 @@ export default function ScheduleMeetingDialog({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/70 backdrop-blur-xs">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
+            <div className="bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl flex flex-col">
                 {/* Header */}
-                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-900/[0.05] dark:border-white/[0.07]">
                     <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-purple-50 dark:bg-purple-950/50 text-purple-600 dark:text-purple-400 rounded-md">
+                        <div className="p-1.5 bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300 rounded-md">
                             <Calendar className="size-5" />
                         </div>
                         <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Schedule Team Meeting</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                        className="p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                     >
                         <X className="size-5" />
                     </button>
@@ -150,7 +150,7 @@ export default function ScheduleMeetingDialog({
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             placeholder="e.g. Weekly Design Review"
-                            className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition"
+                            className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition"
                             required
                         />
                     </div>
@@ -165,7 +165,7 @@ export default function ScheduleMeetingDialog({
                                 type="date"
                                 value={date}
                                 onChange={(e) => setDate(e.target.value)}
-                                className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition"
+                                className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition"
                                 required
                             />
                         </div>
@@ -177,7 +177,7 @@ export default function ScheduleMeetingDialog({
                                 type="time"
                                 value={startTime}
                                 onChange={(e) => setStartTime(e.target.value)}
-                                className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition"
+                                className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition"
                                 required
                             />
                         </div>
@@ -189,7 +189,7 @@ export default function ScheduleMeetingDialog({
                                 type="time"
                                 value={endTime}
                                 onChange={(e) => setEndTime(e.target.value)}
-                                className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition"
+                                className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition"
                                 required
                             />
                         </div>
@@ -203,7 +203,7 @@ export default function ScheduleMeetingDialog({
                         <select
                             value={projectId}
                             onChange={(e) => setProjectId(e.target.value)}
-                            className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition"
+                            className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition"
                         >
                             <option value="">No Project</option>
                             {projects.map((p) => (
@@ -225,7 +225,7 @@ export default function ScheduleMeetingDialog({
                                 <button
                                     type="button"
                                     onClick={handleAddGMeet}
-                                    className="text-[10px] text-purple-600 dark:text-purple-400 hover:underline font-semibold cursor-pointer"
+                                    className="text-[10px] text-brand dark:text-violet-300 hover:underline font-semibold cursor-pointer"
                                 >
                                     Add GMeet
                                 </button>
@@ -235,7 +235,7 @@ export default function ScheduleMeetingDialog({
                                 value={meetingLink}
                                 onChange={(e) => setMeetingLink(e.target.value)}
                                 placeholder="https://meet.google.com/abc-defg-hij"
-                                className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition"
+                                className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition"
                             />
                         </div>
                         <div>
@@ -248,7 +248,7 @@ export default function ScheduleMeetingDialog({
                                 value={location}
                                 onChange={(e) => setLocation(e.target.value)}
                                 placeholder="e.g. Conference Room B"
-                                className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition"
+                                className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition"
                             />
                         </div>
                     </div>
@@ -265,7 +265,7 @@ export default function ScheduleMeetingDialog({
                                 onChange={(e) => setAgenda(e.target.value)}
                                 placeholder="List points to discuss..."
                                 rows={3}
-                                className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition resize-none"
+                                className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition resize-none"
                             />
                         </div>
                         <div>
@@ -278,7 +278,7 @@ export default function ScheduleMeetingDialog({
                                 onChange={(e) => setDescription(e.target.value)}
                                 placeholder="Any pre-meeting context or notes..."
                                 rows={3}
-                                className="w-full px-3 py-2 text-sm rounded-lg bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-white focus:outline-none focus:border-purple-500 transition resize-none"
+                                className="w-full px-3 py-2 text-sm rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-900 dark:text-white focus:outline-none focus:border-brand transition resize-none"
                             />
                         </div>
                     </div>
@@ -289,7 +289,7 @@ export default function ScheduleMeetingDialog({
                             <Users className="size-3.5 text-zinc-400" />
                             Invite Workspace Guests ({selectedInvitees.length} selected)
                         </label>
-                        <div className="max-h-40 overflow-y-auto border border-zinc-200 dark:border-zinc-800 rounded-lg p-2 space-y-1 bg-zinc-50 dark:bg-zinc-950">
+                        <div className="max-h-40 overflow-y-auto border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg p-2 space-y-1 bg-slate-500/[0.05] dark:bg-white/[0.02]">
                             {members.length === 0 ? (
                                 <div className="text-xs text-zinc-500 text-center py-2">No other workspace members</div>
                             ) : (
@@ -297,13 +297,13 @@ export default function ScheduleMeetingDialog({
                                     <div
                                         key={member.user.id}
                                         onClick={() => handleToggleInvitee(member.user.id)}
-                                        className="flex items-center justify-between p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md cursor-pointer transition select-none"
+                                        className="flex items-center justify-between p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded-md cursor-pointer transition select-none"
                                     >
                                         <div className="flex items-center gap-2">
                                             <img
                                                 src={member.user.image || `https://api.dicebear.com/7.x/initials/svg?seed=${member.user.name}`}
                                                 alt={member.user.name}
-                                                className="size-6 rounded-full border border-zinc-200 dark:border-zinc-700"
+                                                className="size-6 rounded-full border border-slate-900/[0.07] dark:border-white/10"
                                             />
                                             <div>
                                                 <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200">{member.user.name}</p>
@@ -314,7 +314,7 @@ export default function ScheduleMeetingDialog({
                                             type="checkbox"
                                             checked={selectedInvitees.includes(member.user.id)}
                                             onChange={() => {}} // Controlled via parent onClick
-                                            className="accent-purple-600 size-3.5 cursor-pointer rounded border-zinc-300"
+                                            className="accent-purple-600 size-3.5 cursor-pointer rounded border-slate-900/10"
                                         />
                                     </div>
                                 ))
@@ -323,18 +323,18 @@ export default function ScheduleMeetingDialog({
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                    <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
                         <button
                             type="button"
                             onClick={onClose}
-                            className="px-4 py-2 text-sm font-semibold rounded-lg border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+                            className="px-4 py-2 text-sm font-semibold rounded-lg border border-slate-900/[0.07] dark:border-white/[0.07] hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07] text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
                         >
                             Cancel
                         </button>
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="px-4 py-2 text-sm font-semibold rounded-lg bg-purple-600 hover:bg-purple-700 text-white shadow-md hover:shadow-lg transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
+                            className="px-4 py-2 text-sm font-semibold rounded-lg bg-brand hover:bg-brand-strong text-white shadow-md hover:shadow-lg transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
                         >
                             {isSubmitting ? 'Scheduling...' : 'Schedule Meeting'}
                         </button>

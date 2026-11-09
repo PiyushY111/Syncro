@@ -16,7 +16,7 @@ export default function GanttSummaryBar({ tasks, criticalPathCount, hasConflicts
     }, [tasks]);
 
     return (
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white px-5 py-2.5 text-xs">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-900/[0.07] bg-white px-5 py-2.5 text-xs">
             <div className="flex items-center gap-4 flex-wrap">
                 <div className="flex items-center gap-1.5 font-medium text-slate-600">
                     <Clock className="size-3.5 text-violet-500" />
@@ -25,7 +25,7 @@ export default function GanttSummaryBar({ tasks, criticalPathCount, hasConflicts
                 <div className="flex items-center gap-2">
                     <BarChart2 className="size-3.5 text-emerald-500" />
                     <span className="font-medium text-slate-500">Progress: {stats.done}/{stats.total} ({stats.percent}%)</span>
-                    <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-2 w-24 overflow-hidden rounded-full bg-slate-500/[0.08]">
                         <div style={{ width: `${stats.percent}%` }} className="h-full rounded-full bg-violet-500 transition-all duration-500" />
                     </div>
                 </div>

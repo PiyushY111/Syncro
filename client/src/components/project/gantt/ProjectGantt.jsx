@@ -144,7 +144,7 @@ export default function ProjectGantt({ tasks = [], project }) {
     }, [isResizingTasks]);
 
     return (
-        <div ref={ganttRef} className={`gantt-reference flex flex-col overflow-hidden rounded-3xl border border-slate-200 bg-white text-slate-800 shadow-[0_20px_55px_rgba(15,23,42,0.08)] font-sans ${isResizingTasks ? 'select-none cursor-col-resize' : ''}`}>
+        <div ref={ganttRef} className={`gantt-reference flex flex-col overflow-hidden rounded-3xl border border-slate-900/[0.07] bg-white text-slate-800 shadow-[0_20px_55px_rgba(15,23,42,0.08)] font-sans ${isResizingTasks ? 'select-none cursor-col-resize' : ''}`}>
             <GanttHeader project={project} currentMonth={currentMonth} zoom={zoom} setZoom={setZoom} searchQuery={searchQuery} setSearchQuery={setSearchQuery} statusFilter={statusFilter} setStatusFilter={setStatusFilter} showDependencies={showDependencies} setShowDependencies={setShowDependencies} highlightCriticalPath={highlightCriticalPath} setHighlightCriticalPath={setHighlightCriticalPath} milestonesOnly={milestonesOnly} setMilestonesOnly={setMilestonesOnly} groupByStatus={groupByStatus} setGroupByStatus={setGroupByStatus} onJumpToToday={handleJumpToToday} onSwitchToCalendar={handleSwitchToCalendar} customStartDate={customStartDate} setCustomStartDate={setCustomStartDate} customEndDate={customEndDate} setCustomEndDate={setCustomEndDate} handlePrevMonth={handlePrevMonth} handleNextMonth={handleNextMonth} />
             <GanttSummaryBar tasks={filteredTasks} criticalPathCount={criticalPathTaskIds.size} hasConflicts={dependencyLines.some(l => l.isConflict)} />
             <div className="flex flex-1 min-h-[500px] overflow-hidden relative">

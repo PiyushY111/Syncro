@@ -22,7 +22,7 @@ export default function DirectMessagesList({ dmMembers, activeChat, setActiveCha
                             {member.user.image ? (
                                 <img src={member.user.image} className="size-5 rounded-full object-cover" alt="avatar" />
                             ) : (
-                                <div className="size-5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[9px] font-bold">
+                                <div className="size-5 rounded-full bg-gradient-to-br from-[#7c5cff] to-brand text-white flex items-center justify-center text-[9px] font-bold">
                                     {member.user.name[0].toUpperCase()}
                                 </div>
                             )}

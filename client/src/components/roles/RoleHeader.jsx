@@ -9,15 +9,15 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, canManage
     const hasManageAccess = canManagePortal || isOwner;
 
     return (
-        <div className="flex flex-col gap-4 bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <div className="sx-glass sx-rise flex flex-col gap-4 p-6 rounded-3xl">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                    <div className="sx-tile">
                         <ShieldCheck className="size-6" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Role-Based Permissions Portal</h1>
-                        <p className="text-xs text-zinc-500">Configure custom roles, feature access levels, and team role assignments</p>
+                        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Role-Based Permissions Portal</h1>
+                        <p className="mt-0.5 text-sm text-slate-500 dark:text-zinc-400">Configure custom roles, feature access levels, and team role assignments</p>
                     </div>
                 </div>
 
@@ -25,13 +25,13 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, canManage
                     <div className="flex items-center gap-3">
                         <button
                             onClick={onOpenCustomModal}
-                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg transition shadow-xs cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-strong rounded-lg transition shadow-xs cursor-pointer"
                         >
                             <Plus className="size-4" /> Custom Role
                         </button>
 
                         {isOwner && (
-                            <div className="flex items-center gap-2 bg-zinc-50 dark:bg-zinc-800/60 p-2 rounded-xl border border-zinc-200 dark:border-zinc-700 text-xs">
+                            <div className="flex items-center gap-2 bg-slate-500/[0.05] dark:bg-white/[0.06] p-2 rounded-xl border border-slate-900/[0.07] dark:border-white/10 text-xs">
                                 <span className="font-medium text-zinc-700 dark:text-zinc-300">Manager Access</span>
                                 <label className="relative inline-flex items-center cursor-pointer">
                                     <input type="checkbox" checked={allowManagerPortalAccess} onChange={(e) => onToggleManagerAccess(e.target.checked)} disabled={isSaving} className="sr-only peer" />
@@ -43,12 +43,12 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, canManage
                 )}
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-zinc-100 dark:border-zinc-800/80 pt-3 text-xs">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-slate-900/[0.05] dark:border-white/[0.07] pt-3 text-xs">
                 <div className="flex items-center gap-2 font-semibold">
-                    <button onClick={() => setActiveTab('matrix')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'matrix' ? 'bg-indigo-600 text-white' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}>
+                    <button onClick={() => setActiveTab('matrix')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'matrix' ? 'bg-brand text-white' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}>
                         <ShieldCheck className="size-4" /> Feature Matrix
                     </button>
-                    <button onClick={() => setActiveTab('members')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'members' ? 'bg-indigo-600 text-white' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}>
+                    <button onClick={() => setActiveTab('members')} className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition cursor-pointer ${activeTab === 'members' ? 'bg-brand text-white' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-white'}`}>
                         <UserCheck className="size-4" /> Team Member Roles
                     </button>
                 </div>
@@ -58,7 +58,7 @@ export default function RoleHeader({ activeTab, setActiveTab, isOwner, canManage
                         <Sparkles className="size-3.5 text-amber-500" />
                         <span className="text-zinc-400 text-[11px]">Presets:</span>
                         {presets.map((p) => (
-                            <button key={p.name} onClick={() => onApplyPreset(p.matrix)} className="px-2 py-1 rounded bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-medium text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer">
+                            <button key={p.name} onClick={() => onApplyPreset(p.matrix)} className="px-2 py-1 rounded bg-slate-500/[0.08] dark:bg-white/[0.06] hover:bg-zinc-200 dark:hover:bg-white/[0.07] font-medium text-[11px] text-zinc-700 dark:text-zinc-300 cursor-pointer">
                                 {p.name}
                             </button>
                         ))}

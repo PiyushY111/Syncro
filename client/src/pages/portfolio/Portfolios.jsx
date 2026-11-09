@@ -11,24 +11,24 @@ function PortfoliosListSkeleton() {
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-pulse">
             {[1, 2, 3].map((i) => (
-                <div key={i} className="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 flex flex-col justify-between space-y-4">
+                <div key={i} className="sx-glass p-5 rounded-2xl flex flex-col justify-between space-y-4">
                     <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="size-10 rounded-xl bg-zinc-200 dark:bg-zinc-800" />
+                            <div className="size-10 rounded-xl bg-zinc-200 dark:bg-white/[0.06]" />
                             <div className="space-y-2">
-                                <div className="h-4 w-28 bg-zinc-200 dark:bg-zinc-800 rounded" />
-                                <div className="h-3 w-16 bg-zinc-200 dark:bg-zinc-800/60 rounded" />
+                                <div className="h-4 w-28 bg-zinc-200 dark:bg-white/[0.06] rounded" />
+                                <div className="h-3 w-16 bg-zinc-200 dark:bg-white/[0.06] rounded" />
                             </div>
                         </div>
                     </div>
-                    <div className="h-3 w-40 bg-zinc-200 dark:bg-zinc-800/50 rounded" />
-                    <div className="space-y-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
+                    <div className="h-3 w-40 bg-zinc-200 dark:bg-white/[0.06] rounded" />
+                    <div className="space-y-3 pt-3 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
                         <div className="grid grid-cols-2 gap-2">
-                            <div className="h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800/50" />
-                            <div className="h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800/50" />
+                            <div className="h-10 rounded-lg bg-slate-500/[0.08] dark:bg-white/[0.06]" />
+                            <div className="h-10 rounded-lg bg-slate-500/[0.08] dark:bg-white/[0.06]" />
                         </div>
-                        <div className="h-2 w-full bg-zinc-200 dark:bg-zinc-800 rounded-full" />
-                        <div className="h-8 w-full bg-zinc-200 dark:bg-zinc-800 rounded-lg" />
+                        <div className="h-2 w-full bg-zinc-200 dark:bg-white/[0.06] rounded-full" />
+                        <div className="h-8 w-full bg-zinc-200 dark:bg-white/[0.06] rounded-lg" />
                     </div>
                 </div>
             ))}
@@ -98,8 +98,8 @@ export default function Portfolios() {
             {loading ? (
                 <PortfoliosListSkeleton />
             ) : filtered.length === 0 ? (
-                <div className="p-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-white/40 dark:bg-zinc-900/20">
-                    <div className="mx-auto size-12 rounded-full bg-indigo-500/10 text-indigo-500 flex items-center justify-center mb-3">
+                <div className="p-12 text-center border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-xl bg-white/40 dark:bg-white/[0.03]">
+                    <div className="mx-auto size-12 rounded-full bg-brand/10 text-brand dark:text-violet-300 flex items-center justify-center mb-3">
                         <FolderKanban className="size-6" />
                     </div>
                     <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base">No portfolios found</h3>

@@ -25,13 +25,13 @@ export default function ChatAvatar({ name, imageUrl, size = 'md', className = ''
                 src={image}
                 alt={`${name || 'Member'} profile`}
                 onError={() => setFailedToLoad(true)}
-                className={`${sizes[size]} rounded-full object-cover shrink-0 bg-zinc-100 ${className}`}
+                className={`${sizes[size]} rounded-full object-cover shrink-0 bg-slate-500/[0.08] ${className}`}
             />
         );
     }
 
     return (
-        <div className={`${sizes[size]} rounded-full shrink-0 bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold ${className}`}>
+        <div className={`${sizes[size]} rounded-full shrink-0 bg-gradient-to-br from-[#7c5cff] to-brand text-white flex items-center justify-center font-bold ${className}`}>
             {initialsFor(name)}
         </div>
     );

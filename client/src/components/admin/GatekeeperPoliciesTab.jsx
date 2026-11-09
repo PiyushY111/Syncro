@@ -14,7 +14,7 @@ export default function GatekeeperPoliciesTab({
     return (
         <form onSubmit={onSaveSettings} className="space-y-6 max-w-4xl">
             {/* Mode 1: User Registration Policy */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <div className="sx-glass p-6 rounded-3xl space-y-4">
                 <div className="flex items-center justify-between">
                     <div>
                         <h3 className="text-base font-bold text-slate-900 dark:text-white">User Registration Access Policy</h3>
@@ -47,15 +47,15 @@ export default function GatekeeperPoliciesTab({
                             onClick={() => setSettings({ ...settings, userRegistrationMode: mode.id })}
                             className={`p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between ${
                                 settings.userRegistrationMode === mode.id
-                                    ? 'border-indigo-600 bg-indigo-50/40 dark:bg-indigo-950/20'
-                                    : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
+                                    ? 'border-brand dark:border-lime bg-indigo-50/40 dark:bg-brand/15'
+                                    : 'border-slate-900/[0.07] dark:border-white/[0.07] hover:border-slate-300 dark:hover:border-zinc-700'
                             }`}
                         >
                             <div className="space-y-1">
                                 <div className="text-xs font-bold text-slate-900 dark:text-white">{mode.title}</div>
                                 <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">{mode.desc}</p>
                             </div>
-                            <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                            <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-brand dark:text-violet-300">
                                 {settings.userRegistrationMode === mode.id && <Check className="size-3.5" />}
                             </div>
                         </label>
@@ -64,7 +64,7 @@ export default function GatekeeperPoliciesTab({
             </div>
 
             {/* Mode 2: Workspace Creation Policy */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <div className="sx-glass p-6 rounded-3xl space-y-4">
                 <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">Organization / Workspace Creation Policy</h3>
                     <p className="text-xs text-slate-500 dark:text-zinc-400">
@@ -95,15 +95,15 @@ export default function GatekeeperPoliciesTab({
                             onClick={() => setSettings({ ...settings, workspaceCreationMode: mode.id })}
                             className={`p-4 rounded-2xl border-2 transition cursor-pointer flex flex-col justify-between ${
                                 settings.workspaceCreationMode === mode.id
-                                    ? 'border-blue-600 bg-blue-50/40 dark:bg-blue-950/20'
-                                    : 'border-slate-200 dark:border-zinc-800 hover:border-slate-300 dark:hover:border-zinc-700'
+                                    ? 'border-brand dark:border-lime bg-blue-50/40 dark:bg-brand/15'
+                                    : 'border-slate-900/[0.07] dark:border-white/[0.07] hover:border-slate-300 dark:hover:border-zinc-700'
                             }`}
                         >
                             <div className="space-y-1">
                                 <div className="text-xs font-bold text-slate-900 dark:text-white">{mode.title}</div>
                                 <p className="text-[11px] text-slate-500 dark:text-zinc-400 leading-relaxed">{mode.desc}</p>
                             </div>
-                            <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-blue-600 dark:text-blue-400">
+                            <div className="mt-3 flex items-center gap-1 text-[11px] font-semibold text-brand dark:text-violet-300">
                                 {settings.workspaceCreationMode === mode.id && <Check className="size-3.5" />}
                             </div>
                         </label>
@@ -112,7 +112,7 @@ export default function GatekeeperPoliciesTab({
             </div>
 
             {/* Whitelisted Email Domains */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <div className="sx-glass p-6 rounded-3xl space-y-4">
                 <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">Whitelisted Corporate / Personal Domains</h3>
                     <p className="text-xs text-slate-500 dark:text-zinc-400">
@@ -126,12 +126,12 @@ export default function GatekeeperPoliciesTab({
                         value={domainInput}
                         onChange={(e) => setDomainInput(e.target.value)}
                         placeholder="e.g. piyushydv.com or google.com"
-                        className="flex-1 px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="flex-1 px-3 py-2 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand/25"
                     />
                     <button
                         type="button"
                         onClick={onAddDomain}
-                        className="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 flex items-center gap-1 cursor-pointer"
+                        className="px-4 py-2 text-xs font-semibold rounded-xl bg-brand text-white hover:bg-brand-strong flex items-center gap-1 cursor-pointer"
                     >
                         <Plus className="size-3.5" />
                         Add Domain
@@ -145,7 +145,7 @@ export default function GatekeeperPoliciesTab({
                         settings.whitelistedDomains.map((domain) => (
                             <span
                                 key={domain}
-                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-indigo-50 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800"
+                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300 border border-brand/25 dark:border-brand/30"
                             >
                                 @{domain}
                                 <button
@@ -162,14 +162,14 @@ export default function GatekeeperPoliciesTab({
             </div>
 
             {/* Checkboxes & Custom Message */}
-            <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <div className="sx-glass p-6 rounded-3xl space-y-4">
                 <div className="space-y-3">
                     <label className="flex items-center gap-3 cursor-pointer">
                         <input
                             type="checkbox"
                             checked={settings.notifyAdminOnRequest}
                             onChange={(e) => setSettings({ ...settings, notifyAdminOnRequest: e.target.checked })}
-                            className="size-4 rounded text-indigo-600 focus:ring-indigo-500"
+                            className="size-4 rounded text-brand focus:ring-brand/25"
                         />
                         <div>
                             <span className="text-xs font-bold text-slate-900 dark:text-white">Email Super-Admin on New Pending Requests</span>
@@ -182,7 +182,7 @@ export default function GatekeeperPoliciesTab({
                             type="checkbox"
                             checked={settings.autoApproveInvitedMembers}
                             onChange={(e) => setSettings({ ...settings, autoApproveInvitedMembers: e.target.checked })}
-                            className="size-4 rounded text-indigo-600 focus:ring-indigo-500"
+                            className="size-4 rounded text-brand focus:ring-brand/25"
                         />
                         <div>
                             <span className="text-xs font-bold text-slate-900 dark:text-white">Auto-Approve Invited Teammates</span>
@@ -191,7 +191,7 @@ export default function GatekeeperPoliciesTab({
                     </label>
                 </div>
 
-                <div className="space-y-1 pt-3 border-t border-slate-100 dark:border-zinc-800">
+                <div className="space-y-1 pt-3 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
                     <label className="text-xs font-semibold text-slate-700 dark:text-zinc-300">
                         Custom Waiting Screen Message
                     </label>
@@ -199,7 +199,7 @@ export default function GatekeeperPoliciesTab({
                         value={settings.customPendingMessage}
                         onChange={(e) => setSettings({ ...settings, customPendingMessage: e.target.value })}
                         rows={3}
-                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="w-full px-3 py-2 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-brand/25"
                     />
                 </div>
             </div>
@@ -207,7 +207,7 @@ export default function GatekeeperPoliciesTab({
             <button
                 type="submit"
                 disabled={isSavingSettings}
-                className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm flex items-center gap-2 transition shadow-lg shadow-indigo-500/20 disabled:opacity-50 cursor-pointer"
+                className="px-6 py-3 rounded-2xl bg-brand hover:bg-brand-strong text-white font-bold text-sm flex items-center gap-2 transition shadow-lg shadow-brand/20 disabled:opacity-50 cursor-pointer"
             >
                 <Sparkles className="size-4" />
                 {isSavingSettings ? 'Saving Policies...' : 'Save & Broadcast Policy Changes'}

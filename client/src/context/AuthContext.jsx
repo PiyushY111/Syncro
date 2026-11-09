@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import api, { setCsrfToken } from '@/configs/api';
+import { AUTH_EXPIRED_EVENT } from '@/configs/sessionRefresh';
 
 // Only non-sensitive display data is cached client-side, purely to avoid a
 // flash-of-unauthenticated-content on reload. The actual credential (the JWT)
@@ -38,20 +39,37 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const bootstrap = async () => {
             try {
-                const { data } = await api.get('/api/auth/me');
+                // Bypass the GET cache: this must reflect the live session.
+                const { data } = await api.get('/api/auth/me', { cache: false });
                 const payload = data?.data || data;
                 setUser(payload.user);
                 persistDisplayUser(payload.user);
                 setCsrfToken(payload.csrfToken);
-            } catch {
-                clearDisplayUser();
-                setUser(null);
+            } catch (error) {
+                // Only a definite rejection ends the session. A timeout, network blip, cold database or
+                // server restart keeps the cached user; the next API call re-validates (and refreshes) it.
+                const status = error?.response?.status;
+                if (status === 401 || status === 403) {
+                    clearDisplayUser();
+                    setUser(null);
+                }
             } finally {
                 setLoading(false);
             }
         };
 
         bootstrap();
+    }, []);
+
+    // Fired by the API client when the 7-day refresh session itself is gone.
+    useEffect(() => {
+        const handleExpired = () => {
+            clearDisplayUser();
+            setUser(null);
+            setCsrfToken(null);
+        };
+        window.addEventListener(AUTH_EXPIRED_EVENT, handleExpired);
+        return () => window.removeEventListener(AUTH_EXPIRED_EVENT, handleExpired);
     }, []);
 
     const syncSession = (nextUser, csrfToken) => {

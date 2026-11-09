@@ -31,7 +31,7 @@ export default function AuditLogs() {
 
     if (!hasAccess) {
         return (
-            <div className="p-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl max-w-md mx-auto my-20 space-y-4">
+            <div className="p-12 text-center border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-xl max-w-md mx-auto my-20 space-y-4">
                 <div className="mx-auto size-12 rounded-full bg-rose-500/10 text-rose-500 flex items-center justify-center">
                     <ShieldAlert className="size-6" />
                 </div>
@@ -41,7 +41,7 @@ export default function AuditLogs() {
                 </p>
                 <button
                     onClick={() => navigate('/dashboard')}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 transition cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 transition cursor-pointer"
                 >
                     <ArrowLeft className="size-4" /> Return to Dashboard
                 </button>

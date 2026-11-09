@@ -16,8 +16,8 @@ export default function ChannelMediaTab({ messages = [] }) {
             ) : (
                 <div className="grid grid-cols-3 gap-2 max-h-72 overflow-y-auto pr-1">
                     {attachments.map((att, idx) => (
-                        <a key={idx} href={att.url} target="_blank" rel="noreferrer" className="aspect-square rounded-xl bg-zinc-100 dark:bg-zinc-800 border flex flex-col items-center justify-center p-2 text-center hover:border-indigo-500 transition">
-                            <FileText className="size-6 text-indigo-500 mb-1" />
+                        <a key={idx} href={att.url} target="_blank" rel="noreferrer" className="aspect-square rounded-xl bg-slate-500/[0.08] dark:bg-white/[0.06] border flex flex-col items-center justify-center p-2 text-center hover:border-indigo-500 transition">
+                            <FileText className="size-6 text-brand dark:text-violet-300 mb-1" />
                             <span className="text-[10px] text-zinc-700 dark:text-zinc-300 font-medium truncate w-full">{att.name || 'File'}</span>
                         </a>
                     ))}

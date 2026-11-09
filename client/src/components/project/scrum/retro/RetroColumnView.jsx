@@ -25,10 +25,10 @@ export default function RetroColumnView({ col, sprintId, socket, user }) {
     };
 
     return (
-        <div style={{ borderColor: col.color }} className="bg-white dark:bg-zinc-900/40 p-4 rounded-xl border-t-4 border border-zinc-200 dark:border-zinc-800 shadow-xs flex flex-col h-[520px]">
-            <div className="flex justify-between items-center pb-3 border-b border-zinc-150 dark:border-zinc-850 mb-4">
+        <div style={{ borderColor: col.color }} className="sx-glass p-4 rounded-2xl border-t-4 flex flex-col h-[520px]">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-900/[0.05] dark:border-white/[0.07] mb-4">
                 <h3 className="font-bold text-sm">{col.title}</h3>
-                <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-550 px-2 py-0.5 rounded font-bold">
+                <span className="text-[10px] bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-550 px-2 py-0.5 rounded font-bold">
                     {col.items?.length || 0}
                 </span>
             </div>
@@ -39,7 +39,7 @@ export default function RetroColumnView({ col, sprintId, socket, user }) {
                     value={cardText}
                     onChange={(e) => setCardText(e.target.value)}
                     placeholder="Add card..."
-                    className="flex-1 text-xs bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2 py-1.5 outline-none"
+                    className="flex-1 text-xs bg-slate-500/[0.05] dark:bg-white/[0.02] border border-slate-900/[0.07] dark:border-white/[0.07] rounded px-2 py-1.5 outline-none"
                 />
                 <button type="submit" className="bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-950 rounded p-1.5 cursor-pointer">
                     <Plus className="size-4" />

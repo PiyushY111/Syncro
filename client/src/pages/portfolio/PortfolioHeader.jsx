@@ -2,14 +2,14 @@ import { Plus, Search, FolderKanban } from 'lucide-react';
 
 export default function PortfolioHeader({ search, setSearch, onOpenCreate }) {
     return (
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <div className="sx-glass sx-rise flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-6 rounded-3xl">
             <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
+                <div className="sx-tile">
                     <FolderKanban className="size-6" />
                 </div>
                 <div>
-                    <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Project Portfolios</h1>
-                    <p className="text-xs text-zinc-500">Group related strategic projects under enterprise umbrellas</p>
+                    <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Project Portfolios</h1>
+                    <p className="mt-0.5 text-sm text-slate-500 dark:text-zinc-400">Group related strategic projects under enterprise umbrellas</p>
                 </div>
             </div>
 
@@ -21,12 +21,12 @@ export default function PortfolioHeader({ search, setSearch, onOpenCreate }) {
                         placeholder="Search portfolios..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 text-xs bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 focus:outline-hidden focus:border-indigo-500"
+                        className="w-full pl-9 pr-3 py-1.5 text-xs bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-zinc-100 focus:outline-hidden focus:border-brand"
                     />
                 </div>
                 <button
                     onClick={onOpenCreate}
-                    className="flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg shadow-xs transition cursor-pointer"
+                    className="flex items-center justify-center gap-2 px-3.5 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-strong rounded-lg shadow-xs transition cursor-pointer"
                 >
                     <Plus className="size-4" />
                     New Portfolio

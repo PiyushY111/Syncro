@@ -41,7 +41,7 @@ export default function OwnerAuditControl() {
                 </p>
                 <button
                     onClick={() => navigate('/audit-logs')}
-                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 transition cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 transition cursor-pointer"
                 >
                     <ArrowLeft className="size-4" /> Return to Audit Logs
                 </button>

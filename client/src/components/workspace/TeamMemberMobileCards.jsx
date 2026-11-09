@@ -6,12 +6,12 @@ export default function TeamMemberMobileCards({
     return (
         <div className="sm:hidden space-y-3">
             {filteredUsers.map((user) => (
-                <div key={user.id} className="p-4 border border-gray-200 dark:border-zinc-800 rounded-md bg-white dark:bg-zinc-900 flex justify-between items-center">
+                <div key={user.id} className="sx-glass p-4 rounded-2xl flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         {user.user.image ? (
-                            <img src={user.user.image} alt={user.user.name} className="size-9 rounded-full bg-gray-200 dark:bg-zinc-800 object-cover" />
+                            <img src={user.user.image} alt={user.user.name} className="size-9 rounded-full bg-gray-200 dark:bg-white/[0.06] object-cover" />
                         ) : (
-                            <div className="size-9 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center font-bold text-sm">
+                            <div className="size-9 rounded-full bg-gradient-to-br from-[#7c5cff] to-brand text-white flex items-center justify-center font-bold text-sm">
                                 {user.user?.name?.charAt(0).toUpperCase() || "?"}
                             </div>
                         )}
@@ -23,7 +23,7 @@ export default function TeamMemberMobileCards({
                                     <select
                                         value={user.role}
                                         onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                                        className="text-xs bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-white rounded-md border border-gray-300 dark:border-zinc-800 p-0.5 outline-none"
+                                        className="text-xs bg-slate-500/[0.05] dark:bg-white/[0.02] text-gray-900 dark:text-white rounded-md border border-slate-900/10 dark:border-white/[0.07] p-0.5 outline-none"
                                     >
                                         <option value="OWNER">Owner</option>
                                         <option value="ADMIN">Admin</option>
@@ -33,8 +33,8 @@ export default function TeamMemberMobileCards({
                                 ) : (
                                     <span className={`px-2 py-0.5 text-xs rounded font-semibold ${
                                         user.role === "OWNER" ? "bg-red-100 dark:bg-red-500/20 text-red-600 dark:text-red-400"
-                                        : user.role === "ADMIN" ? "bg-purple-100 dark:bg-purple-500/20 text-purple-500 dark:text-purple-400"
-                                        : user.role === "MANAGER" ? "bg-blue-100 dark:bg-blue-500/20 text-blue-500 dark:text-blue-400"
+                                        : user.role === "ADMIN" ? "bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300"
+                                        : user.role === "MANAGER" ? "bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300"
                                         : "bg-gray-200 dark:bg-zinc-700 text-gray-700 dark:text-zinc-300"
                                     }`}>
                                         {user.role || "User"}

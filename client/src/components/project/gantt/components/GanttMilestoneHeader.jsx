@@ -19,11 +19,11 @@ export default function GanttMilestoneHeader({ timelineDays, columnWidth, milest
     }, [timelineDays]);
 
     return (
-        <div className="sticky top-0 z-30 border-b border-slate-200 bg-white select-none">
+        <div className="sticky top-0 z-30 border-b border-slate-900/[0.07] bg-white select-none">
             {/* Top Tier: Month/Year */}
-            <div className="flex h-6 border-b border-slate-100 text-[10px] font-bold text-slate-600">
+            <div className="flex h-6 border-b border-slate-900/[0.05] text-[10px] font-bold text-slate-600">
                 {monthGroups.map((mg) => (
-                    <div key={mg.key} style={{ width: `${mg.count * columnWidth}px` }} className="flex items-center justify-center truncate border-r border-slate-100 bg-slate-50 px-2 tracking-wide">
+                    <div key={mg.key} style={{ width: `${mg.count * columnWidth}px` }} className="flex items-center justify-center truncate border-r border-slate-900/[0.05] bg-slate-500/[0.05] px-2 tracking-wide">
                         {mg.key}
                     </div>
                 ))}
@@ -44,12 +44,12 @@ export default function GanttMilestoneHeader({ timelineDays, columnWidth, milest
                             style={{ width: `${columnWidth}px` }}
                             className={`flex flex-col items-center justify-center border-r text-[10px] relative cursor-pointer transition-colors ${
                                 isSelected
-                            ? 'bg-blue-600 text-white font-black border-r-blue-700 shadow-sm'
+                            ? 'bg-brand text-white font-black border-r-blue-700 shadow-sm'
                             : isToday
-                            ? 'bg-blue-50 text-blue-600 font-extrabold border-r-blue-200'
+                            ? 'bg-brand-tint text-brand font-extrabold border-r-blue-200'
                             : isWeekend
-                            ? 'bg-slate-50 text-slate-400 border-slate-100 hover:bg-slate-100'
-                            : 'text-slate-600 border-slate-100 hover:bg-slate-50'
+                            ? 'bg-slate-500/[0.05] text-slate-400 border-slate-900/[0.05] hover:bg-slate-500/10'
+                            : 'text-slate-600 border-slate-900/[0.05] hover:bg-slate-500/[0.06]'
                             }`}
                             title={`Click to select ${format(day, 'MMM d, yyyy')}`}
                         >

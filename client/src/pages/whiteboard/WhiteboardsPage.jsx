@@ -72,13 +72,13 @@ export default function WhiteboardsPage() {
         return (
             <div className="space-y-4 text-left max-w-6xl mx-auto px-4">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => setSearchParams({})} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg shadow-sm">
+                    <button onClick={() => setSearchParams({})} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] px-3 py-1.5 rounded-lg shadow-sm">
                         <ArrowLeft className="size-4" /> Back to Whiteboards
                     </button>
                     <span className="text-sm font-semibold text-zinc-400">/</span>
                     <h2 className="text-lg font-bold text-zinc-900 dark:text-white flex items-center gap-2">
                         {activeBoard.name} 
-                        {proj.name && <span className="text-xs font-normal bg-zinc-100 dark:bg-zinc-850 px-2 py-0.5 rounded text-zinc-500 flex items-center gap-1"><Folder className="size-3" />{proj.name}</span>}
+                        {proj.name && <span className="text-xs font-normal bg-slate-500/[0.08] dark:bg-zinc-850 px-2 py-0.5 rounded text-zinc-500 flex items-center gap-1"><Folder className="size-3" />{proj.name}</span>}
                     </h2>
                 </div>
                 <WhiteboardCanvas whiteboardId={activeBoard.id} projectId={activeBoard.projectId} tasks={proj.tasks || []} />
@@ -90,28 +90,28 @@ export default function WhiteboardsPage() {
 
     return (
         <div className="max-w-6xl mx-auto px-4 text-zinc-900 dark:text-white">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-left relative shadow-sm">
+            <div className="sx-glass rounded-2xl p-6 text-left relative">
                 <div className="flex justify-between items-center mb-6">
-                    <div className="flex items-center gap-2">
-                        <Presentation className="size-5 text-blue-500" /><h2 className="text-xl font-bold">Workspace Whiteboards</h2>
+                    <div className="flex items-center gap-4">
+                        <span className="sx-tile sx-tile-sky"><Presentation className="size-[22px]" /></span><h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Whiteboards</h1>
                     </div>
                     {canManage && (
-                        <button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer shadow-sm"><Plus className="size-4" /> New Whiteboard</button>
+                        <button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2 bg-brand hover:bg-brand-strong text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer shadow-sm"><Plus className="size-4" /> New Whiteboard</button>
                     )}
                 </div>
 
                 {loading ? <div className="text-center py-10 text-zinc-500">Loading boards...</div> : sortedBoards.length === 0 ? (
-                    <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+                    <div className="text-center py-12 border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg">
                         <Presentation className="size-12 text-zinc-300 dark:text-zinc-700 mx-auto mb-3" />
                         <p className="text-zinc-500 dark:text-zinc-400 font-medium">No whiteboards created yet</p>
                         {canManage && (
-                            <button onClick={() => setIsCreateOpen(true)} className="mt-3 text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">Create first board</button>
+                            <button onClick={() => setIsCreateOpen(true)} className="mt-3 text-sm text-brand dark:text-violet-300 font-semibold hover:underline">Create first board</button>
                         )}
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                         {sortedBoards.map(board => (
-                            <div key={board.id} onClick={() => setSearchParams({ id: board.id })} className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 hover:bg-zinc-50 dark:bg-zinc-850/40 dark:hover:bg-zinc-800 transition-all cursor-pointer flex justify-between items-center group shadow-sm relative">
+                            <div key={board.id} onClick={() => setSearchParams({ id: board.id })} className="p-4 rounded-xl border border-slate-900/[0.07] dark:border-white/[0.07] bg-slate-500/[0.05] hover:bg-slate-500/[0.06] dark:bg-zinc-850/40 dark:hover:bg-white/[0.07] transition-all cursor-pointer flex justify-between items-center group shadow-sm relative">
                                 <div className="space-y-1 pr-6">
                                     <h3 className="font-bold group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors text-sm">{board.name}</h3>
                                     <div className="flex items-center gap-1.5 text-[10px] text-zinc-450 dark:text-zinc-500">

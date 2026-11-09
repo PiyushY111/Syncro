@@ -14,7 +14,7 @@ export default function ChatHeader({
     const isStarred = !isDM && activeChannel && starredChannelIds.includes(activeChannel.id);
 
     return (
-        <header className="bg-white dark:bg-zinc-900 border-b border-zinc-200 dark:border-zinc-800 px-5 pt-3 pb-3">
+        <header className="bg-white/60 dark:bg-white/[0.03] border-b border-slate-900/[0.07] dark:border-white/[0.07] px-5 pt-3 pb-3">
 
             {/* Main heading row */}
             <div className="flex items-center justify-between">
@@ -25,7 +25,7 @@ export default function ChatHeader({
                     {!isDM && activeChannel && (
                         <button 
                             onClick={() => onStarChannel(activeChannel.id)} 
-                            className="p-1 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 cursor-pointer transition-colors"
+                            className="p-1 rounded-lg hover:bg-slate-500/10 dark:hover:bg-white/[0.07] cursor-pointer transition-colors"
                             title={isStarred ? "Unstar channel" : "Star channel"}
                         >
                             <Star className={`size-4.5 transition-all ${isStarred ? 'text-amber-500 fill-amber-500 scale-110' : 'text-zinc-400 hover:text-amber-500'}`} />
@@ -48,10 +48,10 @@ export default function ChatHeader({
                     )}
                     {!isDM && activeChannel && (
                         <>
-                            <button onClick={onOpenPinnedMessages} className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer transition-colors" title="Pinned messages">
+                            <button onClick={onOpenPinnedMessages} className="p-2 rounded-lg text-zinc-400 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer transition-colors" title="Pinned messages">
                                 <Pin className="size-4" />
                             </button>
-                            <button onClick={onOpenChannelDetails} className="p-2 rounded-lg text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer transition-colors" title="Channel settings">
+                            <button onClick={onOpenChannelDetails} className="p-2 rounded-lg text-zinc-400 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer transition-colors" title="Channel settings">
                                 <Settings className="size-4" />
                             </button>
                         </>

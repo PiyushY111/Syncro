@@ -13,14 +13,14 @@ const MessageCard = memo(function MessageCard({ message, onReact, onOpenThread, 
     if (isSystem) {
         return (
             <div className="flex items-center gap-3 py-3 px-5 animate-fade-in">
-                <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                <hr className="flex-1 border-slate-900/[0.07] dark:border-white/[0.07]" />
                 <span className="text-xs text-zinc-400 dark:text-zinc-500 whitespace-nowrap">
                     {message.content}
                     <span className="text-zinc-400 dark:text-zinc-500 ml-2">
                         {new Date(message.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                 </span>
-                <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                <hr className="flex-1 border-slate-900/[0.07] dark:border-white/[0.07]" />
             </div>
         );
     }
@@ -61,8 +61,8 @@ const MessageCard = memo(function MessageCard({ message, onReact, onOpenThread, 
                 {/* Bubble Container */}
                 <div className={`relative px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-xs transition-stiff ${
                     isOwner 
-                        ? 'bg-blue-600 text-white rounded-tr-none' 
-                        : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200 rounded-tl-none'
+                        ? 'bg-brand text-white rounded-tr-none' 
+                        : 'bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-800 dark:text-zinc-200 rounded-tl-none'
                 }`}>
                     <p className="break-words text-left">{message.content}</p>
                     
@@ -78,11 +78,11 @@ const MessageCard = memo(function MessageCard({ message, onReact, onOpenThread, 
                                         className={`px-2 py-0.5 rounded-full text-[10px] font-bold border cursor-pointer transition-all duration-200 flex items-center gap-1 ${
                                             hasReacted
                                                 ? isOwner
-                                                    ? 'bg-white text-blue-600 border-white font-extrabold shadow-sm'
-                                                    : 'bg-blue-50 border-blue-200 text-blue-600 dark:bg-blue-955/40 dark:border-blue-900/60 dark:text-blue-400 font-extrabold shadow-xs'
+                                                    ? 'bg-white text-brand border-white font-extrabold shadow-sm'
+                                                    : 'bg-brand-tint border-brand/25 text-brand dark:bg-blue-955/40 dark:border-brand/30 dark:text-violet-300 font-extrabold shadow-xs'
                                                 : isOwner 
                                                     ? 'bg-white/10 hover:bg-white/20 border-white/10 text-white' 
-                                                    : 'bg-zinc-50 hover:bg-zinc-150 border-zinc-200 text-zinc-600 dark:bg-zinc-800/60 dark:hover:bg-zinc-700 dark:border-zinc-700 dark:text-zinc-355'
+                                                    : 'bg-slate-500/[0.05] hover:bg-zinc-150 border-slate-900/[0.07] text-zinc-600 dark:bg-white/[0.06] dark:hover:bg-white/[0.07] dark:border-white/10 dark:text-zinc-355'
                                         }`}
                                     >
                                         <span>{r.emoji}</span>
@@ -96,19 +96,19 @@ const MessageCard = memo(function MessageCard({ message, onReact, onOpenThread, 
             </div>
 
             {/* Hover action toolbar */}
-            <div className={`opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 flex items-center gap-0.5 bg-white dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg p-0.5 shadow-sm z-10 ${
+            <div className={`opacity-0 group-hover:opacity-100 transition-opacity absolute top-1 flex items-center gap-0.5 bg-white/60 dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg p-0.5 shadow-sm z-10 ${
                 isOwner ? 'left-4' : 'right-4'
             }`}>
-                <button onClick={() => onReact(message.id, '👍')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React 👍">👍</button>
-                <button onClick={() => onReact(message.id, '❤️')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React ❤️">❤️</button>
-                <button onClick={() => onReact(message.id, '🔥')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React 🔥">🔥</button>
-                <button onClick={() => onReact(message.id, '🎉')} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-500 cursor-pointer text-sm" title="React 🎉">🎉</button>
-                <button onClick={() => onStar && onStar(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Star Message"><Star className="size-3.5" /></button>
-                <button onClick={() => onOpenThread(message)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Thread Reply"><MessageSquare className="size-3.5" /></button>
-                <button onClick={() => onPin(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Pin Message"><Pin className="size-3.5" /></button>
-                <button onClick={() => onConvertTask(message)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-zinc-400 cursor-pointer" title="Convert to Task"><CheckSquare className="size-3.5" /></button>
+                <button onClick={() => onReact(message.id, '👍')} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-500 cursor-pointer text-sm" title="React 👍">👍</button>
+                <button onClick={() => onReact(message.id, '❤️')} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-500 cursor-pointer text-sm" title="React ❤️">❤️</button>
+                <button onClick={() => onReact(message.id, '🔥')} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-500 cursor-pointer text-sm" title="React 🔥">🔥</button>
+                <button onClick={() => onReact(message.id, '🎉')} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-500 cursor-pointer text-sm" title="React 🎉">🎉</button>
+                <button onClick={() => onStar && onStar(message.id)} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-400 cursor-pointer" title="Star Message"><Star className="size-3.5" /></button>
+                <button onClick={() => onOpenThread(message)} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-400 cursor-pointer" title="Thread Reply"><MessageSquare className="size-3.5" /></button>
+                <button onClick={() => onPin(message.id)} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-400 cursor-pointer" title="Pin Message"><Pin className="size-3.5" /></button>
+                <button onClick={() => onConvertTask(message)} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-zinc-400 cursor-pointer" title="Convert to Task"><CheckSquare className="size-3.5" /></button>
                 {isOwner && (
-                    <button onClick={() => onDelete(message.id)} className="p-1.5 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded text-rose-455 cursor-pointer" title="Delete"><Trash2 className="size-3.5" /></button>
+                    <button onClick={() => onDelete(message.id)} className="p-1.5 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded text-rose-455 cursor-pointer" title="Delete"><Trash2 className="size-3.5" /></button>
                 )}
             </div>
         </div>

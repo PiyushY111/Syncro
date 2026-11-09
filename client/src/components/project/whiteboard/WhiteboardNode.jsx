@@ -6,8 +6,8 @@ const COLOR_MAP = {
     blue: 'bg-sky-100 dark:bg-sky-900/30 text-sky-900 dark:text-sky-200 border-sky-300 dark:border-sky-800',
     green: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-900 dark:text-emerald-200 border-emerald-300 dark:border-emerald-800',
     pink: 'bg-rose-100 dark:bg-rose-900/30 text-rose-900 dark:text-rose-200 border-rose-300 dark:border-rose-800',
-    purple: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-900 dark:text-indigo-200 border-indigo-300 dark:border-indigo-800',
-    white: 'bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 border-zinc-300 dark:border-zinc-700'
+    purple: 'bg-brand/10 dark:bg-brand/15 text-indigo-900 dark:text-indigo-200 border-brand/25 dark:border-brand/30',
+    white: 'bg-white dark:bg-white/[0.06] text-zinc-900 dark:text-zinc-100 border-slate-900/10 dark:border-white/10'
 };
 
 export default function WhiteboardNode({ node, selected, zoom = 1, onClick, onDrag, onUpdateText, onResize }) {
@@ -49,13 +49,13 @@ export default function WhiteboardNode({ node, selected, zoom = 1, onClick, onDr
         if (node.type === 'task') {
             const task = node.task || {};
             return (
-                <div className="flex flex-col justify-between h-full p-3.5 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-lg relative select-none text-left">
+                <div className="sx-glass flex flex-col justify-between h-full p-3.5 rounded-2xl shadow-lg relative select-none text-left">
                     <div className="flex justify-between items-start gap-1">
                         <span className="text-xs font-bold text-zinc-800 dark:text-zinc-200 line-clamp-2">{task.title || node.text}</span>
-                        <a href={`/taskDetails?id=${task.id}`} target="_blank" rel="noreferrer" className="text-zinc-400 hover:text-blue-500"><ExternalLink className="size-3" /></a>
+                        <a href={`/taskDetails?id=${task.id}`} target="_blank" rel="noreferrer" className="text-zinc-400 hover:text-brand"><ExternalLink className="size-3" /></a>
                     </div>
-                    <div className="flex items-center justify-between text-[9px] pt-2 border-t border-zinc-100 dark:border-zinc-850">
-                        <span className={`px-1.5 py-0.5 rounded font-bold ${task.status === 'DONE' ? 'bg-emerald-105 text-emerald-700 dark:bg-emerald-950/20' : 'bg-blue-105 text-blue-700'}`}>{task.status || 'TODO'}</span>
+                    <div className="flex items-center justify-between text-[9px] pt-2 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
+                        <span className={`px-1.5 py-0.5 rounded font-bold ${task.status === 'DONE' ? 'bg-emerald-105 text-emerald-700 dark:bg-emerald-950/20' : 'bg-blue-105 text-brand dark:text-violet-300'}`}>{task.status || 'TODO'}</span>
                         <span className="text-zinc-500 font-mono">PRIORITY: {task.priority || 'MEDIUM'}</span>
                     </div>
                 </div>
@@ -86,7 +86,7 @@ export default function WhiteboardNode({ node, selected, zoom = 1, onClick, onDr
     };
 
     return (
-        <div ref={dragRef} onMouseDown={handleMouseDown} style={{ left: `${node.x}px`, top: `${node.y}px`, width: `${size.width}px`, height: `${size.height}px`, position: 'absolute' }} className={`z-10 transition-shadow ${selected ? 'ring-2 ring-blue-500 ring-offset-2 dark:ring-offset-zinc-900 rounded-lg shadow-xl' : ''}`}>
+        <div ref={dragRef} onMouseDown={handleMouseDown} style={{ left: `${node.x}px`, top: `${node.y}px`, width: `${size.width}px`, height: `${size.height}px`, position: 'absolute' }} className={`z-10 transition-shadow ${selected ? 'ring-2 ring-brand/40 ring-offset-2 dark:ring-offset-zinc-900 rounded-lg shadow-xl' : ''}`}>
             {renderContent()}
             {selected && node.type !== 'task' && (
                 <div onMouseDown={handleResizeMouseDown} className="absolute bottom-0 right-0 w-3 h-3 bg-blue-550 border border-white rounded-full cursor-se-resize z-20" />

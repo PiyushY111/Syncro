@@ -1,129 +1,124 @@
-import { useState, useEffect } from 'react';
-import { Plus, Trash2, CheckSquare, Square, StickyNote } from 'lucide-react';
+/**
+ * Notes: quick private checklist stored in this browser.
+ */
+import { useState } from 'react';
+import { ArrowUp, X, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
+import Panel from '@/components/dashboard/Panel';
 
-export default function Scratchpad() {
-    const { user } = useAuth();
-    const [items, setItems] = useState([]);
-    const [input, setInput] = useState("");
+const MAX_NOTE_LENGTH = 280;
 
-    const storageKey = `scratchpad_${user?.id || 'guest'}`;
+const readItems = (key) => {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+};
 
-    useEffect(() => {
-        const saved = localStorage.getItem(storageKey);
-        if (saved) {
-            try {
-                setItems(JSON.parse(saved));
-            } catch (err) {
-                console.error("Failed to parse scratchpad items:", err);
-            }
+function NoteRow({ item, onToggle, onDelete }) {
+    return (
+        <li className="group flex items-start gap-3 rounded-lg px-2 py-2 transition-colors hover:bg-slate-50 dark:hover:bg-white/[0.03]">
+            <button
+                type="button"
+                onClick={onToggle}
+                aria-label={item.done ? 'Mark as not done' : 'Mark as done'}
+                className={cn(
+                    'mt-0.5 flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-md border-[1.5px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40',
+                    item.done ? 'border-brand bg-brand text-white' : 'border-slate-300 hover:border-brand dark:border-zinc-600'
+                )}
+            >
+                {item.done && <Check className="h-3 w-3" strokeWidth={3} />}
+            </button>
+            <span className={cn('flex-1 break-words text-sm leading-6', item.done ? 'text-slate-400 line-through dark:text-zinc-500' : 'text-slate-700 dark:text-zinc-200')}>
+                {item.text}
+            </span>
+            <button
+                type="button"
+                onClick={onDelete}
+                aria-label="Delete note"
+                className="mt-0.5 shrink-0 rounded p-0.5 text-slate-300 opacity-0 transition hover:text-rose-500 focus-visible:opacity-100 group-hover:opacity-100 dark:text-zinc-600"
+            >
+                <X className="h-4 w-4" />
+            </button>
+        </li>
+    );
+}
+
+function Notes({ storageKey, className, delay }) {
+    const [items, setItems] = useState(() => readItems(storageKey));
+    const [input, setInput] = useState('');
+
+    const saveItems = (next) => {
+        setItems(next);
+        try {
+            localStorage.setItem(storageKey, JSON.stringify(next));
+        } catch {
+            // Storage blocked or full (private mode): notes still work for this session.
         }
-    }, [storageKey]);
-
-    const saveItems = (newItems) => {
-        setItems(newItems);
-        localStorage.setItem(storageKey, JSON.stringify(newItems));
     };
 
     const handleAdd = (e) => {
         e.preventDefault();
-        if (!input.trim()) return;
-        const newItem = { id: Date.now(), text: input.trim(), done: false };
-        saveItems([...items, newItem]);
-        setInput("");
+        const text = input.trim();
+        if (!text) return;
+        saveItems([{ id: Date.now(), text, done: false }, ...items]);
+        setInput('');
     };
 
-    const handleToggle = (id) => {
-        const updated = items.map(item => 
-            item.id === id ? { ...item, done: !item.done } : item
-        );
-        saveItems(updated);
-    };
-
-    const handleDelete = (id) => {
-        const filtered = items.filter(item => item.id !== id);
-        saveItems(filtered);
-    };
-
-    const completedCount = items.filter(i => i.done).length;
+    const doneCount = items.filter((i) => i.done).length;
 
     return (
-        <Card className="border border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900 shadow-xs rounded-2xl text-left overflow-hidden">
-            <CardHeader className="p-4 sm:p-5 border-b border-slate-100 dark:border-zinc-800/60 flex flex-row items-center justify-between">
-                <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-100 dark:border-amber-900/40">
-                        <StickyNote className="h-4 w-4" />
-                    </div>
-                    <CardTitle className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-zinc-300">
-                        Personal Scratchpad
-                    </CardTitle>
-                </div>
-                {items.length > 0 && (
-                    <Badge variant="outline" className="text-[11px] font-semibold py-0.5 px-2.5 rounded-lg bg-amber-50 dark:bg-amber-950/50 text-amber-700 dark:text-amber-300 border-amber-200/60 dark:border-amber-800/40">
-                        {completedCount}/{items.length} Done
-                    </Badge>
-                )}
-            </CardHeader>
+        <Panel
+            eyebrow={items.length ? `${doneCount} of ${items.length} done` : 'Only you can see these'}
+            title="Notes"
+            className={className}
+            delay={delay}
+            bodyClassName="px-3"
+        >
+            <form onSubmit={handleAdd} className="relative mx-2 mb-2">
+                <label htmlFor="dashboard-note" className="sr-only">Add a note</label>
+                <input
+                    id="dashboard-note"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    maxLength={MAX_NOTE_LENGTH}
+                    placeholder="Jot something down…"
+                    className="h-10 w-full rounded-xl border border-white/70 bg-white/60 pl-3.5 pr-11 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand focus:bg-white focus:outline-none focus:ring-4 focus:ring-brand/10 dark:border-white/[0.08] dark:bg-white/[0.03] dark:text-zinc-100 dark:focus:bg-zinc-900"
+                />
+                <button
+                    type="submit"
+                    aria-label="Add note"
+                    disabled={!input.trim()}
+                    className="absolute right-1.5 top-1/2 flex h-7 w-7 -translate-y-1/2 items-center justify-center rounded-lg bg-ink text-white transition-opacity disabled:opacity-25 dark:bg-white dark:text-ink"
+                >
+                    <ArrowUp className="h-4 w-4" />
+                </button>
+            </form>
 
-            <CardContent className="p-4 sm:p-5">
-
-                <form onSubmit={handleAdd} className="flex gap-2 mb-3">
-                    <Input
-                        type="text"
-                        value={input}
-                        onChange={(e) => setInput(e.target.value)}
-                        placeholder="Quick note or key reminder..."
-                        className="h-8 text-xs bg-slate-50/60 dark:bg-zinc-800/50 border-slate-200/80 dark:border-zinc-800 focus:border-blue-500"
-                    />
-                    <Button 
-                        type="submit" 
-                        size="icon" 
-                        className="h-8 w-8 bg-blue-600 hover:bg-blue-700 text-white shrink-0 shadow-xs"
-                    >
-                        <Plus className="h-3.5 w-3.5" />
-                    </Button>
-                </form>
-
-                {items.length === 0 ? (
-                    <p className="text-[11px] text-slate-400 dark:text-zinc-500 text-center py-5">
-                        Scratchpad is empty. Capture quick thoughts here.
-                    </p>
-                ) : (
-                    <div className="space-y-1.5 max-h-48 overflow-y-auto pr-1 no-scrollbar">
-                        {items.map((item) => (
-                            <div 
-                                key={item.id} 
-                                className="flex items-center justify-between gap-2 p-2 rounded-lg bg-slate-50/60 dark:bg-zinc-800/40 border border-slate-100 dark:border-zinc-800/60 hover:bg-slate-100/70 dark:hover:bg-zinc-800/70 transition-colors"
-                            >
-                                <button 
-                                    onClick={() => handleToggle(item.id)} 
-                                    className="text-slate-400 hover:text-slate-600 dark:text-zinc-500 dark:hover:text-zinc-300 shrink-0 cursor-pointer"
-                                >
-                                    {item.done ? (
-                                        <CheckSquare className="h-3.5 w-3.5 text-emerald-500" />
-                                    ) : (
-                                        <Square className="h-3.5 w-3.5" />
-                                    )}
-                                </button>
-                                <span className={`text-xs flex-1 break-all select-none font-medium ${item.done ? 'line-through text-slate-400 dark:text-zinc-500' : 'text-slate-700 dark:text-zinc-200'}`}>
-                                    {item.text}
-                                </span>
-                                <button 
-                                    onClick={() => handleDelete(item.id)} 
-                                    className="text-slate-400 hover:text-rose-500 dark:text-zinc-500 dark:hover:text-rose-400 shrink-0 p-1 cursor-pointer transition-colors"
-                                >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                )}
-            </CardContent>
-        </Card>
+            {items.length === 0 ? (
+                <p className="px-2 py-6 text-center text-xs text-slate-400 dark:text-zinc-500">Your notes are saved in this browser.</p>
+            ) : (
+                <ul className="max-h-64 overflow-y-auto">
+                    {items.map((item) => (
+                        <NoteRow
+                            key={item.id}
+                            item={item}
+                            onToggle={() => saveItems(items.map((i) => (i.id === item.id ? { ...i, done: !i.done } : i)))}
+                            onDelete={() => saveItems(items.filter((i) => i.id !== item.id))}
+                        />
+                    ))}
+                </ul>
+            )}
+        </Panel>
     );
 }
 
+export default function Scratchpad({ className, delay }) {
+    const { user } = useAuth();
+    const storageKey = `scratchpad_${user?.id || 'guest'}`;
+    // Keyed so switching accounts loads that account's notes.
+    return <Notes key={storageKey} storageKey={storageKey} className={className} delay={delay} />;
+}

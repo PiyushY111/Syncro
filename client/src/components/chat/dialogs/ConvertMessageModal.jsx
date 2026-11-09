@@ -33,10 +33,10 @@ export default function ConvertMessageModal({ isOpen, onClose, message, projects
 
     return (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 text-left text-xs animate-fade-in">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl animate-stiff-pop">
-                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+            <div className="bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-xl animate-stiff-pop">
+                <div className="flex items-center justify-between border-b border-slate-900/[0.05] dark:border-white/[0.07] pb-3">
                     <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
-                        <CheckSquare className="size-4 text-blue-500" /> Convert Message to Task
+                        <CheckSquare className="size-4 text-brand dark:text-violet-300" /> Convert Message to Task
                     </h3>
                     <button onClick={onClose} className="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 cursor-pointer">
                         <X className="size-5" />
@@ -51,7 +51,7 @@ export default function ConvertMessageModal({ isOpen, onClose, message, projects
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             required
-                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg p-2.5 text-zinc-900 dark:text-white"
+                            className="w-full bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/10 dark:border-white/10 rounded-lg p-2.5 text-zinc-900 dark:text-white"
                         />
                     </div>
 
@@ -60,7 +60,7 @@ export default function ConvertMessageModal({ isOpen, onClose, message, projects
                         <select
                             value={projectId}
                             onChange={(e) => setProjectId(e.target.value)}
-                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg p-2.5 text-zinc-900 dark:text-white"
+                            className="w-full bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/10 dark:border-white/10 rounded-lg p-2.5 text-zinc-900 dark:text-white"
                         >
                             {projects.map((p) => (
                                 <option key={p.id} value={p.id}>{p.name}</option>
@@ -73,7 +73,7 @@ export default function ConvertMessageModal({ isOpen, onClose, message, projects
                         <select
                             value={priority}
                             onChange={(e) => setPriority(e.target.value)}
-                            className="w-full bg-zinc-50 dark:bg-zinc-800 border border-zinc-300 dark:border-zinc-700 rounded-lg p-2.5 text-zinc-900 dark:text-white"
+                            className="w-full bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/10 dark:border-white/10 rounded-lg p-2.5 text-zinc-900 dark:text-white"
                         >
                             <option value="LOW">Low</option>
                             <option value="MEDIUM">Medium</option>
@@ -83,8 +83,8 @@ export default function ConvertMessageModal({ isOpen, onClose, message, projects
                     </div>
 
                     <div className="flex justify-end gap-2 pt-2">
-                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 font-medium">Cancel</button>
-                        <button type="submit" disabled={loading || !title.trim()} className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium disabled:opacity-50">
+                        <button type="button" onClick={onClose} className="px-4 py-2 rounded-lg bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-700 dark:text-zinc-300 font-medium">Cancel</button>
+                        <button type="submit" disabled={loading || !title.trim()} className="px-5 py-2 rounded-lg bg-brand hover:bg-brand-strong text-white font-medium disabled:opacity-50">
                             {loading ? "Creating..." : "Create Task"}
                         </button>
                     </div>

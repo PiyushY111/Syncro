@@ -10,18 +10,18 @@ export default function TaskInfoCardEdit({
 }) {
     return (
         <div className="space-y-4">
-            <div className="flex justify-between items-center pb-2 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-900/[0.07] dark:border-white/[0.07]">
                 <h2 className="text-lg font-bold text-zinc-800 dark:text-zinc-100">Edit Task</h2>
                 <div className="flex gap-2">
                     <button
                         onClick={onSave}
-                        className="px-3 py-1.5 flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded transition cursor-pointer"
+                        className="px-3 py-1.5 flex items-center gap-1 text-xs font-semibold text-white bg-brand hover:bg-brand-strong rounded transition cursor-pointer"
                     >
                         <Save className="size-3.5" /> Save
                     </button>
                     <button
                         onClick={onCancel}
-                        className="px-3 py-1.5 flex items-center gap-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-zinc-300 dark:border-zinc-700 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded transition cursor-pointer"
+                        className="px-3 py-1.5 flex items-center gap-1 text-xs font-semibold text-zinc-700 dark:text-zinc-300 border border-slate-900/10 dark:border-white/10 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded transition cursor-pointer"
                     >
                         <X className="size-3.5" /> Cancel
                     </button>
@@ -35,7 +35,7 @@ export default function TaskInfoCardEdit({
                         type="text"
                         value={editData.title}
                         onChange={(e) => setEditData({ ...editData, title: e.target.value })}
-                        className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500"
+                        className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25"
                         required
                     />
                 </div>
@@ -45,7 +45,7 @@ export default function TaskInfoCardEdit({
                     <textarea
                         value={editData.description}
                         onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-                        className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500 h-24 resize-none"
+                        className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25 h-24 resize-none"
                     />
                 </div>
 
@@ -55,7 +55,7 @@ export default function TaskInfoCardEdit({
                         <select
                             value={editData.status}
                             onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                            className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25"
                         >
                             {stages.map((st) => (
                                 <option key={st} value={st}>{st.replace(/_/g, " ").toLowerCase()}</option>
@@ -68,7 +68,7 @@ export default function TaskInfoCardEdit({
                         <select
                             value={editData.type}
                             onChange={(e) => setEditData({ ...editData, type: e.target.value })}
-                            className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25"
                         >
                             <option value="BUG">Bug</option>
                             <option value="FEATURE">Feature</option>
@@ -83,7 +83,7 @@ export default function TaskInfoCardEdit({
                         <select
                             value={editData.priority}
                             onChange={(e) => setEditData({ ...editData, priority: e.target.value })}
-                            className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25"
                         >
                             <option value="LOW">Low</option>
                             <option value="MEDIUM">Medium</option>
@@ -98,7 +98,7 @@ export default function TaskInfoCardEdit({
                         <select
                             value={editData.assigneeId}
                             onChange={(e) => setEditData({ ...editData, assigneeId: e.target.value })}
-                            className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25"
                         >
                             <option value="">Unassigned</option>
                             {teamMembers.map((m) => (
@@ -115,7 +115,7 @@ export default function TaskInfoCardEdit({
                             type="date"
                             value={editData.start_date}
                             onChange={(e) => setEditData({ ...editData, start_date: e.target.value })}
-                            className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25"
                         />
                     </div>
 
@@ -125,7 +125,7 @@ export default function TaskInfoCardEdit({
                             type="date"
                             value={editData.due_date}
                             onChange={(e) => setEditData({ ...editData, due_date: e.target.value })}
-                            className="w-full rounded dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-800 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-blue-500"
+                            className="w-full rounded dark:bg-white/[0.02] border border-slate-900/10 dark:border-white/[0.07] px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 outline-none focus:ring-1 focus:ring-brand/25"
                             required
                         />
                     </div>

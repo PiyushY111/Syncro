@@ -55,7 +55,7 @@ export default function GlobalConfirmModal() {
 
     return (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/45 dark:bg-black/80 backdrop-blur-xs transition-all duration-300">
-            <div className={`relative w-full max-w-sm p-6 mx-4 bg-white dark:bg-zinc-900 border ${theme.border} rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200`}>
+            <div className={`relative w-full max-w-sm p-6 mx-4 bg-white dark:bg-[#14161f] border ${theme.border} rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200`}>
                 <button 
                     onClick={handleCancel}
                     className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-650 dark:hover:text-zinc-200 transition cursor-pointer"
@@ -78,7 +78,7 @@ export default function GlobalConfirmModal() {
                 <div className="mt-6 flex justify-end gap-3">
                     <button
                         onClick={handleCancel}
-                        className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-800 rounded-xl hover:bg-zinc-55 dark:hover:bg-zinc-850 transition cursor-pointer"
+                        className="px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 border border-slate-900/[0.07] dark:border-white/[0.07] rounded-xl hover:bg-zinc-55 dark:hover:bg-zinc-850 transition cursor-pointer"
                     >
                         Cancel
                     </button>

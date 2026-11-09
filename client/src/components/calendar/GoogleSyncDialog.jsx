@@ -64,10 +64,10 @@ export default function GoogleSyncDialog({
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-zinc-950/70 backdrop-blur-xs">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl w-full max-w-md shadow-2xl p-6 relative text-left">
+            <div className="bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl w-full max-w-md shadow-2xl p-6 relative text-left">
                 <button
                     onClick={onClose}
-                    className="absolute right-4 top-4 p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                    className="absolute right-4 top-4 p-1.5 text-zinc-400 dark:text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-200 rounded-lg hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                 >
                     <X className="size-5" />
                 </button>
@@ -112,9 +112,9 @@ export default function GoogleSyncDialog({
                             </div>
                         </div>
 
-                        <div className="space-y-2 p-3 bg-zinc-50 dark:bg-zinc-950 rounded-xl border border-zinc-100 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400">
+                        <div className="space-y-2 p-3 bg-slate-500/[0.05] dark:bg-white/[0.02] rounded-xl border border-slate-900/[0.05] dark:border-white/[0.07] text-xs text-zinc-600 dark:text-zinc-400">
                             <div className="flex items-center gap-2">
-                                <Video className="size-3.5 text-blue-500 shrink-0" />
+                                <Video className="size-3.5 text-brand dark:text-violet-300 shrink-0" />
                                 <span>Automatic Google Meet video link generation</span>
                             </div>
                             <div className="flex items-center gap-2">
@@ -131,7 +131,7 @@ export default function GoogleSyncDialog({
                         <button
                             onClick={handleDisconnectSync}
                             disabled={isLoading}
-                            className="w-full py-2.5 px-4 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800 font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                            className="w-full py-2.5 px-4 rounded-xl border border-slate-900/[0.07] dark:border-white/[0.07] text-zinc-700 dark:text-zinc-300 hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07] font-semibold text-sm transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
                         >
                             {isLoading ? (
                                 <Loader2 className="size-4 animate-spin" />
@@ -146,7 +146,7 @@ export default function GoogleSyncDialog({
                 ) : (
                     /* Disconnected State - Pure Google OAuth Redirect */
                     <div className="space-y-4">
-                        <div className="border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-4 text-center">
+                        <div className="border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-xl p-4 text-center">
                             <Chrome className="size-8 mx-auto text-zinc-300 dark:text-zinc-700 mb-2" />
                             <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                                 No Google Account Connected
@@ -156,7 +156,7 @@ export default function GoogleSyncDialog({
                         <button
                             onClick={handleContinueWithGoogle}
                             disabled={isLoading}
-                            className="w-full py-3 px-4 rounded-xl border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-100 font-semibold text-sm transition flex items-center justify-center gap-3 shadow-sm hover:shadow cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                            className="w-full py-3 px-4 rounded-xl border border-slate-900/10 dark:border-white/10 bg-white/70 dark:bg-white/[0.04] text-zinc-800 dark:text-zinc-100 font-semibold text-sm transition flex items-center justify-center gap-3 shadow-sm hover:shadow cursor-pointer hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.04]"
                         >
                             <svg className="size-5" viewBox="0 0 24 24">
                                 <path

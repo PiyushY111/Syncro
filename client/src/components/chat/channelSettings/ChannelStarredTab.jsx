@@ -30,7 +30,7 @@ export default function ChannelStarredTab({ channelId }) {
             ) : (
                 <div className="space-y-0">
                     {starredMessages.map((msg) => (
-                        <div key={msg.id} className="px-3 py-3 border-b border-zinc-100 hover:bg-zinc-50 transition-colors">
+                        <div key={msg.id} className="px-3 py-3 border-b border-slate-900/[0.05] hover:bg-slate-500/[0.06] transition-colors">
                             <div className="flex items-baseline justify-between mb-1">
                                 <span className="font-semibold text-sm text-zinc-900">{msg.user?.name || 'User'}</span>
                                 <span className="text-xs text-zinc-400">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

@@ -100,7 +100,7 @@ export default function ActiveSessionsCard() {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
                     <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-                        <Shield size={18} className="text-blue-500" />
+                        <Shield size={18} className="text-brand dark:text-violet-300" />
                         Connected Devices & Active Sessions
                     </h3>
                     <p className="text-xs text-gray-500 dark:text-zinc-400">
@@ -113,7 +113,7 @@ export default function ActiveSessionsCard() {
                         type="button"
                         onClick={loadSessions}
                         disabled={loading}
-                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                        className="p-2 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 rounded-lg hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                         title="Refresh sessions"
                     >
                         <RefreshCw size={15} className={loading ? 'animate-spin' : ''} />
@@ -138,7 +138,7 @@ export default function ActiveSessionsCard() {
                     Loading authenticated sessions...
                 </div>
             ) : sessions.length === 0 ? (
-                <div className="rounded-xl border border-gray-200 dark:border-zinc-800 p-6 text-center text-xs text-gray-500 dark:text-zinc-400">
+                <div className="rounded-xl border border-slate-900/[0.07] dark:border-white/[0.07] p-6 text-center text-xs text-gray-500 dark:text-zinc-400">
                     No active remote sessions recorded.
                 </div>
             ) : (
@@ -153,15 +153,15 @@ export default function ActiveSessionsCard() {
                                 key={session.id}
                                 className={`flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-xl border transition ${
                                     session.isCurrent
-                                        ? 'bg-blue-50/40 dark:bg-blue-950/20 border-blue-200 dark:border-blue-900/50'
-                                        : 'bg-white dark:bg-zinc-950 border-gray-200 dark:border-zinc-800 hover:border-gray-300 dark:hover:border-zinc-700'
+                                        ? 'bg-blue-50/40 dark:bg-brand/15 border-brand/25 dark:border-brand/30'
+                                        : 'bg-white dark:bg-white/[0.02] border-slate-900/[0.07] dark:border-white/[0.07] hover:border-gray-300 dark:hover:border-zinc-700'
                                 } gap-4`}
                             >
                                 <div className="flex items-start gap-3.5">
                                     <div className={`p-2.5 rounded-xl ${
                                         session.isCurrent
-                                            ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400'
-                                            : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400'
+                                            ? 'bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300'
+                                            : 'bg-slate-500/[0.08] dark:bg-white/[0.06] text-gray-600 dark:text-zinc-400'
                                     }`}>
                                         <DeviceIcon size={20} />
                                     </div>

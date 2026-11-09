@@ -30,8 +30,8 @@ export default function OwnerPurgeModal({ isOpen, onClose, workspaceId, onPurgeS
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl text-xs">
-                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+            <div className="bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl max-w-md w-full p-5 space-y-4 shadow-xl text-xs">
+                <div className="flex items-center justify-between border-b border-slate-900/[0.05] dark:border-white/[0.07] pb-3">
                     <div className="flex items-center gap-2 text-rose-500 font-bold">
                         <AlertTriangle className="size-4" />
                         Owner Purge Audit History
@@ -51,7 +51,7 @@ export default function OwnerPurgeModal({ isOpen, onClose, workspaceId, onPurgeS
                         <select
                             value={severityFilter}
                             onChange={(e) => setSeverityFilter(e.target.value)}
-                            className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white font-medium"
+                            className="w-full px-3 py-2 bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-white font-medium"
                         >
                             <option value="ALL">All Severities (Full Purge)</option>
                             <option value="INFO">INFO Logs Only</option>
@@ -65,7 +65,7 @@ export default function OwnerPurgeModal({ isOpen, onClose, workspaceId, onPurgeS
                         <select
                             value={olderThanDays}
                             onChange={(e) => setOlderThanDays(e.target.value)}
-                            className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white font-medium"
+                            className="w-full px-3 py-2 bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-white font-medium"
                         >
                             <option value="0">Purge All Matching (No age limit)</option>
                             <option value="7">Older than 7 days</option>
@@ -74,8 +74,8 @@ export default function OwnerPurgeModal({ isOpen, onClose, workspaceId, onPurgeS
                         </select>
                     </div>
 
-                    <div className="flex justify-end gap-2 pt-2 border-t border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onClick={onClose} className="px-3 py-1.5 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-700 dark:text-zinc-300">Cancel</button>
+                    <div className="flex justify-end gap-2 pt-2 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
+                        <button type="button" onClick={onClose} className="px-3 py-1.5 border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-700 dark:text-zinc-300">Cancel</button>
                         <button type="submit" disabled={isSubmitting} className="flex items-center gap-1.5 px-3.5 py-1.5 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg disabled:opacity-50 cursor-pointer">
                             <Trash2 className="size-3.5" /> Purge Logs
                         </button>

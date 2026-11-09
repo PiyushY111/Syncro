@@ -108,11 +108,11 @@ export default function Layout() {
     }
 
     return (
-        <div className="flex h-screen w-screen overflow-hidden bg-white dark:bg-zinc-950 text-gray-900 dark:text-slate-100">
+        <div className="sx-mesh flex h-screen w-screen overflow-hidden text-slate-900 dark:text-zinc-100">
             <Sidebar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} onCreateWorkspace={() => setIsCreateWorkspaceOpen(true)} />
-            <div className="flex-1 flex flex-col h-screen overflow-hidden">
-                <Navbar isSidebarOpen={isSidebarOpen} setIsSidebarOpen={setIsSidebarOpen} />
-                <div className={`flex-1 min-h-0 ${isChatPage ? 'p-0 overflow-hidden' : 'p-6 xl:p-10 xl:px-16 overflow-y-auto'}`}>
+            <div className="flex min-w-0 flex-1 flex-col h-screen overflow-hidden">
+                <Navbar setIsSidebarOpen={setIsSidebarOpen} />
+                <div className={`flex-1 min-h-0 ${isChatPage ? 'p-0 overflow-hidden' : 'overflow-y-auto p-4 sm:p-6 xl:px-10 xl:py-8'}`}>
                     <Outlet />
                 </div>
             </div>

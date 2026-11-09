@@ -15,7 +15,7 @@ export default function InboxQuickActions({ item, onMarkRead, onArchive, onActio
     };
 
     return (
-        <div className="flex items-center gap-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
+        <div className="flex items-center gap-1.5 pt-2 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
             {item.entityType === 'MEETING' && (
                 <button
                     onClick={() => onAction('RESPOND_INVITE', item.entityType, item.entityId, 'ACCEPTED')}
@@ -28,7 +28,7 @@ export default function InboxQuickActions({ item, onMarkRead, onArchive, onActio
             {item.entityType === 'TASK' && (
                 <button
                     onClick={() => onAction('COMPLETE_TASK', item.entityType, item.entityId, 'DONE')}
-                    className="px-2.5 py-1 text-[11px] font-semibold text-blue-600 bg-blue-500/10 hover:bg-blue-500/20 rounded-md transition flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 text-[11px] font-semibold text-brand bg-brand/10 hover:bg-blue-500/20 rounded-md transition flex items-center gap-1 cursor-pointer"
                 >
                     <CheckCircle2 className="size-3" /> Complete Task
                 </button>
@@ -37,7 +37,7 @@ export default function InboxQuickActions({ item, onMarkRead, onArchive, onActio
             {item.entityId && (
                 <button
                     onClick={handleJump}
-                    className="px-2.5 py-1 text-[11px] font-medium text-zinc-600 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition flex items-center gap-1 cursor-pointer"
+                    className="px-2.5 py-1 text-[11px] font-medium text-zinc-600 dark:text-zinc-300 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded-md transition flex items-center gap-1 cursor-pointer"
                 >
                     <ExternalLink className="size-3" /> View Source
                 </button>
@@ -46,14 +46,14 @@ export default function InboxQuickActions({ item, onMarkRead, onArchive, onActio
             <div className="ml-auto flex items-center gap-1 text-zinc-400">
                 <button
                     onClick={() => onMarkRead(item.id)}
-                    className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition cursor-pointer text-xs"
+                    className="p-1 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded-md transition cursor-pointer text-xs"
                     title={item.isRead ? "Mark as unread" : "Mark as read"}
                 >
-                    <CheckCircle2 className={`size-3.5 ${item.isRead ? 'text-blue-500' : ''}`} />
+                    <CheckCircle2 className={`size-3.5 ${item.isRead ? 'text-brand dark:text-violet-300' : ''}`} />
                 </button>
                 <button
                     onClick={() => onArchive(item.id)}
-                    className="p-1 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition cursor-pointer text-xs"
+                    className="p-1 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded-md transition cursor-pointer text-xs"
                     title="Archive"
                 >
                     <Archive className="size-3.5" />

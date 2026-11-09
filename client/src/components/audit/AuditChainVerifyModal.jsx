@@ -34,16 +34,16 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-            <div className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-2xl p-6 text-left overflow-hidden">
+            <div className="relative w-full max-w-lg rounded-2xl bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] shadow-2xl p-6 text-left overflow-hidden">
                 {/* Header */}
-                <div className="flex items-center justify-between pb-4 border-b border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-900/[0.05] dark:border-white/[0.07]">
                     <div className="flex items-center gap-2.5">
                         <div className={`p-2 rounded-xl ${
                             result?.isValid
                                 ? 'bg-emerald-100 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400'
                                 : result && !result.isValid
                                 ? 'bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400'
-                                : 'bg-purple-100 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400'
+                                : 'bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300'
                         }`}>
                             {result?.isValid ? (
                                 <ShieldCheck className="size-5" />
@@ -66,7 +66,7 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
                     <button
                         type="button"
                         onClick={onClose}
-                        className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                     >
                         <X className="size-5" />
                     </button>
@@ -76,7 +76,7 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
                 <div className="py-5 space-y-4">
                     {loading ? (
                         <div className="py-12 flex flex-col items-center justify-center gap-3 text-zinc-500">
-                            <RefreshCw className="size-8 animate-spin text-purple-600" />
+                            <RefreshCw className="size-8 animate-spin text-brand dark:text-violet-300" />
                             <p className="text-sm font-medium">Hashing and verifying audit logs...</p>
                             <p className="text-xs text-zinc-400">Validating backwards SHA-256 cryptographic linkage</p>
                         </div>
@@ -99,14 +99,14 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
                             </div>
 
                             <div className="space-y-2.5 text-xs text-zinc-600 dark:text-zinc-300">
-                                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60">
+                                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.06] border border-zinc-200/70 dark:border-white/10">
                                     <span className="text-zinc-500 font-medium">Verified Audit Records</span>
                                     <span className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">
                                         {result.totalLogs ?? result.verifiedCount ?? 0}
                                     </span>
                                 </div>
 
-                                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60">
+                                <div className="flex justify-between items-center py-2 px-3 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.06] border border-zinc-200/70 dark:border-white/10">
                                     <span className="text-zinc-500 font-medium">Cryptographic Algorithm</span>
                                     <span className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">
                                         SHA-256 Linked Chain
@@ -114,7 +114,7 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
                                 </div>
 
                                 {result.lastHash && (
-                                    <div className="py-2 px-3 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200/70 dark:border-zinc-700/60">
+                                    <div className="py-2 px-3 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.06] border border-zinc-200/70 dark:border-white/10">
                                         <div className="text-zinc-500 font-medium mb-1 flex items-center gap-1">
                                             <Hash className="size-3.5" /> Latest Chain Hash
                                         </div>
@@ -143,12 +143,12 @@ export default function AuditChainVerifyModal({ isOpen, onClose, workspaceId }) 
                 </div>
 
                 {/* Footer */}
-                <div className="flex items-center justify-end gap-2 pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                <div className="flex items-center justify-end gap-2 pt-4 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
                     <button
                         type="button"
                         onClick={runVerification}
                         disabled={loading}
-                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg transition cursor-pointer disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-zinc-700 dark:text-zinc-300 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded-lg transition cursor-pointer disabled:opacity-50"
                     >
                         <RefreshCw size={13} className={loading ? 'animate-spin' : ''} />
                         Re-verify

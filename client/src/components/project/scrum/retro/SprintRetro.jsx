@@ -57,10 +57,10 @@ export default function SprintRetro({ project }) {
 
     return (
         <div className="space-y-6 text-zinc-900 dark:text-white text-left">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 gap-4">
+            <div className="sx-glass flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 rounded-2xl gap-4">
                 <div>
                     <h2 className="text-lg font-bold flex items-center gap-2">
-                        <MessageSquare className="size-5 text-indigo-500" />
+                        <MessageSquare className="size-5 text-brand dark:text-violet-300" />
                         Collaborative Sprint Retrospective
                     </h2>
                     <p className="text-xs text-zinc-500 mt-1">Reflect on the completed/active sprint with your team in real-time.</p>
@@ -72,7 +72,7 @@ export default function SprintRetro({ project }) {
                             {activeRoomUsers} Online
                         </span>
                     )}
-                    <select value={selectedSprintId} onChange={(e) => setSelectedSprintId(e.target.value)} className="bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded px-2.5 py-1.5 cursor-pointer outline-none">
+                    <select value={selectedSprintId} onChange={(e) => setSelectedSprintId(e.target.value)} className="bg-slate-500/[0.05] dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded px-2.5 py-1.5 cursor-pointer outline-none">
                         <option value="" disabled>Choose active/completed sprint...</option>
                         {activeSprints.map(s => (
                             <option key={s.id} value={s.id}>{s.name} ({s.status})</option>
@@ -88,7 +88,7 @@ export default function SprintRetro({ project }) {
                     ))}
                 </div>
             ) : (
-                <div className="bg-white dark:bg-zinc-900/40 p-12 text-center border border-zinc-200 dark:border-zinc-800 rounded-xl text-zinc-400">
+                <div className="sx-glass p-12 text-center rounded-2xl text-zinc-400">
                     <MessageSquare className="size-8 mx-auto mb-2 text-zinc-300" />
                     <p className="text-xs font-semibold">Select a Sprint to load its Retro room.</p>
                 </div>

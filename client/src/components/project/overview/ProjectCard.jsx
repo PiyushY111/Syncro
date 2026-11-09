@@ -16,11 +16,11 @@ const ProjectCard = ({ project }) => {
 
     return (
         <Link to={`/projectsDetail?id=${project.id}&tab=tasks`} className="block group">
-            <Card className="h-full border-slate-200/80 dark:border-zinc-800/80 bg-white dark:bg-zinc-900/90 hover:shadow-lg hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer overflow-hidden relative">
+            <Card className="h-full border-slate-900/[0.07] dark:border-white/[0.07] bg-white/60 dark:bg-white/[0.03] hover:shadow-lg hover:border-slate-300 dark:hover:border-zinc-700 transition-all duration-200 cursor-pointer overflow-hidden relative">
                 <CardHeader className="p-5 pb-3 space-y-2">
                     <div className="flex items-start justify-between gap-3">
                         <div className="flex items-center gap-2 min-w-0 flex-1">
-                            <div className="p-2 rounded-lg bg-blue-50 dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shrink-0">
+                            <div className="p-2 rounded-lg bg-brand-tint dark:bg-white/[0.06] text-brand dark:text-violet-300 shrink-0">
                                 <FolderKanban className="h-4 w-4" />
                             </div>
                             <CardTitle className="text-base font-semibold text-slate-900 dark:text-zinc-100 truncate group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
@@ -36,7 +36,7 @@ const ProjectCard = ({ project }) => {
                 </CardHeader>
 
                 <CardContent className="p-5 pt-0 space-y-4">
-                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800/60">
+                    <div className="flex items-center justify-between gap-2 pt-2 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
                         <Badge variant={statusBadgeVariant[project.status] || "outline"} className="text-[10px] font-semibold py-0.5 px-2">
                             {project.status ? project.status.replace("_", " ") : "PLANNING"}
                         </Badge>
@@ -51,9 +51,9 @@ const ProjectCard = ({ project }) => {
                             <span className="text-slate-500 dark:text-zinc-400">Completion</span>
                             <span className="text-slate-700 dark:text-zinc-300 font-semibold">{progress}%</span>
                         </div>
-                        <div className="w-full bg-slate-100 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                        <div className="w-full bg-slate-500/[0.08] dark:bg-white/[0.06] h-2 rounded-full overflow-hidden">
                             <div 
-                                className="h-full rounded-full bg-gradient-to-r from-blue-600 to-indigo-600 transition-all duration-500" 
+                                className="h-full rounded-full bg-gradient-to-r from-[#7c5cff] to-brand transition-all duration-500" 
                                 style={{ width: `${progress}%` }} 
                             />
                         </div>

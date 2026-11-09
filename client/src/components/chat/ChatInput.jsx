@@ -177,19 +177,19 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
     const activeCategory = EMOJI_CATEGORIES.find(c => c.name === activeEmojiTab) || EMOJI_CATEGORIES[0];
 
     return (
-        <form onSubmit={handleSubmit} className="bg-white dark:bg-zinc-900 border-t border-zinc-200 dark:border-zinc-800 px-5 py-3 relative" onClick={(e) => e.stopPropagation()}>
+        <form onSubmit={handleSubmit} className="bg-white/60 dark:bg-white/[0.03] border-t border-slate-900/[0.07] dark:border-white/[0.07] px-5 py-3 relative" onClick={(e) => e.stopPropagation()}>
             {/* Mention Suggestions Dropdown */}
             {showSuggestions && filteredMembers.length > 0 && (
                 <div
                     id="mention-listbox"
                     role="listbox"
                     aria-label="Workspace member mentions"
-                    className="absolute bottom-[calc(100%-8px)] left-5 w-64 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-xl overflow-hidden z-50"
+                    className="absolute bottom-[calc(100%-8px)] left-5 w-64 bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl shadow-xl overflow-hidden z-50"
                 >
-                    <div className="px-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/50 border-b border-zinc-100 dark:border-zinc-800/80 text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                    <div className="px-3 py-1.5 bg-slate-500/[0.05] dark:bg-white/[0.06] border-b border-slate-900/[0.05] dark:border-white/[0.07] text-[10px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                         Mention workspace member
                     </div>
-                    <ul className="max-h-48 overflow-y-auto divide-y divide-zinc-50 dark:divide-zinc-800/50">
+                    <ul className="max-h-48 overflow-y-auto divide-y divide-zinc-50 dark:divide-white/[0.06]">
                         {filteredMembers.map((member, index) => {
                             const isActive = index === activeSuggestionIndex;
                             return (
@@ -198,9 +198,9 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                                     role="option"
                                     aria-selected={isActive}
                                     onClick={() => handleSelectSuggestion(member)}
-                                    className={`flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer transition-colors ${isActive ? 'bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-semibold' : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-50 dark:hover:bg-zinc-800/60'}`}
+                                    className={`flex items-center gap-2.5 px-3 py-2 text-sm cursor-pointer transition-colors ${isActive ? 'bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300 font-semibold' : 'text-zinc-700 dark:text-zinc-300 hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07]'}`}
                                 >
-                                    <div className="size-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center font-bold text-xs uppercase text-zinc-600 dark:text-zinc-300 border border-zinc-200 dark:border-zinc-700">
+                                    <div className="size-6 rounded-full bg-slate-500/[0.08] dark:bg-white/[0.06] flex items-center justify-center font-bold text-xs uppercase text-zinc-600 dark:text-zinc-300 border border-slate-900/[0.07] dark:border-white/10">
                                         {member.name.charAt(0)}
                                     </div>
                                     <span className="truncate">{member.name}</span>
@@ -219,14 +219,14 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                     aria-label="Emoji Picker"
                     className="absolute bottom-[calc(100%+8px)] right-8 w-72 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-2xl p-3 z-50 animate-in fade-in zoom-in-95 duration-150"
                 >
-                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-zinc-100 dark:border-zinc-800">
+                    <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-900/[0.05] dark:border-white/[0.07]">
                         <div className="flex gap-1">
                             {EMOJI_CATEGORIES.map(cat => (
                                 <button
                                     key={cat.name}
                                     type="button"
                                     onClick={() => setActiveEmojiTab(cat.name)}
-                                    className={`px-2 py-1 rounded text-xs font-medium transition cursor-pointer ${activeEmojiTab === cat.name ? 'bg-blue-500 text-white font-semibold' : 'text-zinc-500 hover:bg-zinc-100 dark:hover:bg-zinc-800'}`}
+                                    className={`px-2 py-1 rounded text-xs font-medium transition cursor-pointer ${activeEmojiTab === cat.name ? 'bg-brand text-white font-semibold' : 'text-zinc-500 hover:bg-slate-500/10 dark:hover:bg-white/[0.07]'}`}
                                 >
                                     {cat.name}
                                 </button>
@@ -248,7 +248,7 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                                 key={emoji}
                                 type="button"
                                 onClick={() => handleSelectEmoji(emoji)}
-                                className="h-8 w-8 flex items-center justify-center text-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-md transition cursor-pointer hover:scale-125 duration-100"
+                                className="h-8 w-8 flex items-center justify-center text-lg hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded-md transition cursor-pointer hover:scale-125 duration-100"
                             >
                                 {emoji}
                             </button>
@@ -259,14 +259,14 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
 
             {/* File Attachment Chip */}
             {attachment && (
-                <div className="flex items-center gap-2 mb-2 p-1.5 px-3 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/60 rounded-lg text-xs w-fit text-blue-700 dark:text-blue-300">
+                <div className="flex items-center gap-2 mb-2 p-1.5 px-3 bg-brand-tint dark:bg-brand/15 border border-brand/25 dark:border-brand/30 rounded-lg text-xs w-fit text-brand dark:text-violet-300">
                     {attachment.type.startsWith('image/') ? (
                         <ImageIcon className="size-3.5 shrink-0" />
                     ) : (
                         <FileText className="size-3.5 shrink-0" />
                     )}
                     <span className="font-semibold truncate max-w-[200px]">{attachment.name}</span>
-                    <span className="text-[10px] text-blue-500 dark:text-blue-400">({attachment.size})</span>
+                    <span className="text-[10px] text-brand dark:text-violet-300">({attachment.size})</span>
                     <button
                         type="button"
                         aria-label="Remove attachment"
@@ -287,7 +287,7 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                 aria-label="Upload file attachment"
             />
 
-            <div className="flex items-center border border-zinc-300 dark:border-zinc-700 rounded-lg border-l-4 border-l-blue-400 bg-white dark:bg-zinc-800/80 overflow-hidden focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:border-l-blue-500 transition">
+            <div className="flex items-center border border-slate-900/10 dark:border-white/10 rounded-lg border-l-4 border-l-blue-400 bg-white/60 dark:bg-white/[0.06] overflow-hidden focus-within:border-zinc-400 dark:focus-within:border-zinc-600 focus-within:border-l-blue-500 transition">
                 <input
                     ref={inputRef}
                     type="text"
@@ -306,7 +306,7 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                         type="button"
                         aria-label="Attach file"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700 rounded-lg transition-colors cursor-pointer"
+                        className="p-2 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded-lg transition-colors cursor-pointer"
                         title="Attach file"
                     >
                         <Paperclip className="size-[18px]" />
@@ -320,7 +320,7 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                             e.stopPropagation();
                             setShowEmojiPicker(prev => !prev);
                         }}
-                        className={`p-2 rounded-lg transition-colors cursor-pointer ${showEmojiPicker ? 'bg-blue-50 dark:bg-blue-950 text-blue-500' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-700'}`}
+                        className={`p-2 rounded-lg transition-colors cursor-pointer ${showEmojiPicker ? 'bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300' : 'text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-slate-500/10 dark:hover:bg-white/[0.07]'}`}
                         title="Add emoji"
                     >
                         <Smile className="size-[18px]" />
@@ -329,7 +329,7 @@ export default function ChatInput({ members = [], onSendMessage, onTypingStart, 
                         type="submit"
                         aria-label="Send message"
                         disabled={!content.trim() && !attachment}
-                        className="p-2 bg-blue-500 hover:bg-blue-600 text-white rounded-full disabled:opacity-30 transition cursor-pointer ml-1"
+                        className="p-2 bg-brand hover:bg-brand-strong text-white rounded-full disabled:opacity-30 transition cursor-pointer ml-1"
                     >
                         <Send className="size-4" />
                     </button>

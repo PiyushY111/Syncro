@@ -12,9 +12,9 @@ export default function AnalyticsMetrics({ stats, project, completionRate }) {
         {
             label: "Active Tasks",
             value: stats.inProgress,
-            color: "text-blue-600 dark:text-blue-400",
-            icon: <Clock className="size-5 text-blue-600 dark:text-blue-400" />,
-            bg: "bg-blue-200 dark:bg-blue-500/10",
+            color: "text-brand dark:text-violet-300",
+            icon: <Clock className="size-5 text-brand dark:text-violet-300" />,
+            bg: "bg-blue-200 dark:bg-brand/15",
         },
         {
             label: "Overdue Tasks",
@@ -26,9 +26,9 @@ export default function AnalyticsMetrics({ stats, project, completionRate }) {
         {
             label: "Team Size",
             value: project?.members?.length || 0,
-            color: "text-purple-600 dark:text-purple-400",
-            icon: <Users className="size-5 text-purple-600 dark:text-purple-400" />,
-            bg: "bg-purple-200 dark:bg-purple-500/10",
+            color: "text-brand dark:text-violet-300",
+            icon: <Users className="size-5 text-brand dark:text-violet-300" />,
+            bg: "bg-purple-200 dark:bg-brand/15",
         },
     ];
 
@@ -37,7 +37,7 @@ export default function AnalyticsMetrics({ stats, project, completionRate }) {
             {metrics.map((m, i) => (
                 <div
                     key={i}
-                    className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-6"
+                    className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-slate-900/10 dark:border-white/[0.07] rounded-lg p-6"
                 >
                     <div className="flex items-center justify-between">
                         <div>

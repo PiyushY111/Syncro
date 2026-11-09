@@ -74,7 +74,7 @@ export default function BurndownAnalytics({ project, tasks }) {
 
     if (!activeSprint || sprintTasks.length === 0) {
         return (
-            <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-16 text-center text-zinc-500 max-w-4xl mx-auto mt-10">
+            <div className="sx-glass rounded-2xl p-16 text-center text-zinc-500 max-w-4xl mx-auto mt-10">
                 <ChartIcon className="size-12 mx-auto text-zinc-300 dark:text-zinc-700 mb-4 animate-pulse" />
                 <h3 className="text-lg font-bold text-zinc-750 dark:text-zinc-250">No Sprint Data Found</h3>
                 <p className="text-sm text-zinc-400 mt-2 max-w-md mx-auto">Sprint charts require an active or completed sprint containing tasks with assigned story points.</p>
@@ -90,8 +90,8 @@ export default function BurndownAnalytics({ project, tasks }) {
         <div className="space-y-8 text-zinc-900 dark:text-white text-left">
             {/* Stats Dashboard */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-indigo-500/10 text-indigo-500">
+                <div className="sx-glass p-5 rounded-2xl flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-brand/10 text-brand dark:text-violet-300">
                         <TrendingDown className="size-6" />
                     </div>
                     <div>
@@ -101,7 +101,7 @@ export default function BurndownAnalytics({ project, tasks }) {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
+                <div className="sx-glass p-5 rounded-2xl flex items-center gap-4">
                     <div className="p-3 rounded-lg bg-emerald-500/10 text-emerald-500">
                         <Activity className="size-6" />
                     </div>
@@ -112,8 +112,8 @@ export default function BurndownAnalytics({ project, tasks }) {
                     </div>
                 </div>
 
-                <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex items-center gap-4">
-                    <div className="p-3 rounded-lg bg-purple-500/10 text-purple-500">
+                <div className="sx-glass p-5 rounded-2xl flex items-center gap-4">
+                    <div className="p-3 rounded-lg bg-brand/10 text-brand dark:text-violet-300">
                         <Layers className="size-6" />
                     </div>
                     <div>
@@ -127,7 +127,7 @@ export default function BurndownAnalytics({ project, tasks }) {
             {/* Charts section */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* 1. Sprint Burndown Chart */}
-                <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="sx-glass p-5 rounded-2xl">
                     <div className="mb-4">
                         <h3 className="font-bold text-sm">Sprint Burndown Chart</h3>
                         <p className="text-xs text-zinc-400">Ideal vs. Actual remaining effort in story points.</p>
@@ -148,7 +148,7 @@ export default function BurndownAnalytics({ project, tasks }) {
                 </div>
 
                 {/* 2. Sprint Burnup Chart (Tracks scope creep) */}
-                <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="sx-glass p-5 rounded-2xl">
                     <div className="mb-4">
                         <h3 className="font-bold text-sm">Sprint Burnup Chart</h3>
                         <p className="text-xs text-zinc-400">Total scope vs. Completed points (reveals scope creep).</p>

@@ -49,34 +49,34 @@ export default function EpicMapping({ project, tasks }) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-zinc-900 dark:text-white text-left">
             <div className="md:col-span-2 space-y-6">
-                <div className="flex justify-between items-center bg-white dark:bg-zinc-900/60 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800">
+                <div className="sx-glass flex justify-between items-center p-4 rounded-2xl">
                     <div>
                         <h2 className="text-lg font-bold flex items-center gap-2">
-                            <Layers className="size-5 text-indigo-500" />
+                            <Layers className="size-5 text-brand dark:text-violet-300" />
                             Epics & Feature Maps
                         </h2>
                         <p className="text-xs text-zinc-500 dark:text-zinc-405 mt-1">Group your tasks into high-level features and track their completion.</p>
                     </div>
-                    <button onClick={() => setShowCreate(!showCreate)} className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded text-xs font-semibold cursor-pointer">
+                    <button onClick={() => setShowCreate(!showCreate)} className="flex items-center gap-1.5 px-3 py-1.5 bg-brand hover:bg-brand-strong text-white rounded text-xs font-semibold cursor-pointer">
                         <Plus className="size-3.5" /> New Epic
                     </button>
                 </div>
 
                 {showCreate && (
-                    <form onSubmit={handleCreateEpic} className="bg-zinc-50 dark:bg-zinc-900/80 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+                    <form onSubmit={handleCreateEpic} className="bg-slate-500/[0.05] dark:bg-white/[0.03] p-5 rounded-xl border border-slate-900/[0.07] dark:border-white/[0.07] space-y-4">
                         <h3 className="text-sm font-semibold">Create New Epic</h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Epic Name" className="w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-2" required />
+                            <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Epic Name" className="w-full text-xs bg-white/60 dark:bg-white/[0.02] border border-slate-900/[0.07] dark:border-white/[0.07] rounded p-2" required />
                             <div className="flex gap-2 items-center">
                                 {colors.map((c) => (
                                     <button key={c.hex} type="button" onClick={() => setColor(c.hex)} style={{ backgroundColor: c.hex }} className={`size-5 rounded-full border cursor-pointer ${color === c.hex ? 'border-zinc-900 dark:border-white scale-110' : 'border-transparent'}`} />
                                 ))}
                             </div>
                         </div>
-                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className="w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded p-2" />
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className="w-full text-xs bg-white/60 dark:bg-white/[0.02] border border-slate-900/[0.07] dark:border-white/[0.07] rounded p-2" />
                         <div className="flex justify-end gap-2 text-xs">
-                            <button type="button" onClick={() => setShowCreate(false)} className="px-3 py-1.5 border border-zinc-250 dark:border-zinc-800 rounded">Cancel</button>
-                            <button type="submit" className="px-3 py-1.5 bg-blue-600 text-white rounded font-semibold">Create</button>
+                            <button type="button" onClick={() => setShowCreate(false)} className="px-3 py-1.5 border border-slate-900/10 dark:border-white/[0.07] rounded">Cancel</button>
+                            <button type="submit" className="px-3 py-1.5 bg-brand text-white rounded font-semibold">Create</button>
                         </div>
                     </form>
                 )}

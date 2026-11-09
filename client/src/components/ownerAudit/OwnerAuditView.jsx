@@ -31,17 +31,17 @@ export default function OwnerAuditView() {
 
     return (
         <div className="space-y-6 max-w-5xl mx-auto text-xs">
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+            <div className="sx-glass sx-rise flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 p-6 rounded-3xl">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => navigate('/audit-logs')} className="p-2 rounded-lg bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 cursor-pointer">
+                    <button onClick={() => navigate('/audit-logs')} className="p-2 rounded-lg bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 cursor-pointer">
                         <ArrowLeft className="size-4" />
                     </button>
-                    <div className="p-2.5 rounded-xl bg-amber-500/10 text-amber-500">
+                    <div className="sx-tile sx-tile-amber">
                         <Crown className="size-6" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Owner Security Command Center</h1>
-                        <p className="text-xs text-zinc-500">Executive security oversight, anomaly alerts, purge management, and compliance exports</p>
+                        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Owner Security Command Center</h1>
+                        <p className="mt-0.5 text-sm text-slate-500 dark:text-zinc-400">Executive security oversight, anomaly alerts, purge management, and compliance exports</p>
                     </div>
                 </div>
 

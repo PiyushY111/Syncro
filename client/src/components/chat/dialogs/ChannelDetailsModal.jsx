@@ -10,9 +10,9 @@ export default function ChannelDetailsModal({ isOpen, onClose, channel, workspac
     if (!isOpen || !channel) return null;
 
     const tabs = [
-        { key: 'info', label: 'Info', icon: Info, color: 'text-blue-500' },
+        { key: 'info', label: 'Info', icon: Info, color: 'text-brand dark:text-violet-300' },
         { key: 'starred', label: 'Starred', icon: Star, color: 'text-amber-500' },
-        { key: 'members', label: 'Members', icon: Users, color: 'text-indigo-500' }
+        { key: 'members', label: 'Members', icon: Users, color: 'text-brand dark:text-violet-300' }
     ];
 
     return (
@@ -23,23 +23,23 @@ export default function ChannelDetailsModal({ isOpen, onClose, channel, workspac
             {/* Slide-in panel */}
             <div className="relative w-[420px] h-full bg-white shadow-2xl flex flex-col animate-stiff-slide-right">
                 {/* Panel header */}
-                <div className="px-5 py-4 border-b border-zinc-200 flex items-center justify-between shrink-0">
+                <div className="px-5 py-4 border-b border-slate-900/[0.07] flex items-center justify-between shrink-0">
                     <h2 className="font-bold text-base text-zinc-900">Group Info</h2>
-                    <button onClick={onClose} className="p-1.5 rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-600 cursor-pointer transition-colors">
+                    <button onClick={onClose} className="p-1.5 rounded-lg text-zinc-400 hover:bg-slate-500/10 hover:text-zinc-600 cursor-pointer transition-colors">
                         <X className="size-5" />
                     </button>
                 </div>
 
                 {/* Tab navigation */}
-                <div className="px-3 py-2 border-b border-zinc-100 shrink-0 space-y-0.5">
+                <div className="px-3 py-2 border-b border-slate-900/[0.05] shrink-0 space-y-0.5">
                     {tabs.map((tab) => (
                         <button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key)}
                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition cursor-pointer ${
                                 activeTab === tab.key
-                                    ? 'bg-zinc-100 text-zinc-900 font-semibold border-l-[3px] border-l-blue-500'
-                                    : 'text-zinc-500 hover:bg-zinc-50 hover:text-zinc-700 border-l-[3px] border-l-transparent'
+                                    ? 'bg-slate-500/[0.08] text-zinc-900 font-semibold border-l-[3px] border-l-blue-500'
+                                    : 'text-zinc-500 hover:bg-slate-500/[0.06] hover:text-zinc-700 border-l-[3px] border-l-transparent'
                              }`}
                         >
                             <tab.icon className={`size-4 ${activeTab === tab.key ? tab.color : 'text-zinc-400'}`} />
@@ -62,7 +62,7 @@ export default function ChannelDetailsModal({ isOpen, onClose, channel, workspac
                 </div>
 
                 {/* Bottom done button */}
-                <div className="px-5 py-3 border-t border-zinc-200 shrink-0">
+                <div className="px-5 py-3 border-t border-slate-900/[0.07] shrink-0">
                     <button onClick={onClose} className="w-full py-2.5 rounded-lg bg-zinc-900 text-white font-semibold hover:bg-zinc-800 transition cursor-pointer text-sm">
                         Done
                     </button>

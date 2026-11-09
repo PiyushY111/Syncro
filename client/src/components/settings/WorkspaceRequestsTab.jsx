@@ -48,7 +48,7 @@ export default function WorkspaceRequestsTab() {
     if (loading && requests.length === 0) {
         return (
             <div className="flex items-center justify-center py-12">
-                <RefreshCw className="size-6 text-blue-500 animate-spin" />
+                <RefreshCw className="size-6 text-brand dark:text-violet-300 animate-spin" />
             </div>
         );
     }
@@ -56,7 +56,7 @@ export default function WorkspaceRequestsTab() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-gray-200 dark:border-zinc-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-4 border-b border-slate-900/[0.07] dark:border-white/[0.07]">
                 <div>
                     <h2 className="text-base font-semibold text-gray-900 dark:text-white">Workspace Requests & Approvals</h2>
                     <p className="text-xs text-gray-500 dark:text-zinc-400 mt-0.5">
@@ -65,7 +65,7 @@ export default function WorkspaceRequestsTab() {
                 </div>
                 <button
                     onClick={() => fetchRequests(true)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-gray-700 dark:text-zinc-200 transition cursor-pointer self-start sm:self-auto"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-500/[0.08] hover:bg-gray-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.07] text-gray-700 dark:text-zinc-200 transition cursor-pointer self-start sm:self-auto"
                 >
                     <RefreshCw className="size-3.5" />
                     Refresh Status
@@ -74,7 +74,7 @@ export default function WorkspaceRequestsTab() {
 
             {/* List */}
             {requests.length === 0 ? (
-                <div className="p-10 text-center rounded-2xl bg-gray-50 dark:bg-zinc-800/40 border border-gray-200 dark:border-zinc-800">
+                <div className="p-10 text-center rounded-2xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/[0.07]">
                     <CheckCircle2 className="size-10 text-emerald-500 mx-auto mb-2.5 opacity-80" />
                     <h3 className="text-sm font-semibold text-gray-900 dark:text-white">No Pending or Rejected Requests</h3>
                     <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">

@@ -50,13 +50,13 @@ export default function MessageStream({
 
     if (isLoading) {
         return (
-            <div className="flex-1 min-h-0 bg-white dark:bg-zinc-950 flex flex-col justify-between p-5 space-y-6 overflow-hidden animate-pulse">
+            <div className="flex-1 min-h-0 bg-white/60 dark:bg-white/[0.02] flex flex-col justify-between p-5 space-y-6 overflow-hidden animate-pulse">
                 <div className="space-y-6">
                     {/* Date divider skeleton */}
                     <div className="flex items-center gap-4 px-5 py-2">
-                        <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
-                        <div className="h-2.5 w-16 bg-zinc-200 dark:bg-zinc-800 rounded-full" />
-                        <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                        <hr className="flex-1 border-slate-900/[0.07] dark:border-white/[0.07]" />
+                        <div className="h-2.5 w-16 bg-zinc-200 dark:bg-white/[0.06] rounded-full" />
+                        <hr className="flex-1 border-slate-900/[0.07] dark:border-white/[0.07]" />
                     </div>
 
                     {/* Message skeleton rows */}
@@ -67,14 +67,14 @@ export default function MessageStream({
                         { wName: 'w-20', w1: 'w-1/2', w2: '' }
                     ].map((item, idx) => (
                         <div key={idx} className="flex items-start gap-3 px-3">
-                            <div className="size-9 rounded-full bg-zinc-200 dark:bg-zinc-800 shrink-0" />
+                            <div className="size-9 rounded-full bg-zinc-200 dark:bg-white/[0.06] shrink-0" />
                             <div className="space-y-2 flex-1">
                                 <div className="flex items-center gap-2">
-                                    <div className={`h-3 ${item.wName} bg-zinc-200 dark:bg-zinc-800 rounded`} />
-                                    <div className="h-2.5 w-12 bg-zinc-100 dark:bg-zinc-800/60 rounded" />
+                                    <div className={`h-3 ${item.wName} bg-zinc-200 dark:bg-white/[0.06] rounded`} />
+                                    <div className="h-2.5 w-12 bg-slate-500/[0.08] dark:bg-white/[0.06] rounded" />
                                 </div>
-                                <div className={`h-3.5 ${item.w1} bg-zinc-200 dark:bg-zinc-800 rounded`} />
-                                {item.w2 && <div className={`h-3.5 ${item.w2} bg-zinc-100 dark:bg-zinc-800/70 rounded`} />}
+                                <div className={`h-3.5 ${item.w1} bg-zinc-200 dark:bg-white/[0.06] rounded`} />
+                                {item.w2 && <div className={`h-3.5 ${item.w2} bg-slate-500/[0.08] dark:bg-white/[0.06] rounded`} />}
                             </div>
                         </div>
                     ))}
@@ -82,8 +82,8 @@ export default function MessageStream({
 
                 {/* Centered loader spinner */}
                 <div className="flex items-center justify-center pb-4">
-                    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs text-zinc-600 dark:text-zinc-400 font-medium shadow-xs">
-                        <Loader2 className="size-3.5 animate-spin text-blue-500" />
+                    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-slate-500/[0.08] dark:bg-white/[0.03] border border-slate-900/[0.07] dark:border-white/[0.07] text-xs text-zinc-600 dark:text-zinc-400 font-medium shadow-xs">
+                        <Loader2 className="size-3.5 animate-spin text-brand dark:text-violet-300" />
                         <span>Loading conversation...</span>
                     </div>
                 </div>
@@ -101,9 +101,9 @@ export default function MessageStream({
             if (label !== lastDateLabel) {
                 elements.push(
                     <div key={`divider-${msg.id}`} className="flex items-center gap-4 px-5 py-3">
-                        <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                        <hr className="flex-1 border-slate-900/[0.07] dark:border-white/[0.07]" />
                         <span className="text-xs text-zinc-400 dark:text-zinc-500 font-medium whitespace-nowrap">{label}</span>
-                        <hr className="flex-1 border-zinc-200 dark:border-zinc-800" />
+                        <hr className="flex-1 border-slate-900/[0.07] dark:border-white/[0.07]" />
                     </div>
                 );
                 lastDateLabel = label;
@@ -126,11 +126,11 @@ export default function MessageStream({
     };
 
     return (
-        <div className="flex-1 min-h-0 bg-white dark:bg-zinc-950 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 bg-white/60 dark:bg-white/[0.02] flex flex-col overflow-hidden">
             <div ref={containerRef} className="flex-1 overflow-y-auto">
                 {messages.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-center p-8 text-zinc-400 dark:text-zinc-500">
-                        <div className="size-14 grid place-items-center rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-500 dark:text-blue-400 mb-4">
+                        <div className="size-14 grid place-items-center rounded-full bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300 mb-4">
                             <MessageSquare className="size-7" />
                         </div>
                         <h4 className="font-bold text-zinc-700 dark:text-zinc-200 text-sm">Start the conversation</h4>

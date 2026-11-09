@@ -23,9 +23,9 @@ export default function ChatChannelSidebar({
     const regularChannels = channels.filter(ch => !starredChannelIds.includes(ch.id));
 
     return (
-        <aside className="w-64 shrink-0 flex flex-col h-full bg-white dark:bg-zinc-900 border-r border-zinc-200 dark:border-zinc-800 overflow-hidden">
+        <aside className="w-64 shrink-0 flex flex-col h-full bg-white/60 dark:bg-white/[0.03] border-r border-slate-900/[0.07] dark:border-white/[0.07] overflow-hidden">
             {/* Workspace header */}
-            <div className="px-4 pt-4 pb-3 border-b border-zinc-100 dark:border-zinc-800 text-left space-y-2.5">
+            <div className="px-4 pt-4 pb-3 border-b border-slate-900/[0.05] dark:border-white/[0.07] text-left space-y-2.5">
                 <div className="flex items-center justify-between">
                     <h2 className="text-sm font-bold text-zinc-900 dark:text-white truncate">Team conversations</h2>
                 </div>
@@ -38,7 +38,7 @@ export default function ChatChannelSidebar({
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Search messages..."
-                        className="pl-8 pr-7 w-full text-xs rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 py-1.5 focus:outline-none focus:border-blue-500 bg-zinc-50 dark:bg-zinc-800 focus:bg-white dark:focus:bg-zinc-800 transition"
+                        className="pl-8 pr-7 w-full text-xs rounded-lg border border-slate-900/[0.07] dark:border-white/10 text-zinc-900 dark:text-zinc-100 placeholder-zinc-400 dark:placeholder-zinc-500 py-1.5 focus:outline-none focus:border-brand bg-slate-500/[0.05] dark:bg-white/[0.06] focus:bg-white dark:focus:bg-zinc-800 transition"
                     />
                     {searchQuery && (
                         <button 
@@ -52,7 +52,7 @@ export default function ChatChannelSidebar({
 
                 <button
                     onClick={onOpenChannelBrowser}
-                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg font-medium transition-colors cursor-pointer"
+                    className="w-full flex items-center gap-2 px-3 py-1.5 text-xs text-brand dark:text-violet-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 rounded-lg font-medium transition-colors cursor-pointer"
                 >
                     <Compass className="size-4" />
                     Browse Channels
@@ -80,8 +80,8 @@ export default function ChatChannelSidebar({
                                         onClick={() => onSelectChannel(ch)}
                                         className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${
                                             isActive 
-                                                ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold' 
-                                                : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                                                ? 'bg-brand-tint text-brand dark:bg-brand/15 dark:text-violet-300 font-semibold' 
+                                                : 'text-zinc-700 dark:text-zinc-300 hover:bg-slate-500/10 dark:hover:bg-white/[0.07]'
                                         }`}
                                     >
                                         <div className="flex items-center gap-2 truncate">
@@ -91,7 +91,7 @@ export default function ChatChannelSidebar({
                                         {hasMention ? (
                                             <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded-full shrink-0 animate-pulse">@</span>
                                         ) : isUnread ? (
-                                            <span className="size-2 bg-blue-500 rounded-full shrink-0 animate-pulse" />
+                                            <span className="size-2 bg-brand rounded-full shrink-0 animate-pulse" />
                                         ) : null}
                                     </button>
                                 );
@@ -105,7 +105,7 @@ export default function ChatChannelSidebar({
                     <div className="flex items-center justify-between px-2 mb-1">
                         <span className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Channels</span>
                         {canManage && (
-                            <button onClick={onOpenCreateChannel} title="Create channel" className="text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded p-0.5 transition cursor-pointer">
+                            <button onClick={onOpenCreateChannel} title="Create channel" className="text-zinc-400 hover:text-brand dark:hover:text-violet-200 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] rounded p-0.5 transition cursor-pointer">
                                 <Plus className="size-3.5" strokeWidth={2.5} />
                             </button>
                         )}
@@ -122,8 +122,8 @@ export default function ChatChannelSidebar({
                                     onClick={() => onSelectChannel(ch)}
                                     className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${
                                         isActive 
-                                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold' 
-                                            : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                                            ? 'bg-brand-tint text-brand dark:bg-brand/15 dark:text-violet-300 font-semibold' 
+                                            : 'text-zinc-700 dark:text-zinc-300 hover:bg-slate-500/10 dark:hover:bg-white/[0.07]'
                                     }`}
                                 >
                                     <div className="flex items-center gap-2 truncate">
@@ -133,7 +133,7 @@ export default function ChatChannelSidebar({
                                     {hasMention ? (
                                         <span className="text-[10px] font-bold text-white bg-rose-500 px-1.5 py-0.5 rounded-full shrink-0 animate-pulse">@</span>
                                     ) : isUnread ? (
-                                        <span className="size-2 bg-blue-500 rounded-full shrink-0 animate-pulse" />
+                                        <span className="size-2 bg-brand rounded-full shrink-0 animate-pulse" />
                                     ) : null}
                                 </button>
                             );
@@ -145,7 +145,7 @@ export default function ChatChannelSidebar({
                     {canManage && (
                         <button
                             onClick={onOpenCreateChannel}
-                            className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-xs text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 mt-1 text-xs text-zinc-400 hover:text-brand dark:hover:text-violet-200 transition-colors cursor-pointer"
                         >
                             <Plus className="size-3.5" />
                             <span>Add channels</span>
@@ -154,7 +154,7 @@ export default function ChatChannelSidebar({
                 </div>
 
                 {/* Direct Messages section */}
-                <div className="border-t border-zinc-100 dark:border-zinc-800 pt-4">
+                <div className="border-t border-slate-900/[0.05] dark:border-white/[0.07] pt-4">
                     <div className="px-2 mb-1">
                         <span className="text-[11px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">Direct Messages</span>
                     </div>
@@ -170,8 +170,8 @@ export default function ChatChannelSidebar({
                                     onClick={() => onSelectDM(m.user)}
                                     className={`w-full flex items-center justify-between px-3 py-1.5 rounded-lg text-sm transition-stiff cursor-pointer ${
                                         isActive 
-                                            ? 'bg-blue-50 text-blue-600 dark:bg-blue-950/50 dark:text-blue-400 font-semibold' 
-                                            : 'text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800/60'
+                                            ? 'bg-brand-tint text-brand dark:bg-brand/15 dark:text-violet-300 font-semibold' 
+                                            : 'text-zinc-700 dark:text-zinc-300 hover:bg-slate-500/10 dark:hover:bg-white/[0.07]'
                                     }`}
                                 >
                                     <div className="flex items-center gap-2.5 truncate">

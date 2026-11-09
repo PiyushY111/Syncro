@@ -53,6 +53,14 @@ export const authLimiter = createRateLimiter({
   prefix: 'auth:limiter:strict:',
 });
 
+// Silent session renewal runs roughly every 15 minutes per open tab. It must not share the strict
+// login budget above, or several users behind one campus/office IP lock each other out.
+export const refreshLimiter = createRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  maxAttempts: isDev ? 1000 : 60,
+  prefix: 'auth:limiter:refresh:',
+});
+
 export const apiLimiter = createRateLimiter({
   windowMs: 60 * 1000, // 1 minute
   maxAttempts: isDev ? 1000 : 100,

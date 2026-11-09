@@ -35,7 +35,7 @@ export default function BrowseChannelsDialog({
                         value={browseSearchQuery}
                         onChange={(e) => setBrowseSearchQuery(e.target.value)}
                         placeholder="Search by channel name..."
-                        className="w-full text-sm pl-10 pr-4 py-2.5 rounded-xl border focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        className="w-full text-sm pl-10 pr-4 py-2.5 rounded-xl border focus:outline-none focus:ring-1 focus:ring-brand/25"
                         style={{
                             backgroundColor: isDark ? "#18181B" : "#FFFFFF",
                             color: colors.mainText,
@@ -52,7 +52,7 @@ export default function BrowseChannelsDialog({
                             return (
                                 <div 
                                     key={chan.id} 
-                                    className="flex items-center justify-between p-3 rounded-xl border transition hover:bg-slate-50 dark:hover:bg-zinc-800/10"
+                                    className="flex items-center justify-between p-3 rounded-xl border transition hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07]"
                                     style={{ borderColor: colors.mainBorder }}
                                 >
                                     <div className="min-w-0 flex-1 pr-3">
@@ -80,7 +80,7 @@ export default function BrowseChannelsDialog({
                                     {!isJoined ? (
                                         <button
                                             onClick={() => setConfirmModal({ isOpen: true, type: "join_channel", targetId: chan.id, targetName: chan.name })}
-                                            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition flex-shrink-0"
+                                            className="bg-brand hover:bg-brand-strong text-white text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition flex-shrink-0"
                                         >
                                             Join
                                         </button>
@@ -90,7 +90,7 @@ export default function BrowseChannelsDialog({
                                                 setActiveChat({ type: "channel", id: chan.id, name: chan.name, isArchived: chan.isArchived, isPrivate: chan.isPrivate });
                                                 setIsBrowseChannelsOpen(false);
                                             }}
-                                            className="border text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition flex-shrink-0 hover:bg-slate-100 dark:hover:bg-zinc-800"
+                                            className="border text-xs font-semibold px-3 py-1.5 rounded-lg cursor-pointer transition flex-shrink-0 hover:bg-slate-500/10 dark:hover:bg-white/[0.07]"
                                             style={{ color: colors.mainText, borderColor: colors.mainBorder }}
                                         >
                                             View

@@ -20,11 +20,7 @@ export default function ProjectKanban({ tasks, project }) {
     const canManageStages = canManageProjectStages(currentUserRole, project, currentUser?.id, currentWorkspace);
     const stages = project?.stages ? project.stages.split(",") : ["TODO", "IN_PROGRESS", "DONE"];
 
-    const columns = stages.map(stageId => ({
-        id: stageId,
-        title: stageId.replace(/_/g, " "),
-        border: stageId === "TODO" ? "border-zinc-200 dark:border-zinc-800" : stageId === "IN_PROGRESS" ? "border-blue-200 dark:border-blue-950" : stageId === "DONE" ? "border-emerald-200 dark:border-emerald-950" : "border-purple-200 dark:border-purple-950"
-    }));
+    const columns = stages.map((stageId) => ({ id: stageId }));
 
     const [newColumnName, setNewColumnName] = useState("");
     const [showAddColumn, setShowAddColumn] = useState(false);
@@ -104,7 +100,7 @@ export default function ProjectKanban({ tasks, project }) {
     };
 
     return (
-        <div className="flex items-start gap-6 overflow-x-auto pb-6 no-scrollbar min-w-full">
+        <div className="no-scrollbar flex min-w-full items-start gap-4 overflow-x-auto pb-6">
             {columns.map((column, index) => (
                 <KanbanColumn key={column.id} column={column} index={index} columnTasks={tasks.filter((t) => t.status === column.id)} canManageStages={canManageStages} onColumnDragStart={(e, i) => e.dataTransfer.setData("text/column-index", i.toString())} onDragOver={(e) => e.preventDefault()} onDrop={onDrop} onTaskDragStart={(e, id) => { e.stopPropagation(); e.dataTransfer.setData("text/task-id", id); }} handleDeleteColumn={handleDeleteColumn} navigate={navigate} />
             ))}

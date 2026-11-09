@@ -102,7 +102,7 @@ export default function WhiteboardCanvas({ whiteboardId, tasks }) {
         document.body.appendChild(a); a.click(); a.remove();
     };
 
-    const canvasClass = zenMode ? "fixed inset-0 bg-zinc-50 dark:bg-zinc-955 z-[100] h-screen w-screen flex flex-col select-none" : "relative w-full h-[65vh] bg-zinc-50 dark:bg-zinc-955 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden cursor-grab select-none";
+    const canvasClass = zenMode ? "fixed inset-0 bg-slate-500/[0.05] dark:bg-zinc-955 z-[100] h-screen w-screen flex flex-col select-none" : "relative w-full h-[65vh] bg-slate-500/[0.05] dark:bg-zinc-955 border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl overflow-hidden cursor-grab select-none";
 
     return (
         <div ref={canvasRef} onMouseDown={handleMouseDown} onMouseMove={handleMouseMove} onMouseUp={handleMouseUp} onDoubleClick={(e) => {
@@ -119,15 +119,15 @@ export default function WhiteboardCanvas({ whiteboardId, tasks }) {
             setViewport({ x: mouseX - cx * nextZoom, y: mouseY - cy * nextZoom, zoom: nextZoom });
         }} className={canvasClass}>
             <div className="absolute top-4 left-4 z-20 flex gap-2">
-                <button onClick={() => setZenMode(!zenMode)} className="p-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-md hover:bg-zinc-100 cursor-pointer">{zenMode ? <Minimize2 className="size-4.5" /> : <Maximize2 className="size-4.5" />}</button>
-                <button onClick={() => setIsShareOpen(true)} className="p-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-md hover:bg-zinc-100 cursor-pointer"><Share2 className="size-4.5" /></button>
-                <button onClick={undo} disabled={history.past.length === 0} className="p-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-md hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"><Undo className="size-4.5" /></button>
-                <button onClick={redo} disabled={history.future.length === 0} className="p-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-md hover:bg-zinc-100 disabled:opacity-30 cursor-pointer"><Redo className="size-4.5" /></button>
-                <button onClick={exportSVG} className="p-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-md hover:bg-zinc-100 cursor-pointer"><Download className="size-4.5" /></button>
+                <button onClick={() => setZenMode(!zenMode)} className="p-2 bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg shadow-md hover:bg-slate-500/10 cursor-pointer">{zenMode ? <Minimize2 className="size-4.5" /> : <Maximize2 className="size-4.5" />}</button>
+                <button onClick={() => setIsShareOpen(true)} className="p-2 bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg shadow-md hover:bg-slate-500/10 cursor-pointer"><Share2 className="size-4.5" /></button>
+                <button onClick={undo} disabled={history.past.length === 0} className="p-2 bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg shadow-md hover:bg-slate-500/10 disabled:opacity-30 cursor-pointer"><Undo className="size-4.5" /></button>
+                <button onClick={redo} disabled={history.future.length === 0} className="p-2 bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg shadow-md hover:bg-slate-500/10 disabled:opacity-30 cursor-pointer"><Redo className="size-4.5" /></button>
+                <button onClick={exportSVG} className="p-2 bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg shadow-md hover:bg-slate-500/10 cursor-pointer"><Download className="size-4.5" /></button>
                 {selectedNodeIds.length > 0 && (
-                    <div className="flex gap-1.5 border-l border-zinc-200 dark:border-zinc-850 pl-2">
-                        <button onClick={() => handleLayer('front')} className="p-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-md hover:bg-zinc-100 cursor-pointer text-zinc-555"><ArrowUp className="size-4" /></button>
-                        <button onClick={() => handleLayer('back')} className="p-2 bg-white/95 dark:bg-zinc-900/95 border border-zinc-200 dark:border-zinc-800 rounded-lg shadow-md hover:bg-zinc-100 cursor-pointer text-zinc-555"><ArrowDown className="size-4" /></button>
+                    <div className="flex gap-1.5 border-l border-slate-900/[0.07] dark:border-white/[0.07] pl-2">
+                        <button onClick={() => handleLayer('front')} className="p-2 bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg shadow-md hover:bg-slate-500/10 cursor-pointer text-zinc-555"><ArrowUp className="size-4" /></button>
+                        <button onClick={() => handleLayer('back')} className="p-2 bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg shadow-md hover:bg-slate-500/10 cursor-pointer text-zinc-555"><ArrowDown className="size-4" /></button>
                     </div>
                 )}
             </div>

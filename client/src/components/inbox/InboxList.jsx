@@ -4,8 +4,8 @@ import { Inbox as InboxIcon } from 'lucide-react';
 export default function InboxList({ notifications, onMarkRead, onArchive, onAction }) {
     if (!notifications || notifications.length === 0) {
         return (
-            <div className="p-12 text-center border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl bg-white/40 dark:bg-zinc-900/20">
-                <div className="mx-auto size-12 rounded-full bg-blue-500/10 text-blue-500 flex items-center justify-center mb-3">
+            <div className="p-12 text-center border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-xl bg-white/40 dark:bg-white/[0.03]">
+                <div className="mx-auto size-12 rounded-full bg-brand/10 text-brand dark:text-violet-300 flex items-center justify-center mb-3">
                     <InboxIcon className="size-6" />
                 </div>
                 <h3 className="font-semibold text-zinc-900 dark:text-zinc-100 text-base">Your inbox is clear!</h3>

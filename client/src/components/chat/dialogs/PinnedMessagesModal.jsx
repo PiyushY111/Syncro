@@ -19,8 +19,8 @@ export default function PinnedMessagesModal({ isOpen, onClose, channelId }) {
 
     return (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl text-left text-xs animate-stiff-pop">
-                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+            <div className="bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl max-w-lg w-full p-6 space-y-4 shadow-xl text-left text-xs animate-stiff-pop">
+                <div className="flex items-center justify-between border-b border-slate-900/[0.05] dark:border-white/[0.07] pb-3">
                     <h3 className="font-bold text-base text-zinc-900 dark:text-white flex items-center gap-2">
                         <Pin className="size-4 text-amber-500 fill-amber-500" /> Pinned Messages
                     </h3>
@@ -40,7 +40,7 @@ export default function PinnedMessagesModal({ isOpen, onClose, channelId }) {
                         </div>
                     ) : (
                         pinnedMessages.map((msg) => (
-                            <div key={msg.id} className="p-3 rounded-xl bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700/60 space-y-1">
+                            <div key={msg.id} className="p-3 rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 space-y-1">
                                 <div className="flex items-center justify-between">
                                     <span className="font-bold text-zinc-900 dark:text-zinc-100">{msg.user?.name || 'User'}</span>
                                     <span className="text-[10px] text-zinc-400">{new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>

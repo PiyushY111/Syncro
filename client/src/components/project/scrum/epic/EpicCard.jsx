@@ -36,7 +36,7 @@ export default function EpicCard({ project, epic, tasks }) {
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 p-5 rounded-xl shadow-xs">
+        <div className="sx-glass p-5 rounded-2xl">
             <div className="flex justify-between items-start">
                 <div className="flex items-center gap-2.5">
                     <span style={{ backgroundColor: epic.color }} className="w-3 h-3 rounded-full" />
@@ -50,7 +50,7 @@ export default function EpicCard({ project, epic, tasks }) {
                 <p className="text-xs text-zinc-500 dark:text-zinc-450 mt-1">{epic.description}</p>
             )}
 
-            <div className="grid grid-cols-3 gap-2 mt-4 text-xs bg-zinc-50 dark:bg-zinc-950/60 p-2.5 rounded border border-zinc-150 dark:border-zinc-850">
+            <div className="grid grid-cols-3 gap-2 mt-4 text-xs bg-slate-500/[0.05] dark:bg-white/[0.02] p-2.5 rounded border border-slate-900/[0.05] dark:border-white/[0.07]">
                 <div>
                     <span className="block text-zinc-400 text-[10px]">Tasks</span>
                     <span className="font-bold">{completedTasks.length} / {epicTasks.length}</span>
@@ -65,18 +65,18 @@ export default function EpicCard({ project, epic, tasks }) {
                 </div>
             </div>
 
-            <div className="w-full bg-zinc-150 dark:bg-zinc-800 h-1.5 rounded-full mt-4 overflow-hidden">
+            <div className="w-full bg-zinc-150 dark:bg-white/[0.06] h-1.5 rounded-full mt-4 overflow-hidden">
                 <div style={{ width: `${percent}%`, backgroundColor: epic.color }} className="h-full rounded-full transition-all duration-500" />
             </div>
 
-            <div className="mt-4 border-t border-zinc-100 dark:border-zinc-800 pt-3">
+            <div className="mt-4 border-t border-slate-900/[0.05] dark:border-white/[0.07] pt-3">
                 <span className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold block mb-2">Linked Tasks:</span>
                 {epicTasks.length === 0 ? (
                     <p className="text-xs text-zinc-400">No tasks linked.</p>
                 ) : (
                     <div className="space-y-1.5 max-h-40 overflow-y-auto pr-1">
                         {epicTasks.map(task => (
-                            <div key={task.id} className="flex justify-between items-center bg-zinc-50 dark:bg-zinc-950 p-2 rounded text-xs border border-zinc-150 dark:border-zinc-850">
+                            <div key={task.id} className="flex justify-between items-center bg-slate-500/[0.05] dark:bg-white/[0.02] p-2 rounded text-xs border border-slate-900/[0.05] dark:border-white/[0.07]">
                                 <span className="truncate max-w-[80%] font-medium">{task.title}</span>
                                 <button onClick={() => handleAssignEpic(task.id, null)} className="text-zinc-400 hover:text-red-500 text-[10px] font-semibold cursor-pointer">Unlink</button>
                             </div>

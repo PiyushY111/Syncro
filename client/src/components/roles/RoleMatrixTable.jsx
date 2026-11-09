@@ -22,10 +22,10 @@ export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggle
     const hasManageAccess = canManagePortal || isOwner;
 
     return (
-        <div className="bg-white dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+        <div className="bg-white/60 dark:bg-white/[0.03] rounded-xl border border-slate-900/[0.07] dark:border-white/[0.07] overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                    <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500">
+                    <tr className="border-b border-slate-900/[0.07] dark:border-white/[0.07] bg-slate-500/[0.05] dark:bg-white/[0.06] text-zinc-500">
                         <th className="p-3.5 font-semibold min-w-[200px]">Feature Capability</th>
                         {allRoles.map((r) => {
                             const customObj = customRoles.find(c => c.key === r);
@@ -44,9 +44,9 @@ export default function RoleMatrixTable({ roleMatrix, customRoles = [], onToggle
                         })}
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                <tbody className="divide-y divide-slate-900/[0.06] dark:divide-white/[0.06]">
                     {featureLabels.map((f) => (
-                        <tr key={f.key} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition">
+                        <tr key={f.key} className="hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07] transition">
                             <td className="p-3.5 font-medium text-zinc-800 dark:text-zinc-200">
                                 <div>
                                     <p>{f.label}</p>

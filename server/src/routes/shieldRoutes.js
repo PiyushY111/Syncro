@@ -13,6 +13,10 @@ import logger from '../utils/logger/logger.js';
 
 const router = express.Router();
 
+// Upper bound for one internally dispatched API call. Kept under typical 30s proxy limits;
+// override with SHIELD_DISPATCH_TIMEOUT_MS (e.g. lower in prod once the DB is close to the server).
+const DISPATCH_TIMEOUT_MS = Number(process.env.SHIELD_DISPATCH_TIMEOUT_MS) || 25_000;
+
 const FORBIDDEN_OVERRIDE_HEADERS = new Set([
     'host', 'x-forwarded-for', 'x-real-ip', 'connection', 'transfer-encoding', 'content-length'
 ]);
@@ -152,16 +156,24 @@ router.post('/dispatch', apiLimiter, async (req, res) => {
             let responseData = null;
             let isResolved = false;
 
+            const startedAt = Date.now();
             const timer = setTimeout(() => {
                 if (!isResolved) {
                     isResolved = true;
+                    logger.warn('[SHIELD DISPATCH TIMEOUT]', {
+                        method: targetMethod,
+                        endpoint: targetEndpoint,
+                        elapsedMs: Date.now() - startedAt,
+                        timeoutMs: DISPATCH_TIMEOUT_MS,
+                        requestId: req.headers['x-request-id'],
+                    });
                     resolve({
                         status: 504,
                         headers: responseHeaders,
                         data: { message: 'Shield internal dispatch gateway timeout' }
                     });
                 }
-            }, 10000);
+            }, DISPATCH_TIMEOUT_MS);
 
             const finishDispatch = (status, headers, data) => {
                 if (isResolved) return;
