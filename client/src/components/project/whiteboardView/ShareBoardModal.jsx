@@ -64,30 +64,30 @@ export function ShareBoardModal({ isOpen, onClose, boardId }) {
 
     return (
         <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-xs flex items-center justify-center z-50 text-left">
-            <div className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 w-full max-w-md text-zinc-900 dark:text-zinc-200 relative shadow-2xl animate-in fade-in duration-150">
+            <div className="bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl p-6 w-full max-w-md text-zinc-900 dark:text-zinc-200 relative shadow-2xl animate-in fade-in duration-150">
                 <button onClick={onClose} className="absolute top-4 right-4 text-zinc-400 hover:text-zinc-250 cursor-pointer"><X className="size-5" /></button>
                 <h3 className="text-lg font-bold mb-1">Share Whiteboard</h3>
                 <p className="text-xs text-zinc-500 mb-4">{isPrivate ? "Private: Only explicitly shared users can view." : "Public: Anyone in organization can view."}</p>
 
                 <div className="space-y-4">
                     <div className="flex gap-2">
-                        <input type="text" readOnly value={shareLink} className="flex-1 px-3 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs focus:outline-none" />
-                        <button onClick={handleCopy} className="px-3.5 py-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs font-semibold cursor-pointer whitespace-nowrap">{copied ? 'Copied!' : 'Copy Link'}</button>
+                        <input type="text" readOnly value={shareLink} className="flex-1 px-3 py-1.5 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.03] border border-slate-900/[0.07] dark:border-white/[0.07] text-xs focus:outline-none" />
+                        <button onClick={handleCopy} className="px-3.5 py-1.5 bg-slate-500/[0.08] hover:bg-zinc-200 dark:bg-white/[0.04] dark:hover:bg-white/[0.07] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg text-xs font-semibold cursor-pointer whitespace-nowrap">{copied ? 'Copied!' : 'Copy Link'}</button>
                     </div>
 
                     {isPrivate && (
-                        <div className="space-y-3 pt-2 border-t border-zinc-100 dark:border-zinc-850">
+                        <div className="space-y-3 pt-2 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
                             <label className="block text-xs font-semibold text-zinc-500 uppercase tracking-wider">Share via Email</label>
                             {isOwner ? (
                                 <div className="relative">
                                     <div className="flex gap-2">
-                                        <input type="email" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type colleague's email..." className="flex-1 px-3 py-2 rounded-lg bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-xs focus:outline-none focus:ring-1 focus:ring-blue-500" onKeyDown={(e) => { if (e.key === 'Enter') handleAddEmail(input.trim()); }} />
-                                        <button onClick={() => handleAddEmail(input.trim())} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer">Invite</button>
+                                        <input type="email" value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type colleague's email..." className="flex-1 px-3 py-2 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.03] border border-slate-900/[0.07] dark:border-white/[0.07] text-xs focus:outline-none focus:ring-1 focus:ring-brand/25" onKeyDown={(e) => { if (e.key === 'Enter') handleAddEmail(input.trim()); }} />
+                                        <button onClick={() => handleAddEmail(input.trim())} className="px-4 py-2 bg-brand hover:bg-brand-strong text-white rounded-lg text-xs font-semibold cursor-pointer">Invite</button>
                                     </div>
                                     {suggestions.length > 0 && (
-                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-850 rounded-lg shadow-lg max-h-32 overflow-y-auto z-50">
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl shadow-lg max-h-32 overflow-y-auto z-50">
                                             {suggestions.map(s => (
-                                                <button key={s.id} onClick={() => handleAddEmail(s.user.email)} className="w-full text-left px-3 py-1.5 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-xs flex flex-col cursor-pointer border-b border-zinc-100 dark:border-zinc-850/50">
+                                                <button key={s.id} onClick={() => handleAddEmail(s.user.email)} className="w-full text-left px-3 py-1.5 hover:bg-slate-500/[0.06] dark:hover:bg-zinc-850 text-xs flex flex-col cursor-pointer border-b border-slate-900/[0.05] dark:border-white/[0.07]">
                                                     <span className="font-semibold">{s.user.name}</span>
                                                     <span className="text-[10px] text-zinc-400">{s.user.email}</span>
                                                 </button>
@@ -101,7 +101,7 @@ export function ShareBoardModal({ isOpen, onClose, boardId }) {
 
                             <div className="space-y-1.5 max-h-28 overflow-y-auto pt-1">
                                 {emails.map(email => (
-                                    <div key={email} className="flex justify-between items-center px-3 py-1.5 bg-zinc-50/50 dark:bg-zinc-900/40 rounded-lg border border-zinc-100 dark:border-zinc-850 text-xs">
+                                    <div key={email} className="flex justify-between items-center px-3 py-1.5 bg-slate-500/[0.05] dark:bg-white/[0.03] rounded-lg border border-slate-900/[0.05] dark:border-white/[0.07] text-xs">
                                         <span className="flex items-center gap-1.5 text-zinc-600 dark:text-zinc-350"><Mail className="size-3.5" />{email}</span>
                                         {isOwner && (
                                             <button onClick={() => setEmails(emails.filter(e => e !== email))} className="text-zinc-400 hover:text-red-500 cursor-pointer"><Trash2 className="size-3.5" /></button>
@@ -113,7 +113,7 @@ export function ShareBoardModal({ isOpen, onClose, boardId }) {
                     )}
 
                     {isPrivate && isOwner && (
-                        <button onClick={handleSave} disabled={saving} className="w-full py-2 bg-blue-650 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold cursor-pointer shadow-md shadow-blue-500/10 disabled:opacity-50">
+                        <button onClick={handleSave} disabled={saving} className="w-full py-2 bg-blue-650 hover:bg-brand-strong text-white rounded-lg text-xs font-semibold cursor-pointer shadow-md shadow-brand/10 disabled:opacity-50">
                             {saving ? 'Saving...' : 'Save Permissions'}
                         </button>
                     )}

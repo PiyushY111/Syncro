@@ -54,7 +54,7 @@ export default function WhiteboardView({ projectId, tasks }) {
         return (
             <div className="space-y-4 text-left">
                 <div className="flex items-center gap-3">
-                    <button onClick={() => setActiveBoardId(null)} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-3 py-1.5 rounded-lg shadow-sm">
+                    <button onClick={() => setActiveBoardId(null)} className="flex items-center gap-2 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 cursor-pointer bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] px-3 py-1.5 rounded-lg shadow-sm">
                         <ArrowLeft className="size-4" /> Back to Boards
                     </button>
                     <span className="text-sm font-semibold text-zinc-400">/</span>
@@ -68,13 +68,13 @@ export default function WhiteboardView({ projectId, tasks }) {
     }
 
     return (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-left relative">
+        <div className="sx-glass rounded-2xl p-6 text-left relative">
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
-                    <Presentation className="size-5 text-blue-500" />
+                    <Presentation className="size-5 text-brand dark:text-violet-300" />
                     <h2 className="text-xl font-bold text-zinc-900 dark:text-white">Project Whiteboards</h2>
                 </div>
-                <button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer shadow-sm">
+                <button onClick={() => setIsCreateOpen(true)} className="flex items-center gap-2 bg-brand hover:bg-brand-strong text-white px-4 py-2 rounded-lg text-sm font-semibold cursor-pointer shadow-sm">
                     <Plus className="size-4" /> New Whiteboard
                 </button>
             </div>
@@ -82,17 +82,17 @@ export default function WhiteboardView({ projectId, tasks }) {
             {loading ? (
                 <div className="text-center py-10 text-zinc-500">Loading boards...</div>
             ) : boards.length === 0 ? (
-                <div className="text-center py-12 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-lg">
+                <div className="text-center py-12 border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-lg">
                     <Presentation className="size-12 text-zinc-300 dark:text-zinc-700 mx-auto mb-3" />
                     <p className="text-zinc-500 dark:text-zinc-400 font-medium">No whiteboards created yet</p>
-                    <button onClick={() => setIsCreateOpen(true)} className="mt-3 text-sm text-blue-600 dark:text-blue-400 font-semibold hover:underline">
+                    <button onClick={() => setIsCreateOpen(true)} className="mt-3 text-sm text-brand dark:text-violet-300 font-semibold hover:underline">
                         Create your first board
                     </button>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     {boards.map(board => (
-                        <div key={board.id} onClick={() => setActiveBoardId(board.id)} className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 hover:bg-zinc-50 dark:bg-zinc-850/40 dark:hover:bg-zinc-800 transition-all cursor-pointer flex justify-between items-center group shadow-sm">
+                        <div key={board.id} onClick={() => setActiveBoardId(board.id)} className="p-4 rounded-xl border border-slate-900/[0.07] dark:border-white/[0.07] bg-slate-500/[0.05] hover:bg-slate-500/[0.06] dark:bg-zinc-850/40 dark:hover:bg-white/[0.07] transition-all cursor-pointer flex justify-between items-center group shadow-sm">
                             <div>
                                 <h3 className="font-bold text-zinc-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{board.name}</h3>
                                 <p className="text-xs text-zinc-450 dark:text-zinc-500 mt-1">Created: {new Date(board.createdAt).toLocaleDateString()}</p>
