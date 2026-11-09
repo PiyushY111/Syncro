@@ -1,6 +1,145 @@
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap');
 @import "tailwindcss";
 
+/* Syncro app-shell tokens (shared with the landing page palette). Exposed as bg-ink, text-brand, bg-lime, bg-canvas… */
+@theme {
+    --color-ink: #0c0e14;
+    --color-ink-raised: #151822;
+    --color-ink-line: #242836;
+    --color-ink-muted: #8b90a3;
+    --color-brand: #6246ea;
+    --color-brand-strong: #4f35d6;
+    --color-brand-tint: #efebff;
+    --color-lime: #d9fc71;
+    --color-canvas: #f6f7f9;
+    --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Theme-aware sidebar ("rail") tokens: values swap under .dark, utilities stay the same (bg-rail, text-rail-muted…). */
+@theme inline {
+    --color-rail: var(--sx-rail);
+    --color-rail-raised: var(--sx-rail-raised);
+    --color-rail-line: var(--sx-rail-line);
+    --color-rail-fg: var(--sx-rail-fg);
+    --color-rail-muted: var(--sx-rail-muted);
+    --color-rail-subtle: var(--sx-rail-subtle);
+    --color-rail-hover: var(--sx-rail-hover);
+    --color-rail-active: var(--sx-rail-active);
+    --color-rail-accent: var(--sx-rail-accent);
+    --color-rail-accent-fg: var(--sx-rail-accent-fg);
+}
+
+:root {
+    color-scheme: light;
+    --sx-rail: rgba(255, 255, 255, 0.62);
+    --sx-rail-raised: rgba(255, 255, 255, 0.72);
+    --sx-rail-line: rgba(15, 23, 42, 0.08);
+    --sx-rail-fg: #0f1222;
+    --sx-rail-muted: #545a70;
+    --sx-rail-subtle: #8d92a6;
+    --sx-rail-hover: rgba(255, 255, 255, 0.6);
+    --sx-rail-active: rgba(255, 255, 255, 0.96);
+    --sx-rail-accent: #6246ea;
+    --sx-rail-accent-fg: #ffffff;
+}
+
+.dark {
+    color-scheme: dark;
+    --sx-rail: rgba(16, 18, 28, 0.6);
+    --sx-rail-raised: rgba(255, 255, 255, 0.04);
+    --sx-rail-line: rgba(255, 255, 255, 0.07);
+    --sx-rail-fg: #f4f4f5;
+    --sx-rail-muted: #9a9fb3;
+    --sx-rail-subtle: #62677b;
+    --sx-rail-hover: rgba(255, 255, 255, 0.04);
+    --sx-rail-active: rgba(255, 255, 255, 0.08);
+    --sx-rail-accent: #d9fc71;
+    --sx-rail-accent-fg: #0c0e14;
+}
+
+/* Subtle gradient tokens shared by surfaces, dialogs and primary actions. */
+:root {
+    --sx-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.1) 48%, rgba(124, 92, 255, 0.03) 100%);
+    --sx-surface-sheen: linear-gradient(160deg, rgba(124, 92, 255, 0.022) 0%, rgba(255, 255, 255, 0) 40%, rgba(56, 189, 248, 0.02) 100%);
+    --sx-action-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0) 55%, rgba(0, 0, 0, 0.06) 100%);
+}
+.dark {
+    --sx-sheen: linear-gradient(145deg, rgba(255, 255, 255, 0.035) 0%, rgba(255, 255, 255, 0) 45%, rgba(124, 92, 255, 0.035) 100%);
+    --sx-surface-sheen: linear-gradient(160deg, rgba(124, 92, 255, 0.04) 0%, rgba(255, 255, 255, 0) 45%, rgba(56, 189, 248, 0.02) 100%);
+    --sx-action-sheen: linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 60%, rgba(0, 0, 0, 0.05) 100%);
+}
+
+/* App backdrop: soft gradient mesh the glass surfaces float over. */
+.sx-mesh {
+    background-color: #f6f7fb;
+    background-image:
+        radial-gradient(at 6% 0%, rgba(124, 92, 255, 0.12) 0, transparent 42%),
+        radial-gradient(at 94% 6%, rgba(56, 189, 248, 0.10) 0, transparent 42%),
+        radial-gradient(at 72% 100%, rgba(190, 242, 100, 0.12) 0, transparent 44%),
+        radial-gradient(at 12% 92%, rgba(251, 146, 160, 0.08) 0, transparent 40%);
+}
+
+.dark .sx-mesh {
+    background-color: #07080d;
+    background-image:
+        radial-gradient(at 6% 0%, rgba(98, 70, 234, 0.16) 0, transparent 42%),
+        radial-gradient(at 94% 6%, rgba(14, 165, 233, 0.08) 0, transparent 42%),
+        radial-gradient(at 72% 100%, rgba(217, 252, 113, 0.035) 0, transparent 44%),
+        radial-gradient(at 12% 92%, rgba(244, 63, 94, 0.045) 0, transparent 40%);
+}
+
+/* Frosted glass surface. In the components layer so utilities (radius, padding, bg overrides) still win. */
+@layer components {
+    .sx-glass {
+        background-color: rgba(255, 255, 255, 0.62);
+        /* Faint diagonal sheen: brighter top-left, a whisper of brand lavender bottom-right. */
+        background-image: var(--sx-sheen);
+        border: 1px solid rgba(255, 255, 255, 0.75);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 12px 32px -20px rgba(30, 27, 75, 0.28);
+        -webkit-backdrop-filter: blur(22px) saturate(170%);
+        backdrop-filter: blur(22px) saturate(170%);
+    }
+
+    /* Gradient icon tile used by page headers (tone set by a modifier class). */
+    .sx-tile {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: center;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 1rem;
+        color: #fff;
+        background-image: linear-gradient(135deg, #7c5cff, #38bdf8);
+        box-shadow: 0 12px 28px -14px rgba(98, 70, 234, 0.9);
+    }
+    .sx-tile-rose { background-image: linear-gradient(135deg, #fb7185, #f43f5e); box-shadow: 0 12px 28px -14px rgba(244, 63, 94, 0.9); }
+    .sx-tile-emerald { background-image: linear-gradient(135deg, #34d399, #059669); box-shadow: 0 12px 28px -14px rgba(5, 150, 105, 0.9); }
+    .sx-tile-amber { background-image: linear-gradient(135deg, #fbbf24, #f97316); box-shadow: 0 12px 28px -14px rgba(249, 115, 22, 0.9); }
+    .sx-tile-sky { background-image: linear-gradient(135deg, #38bdf8, #6366f1); box-shadow: 0 12px 28px -14px rgba(56, 189, 248, 0.9); }
+
+    .dark .sx-glass {
+        background-color: rgba(20, 22, 33, 0.55);
+        border-color: rgba(255, 255, 255, 0.07);
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 24px 48px -28px rgba(0, 0, 0, 0.85);
+    }
+
+    /* Solid primary fills (buttons, active pills, progress) get a soft top-down sheen. */
+    .bg-brand,
+    .bg-brand-strong,
+    .dark .dark\:bg-lime {
+        background-image: var(--sx-action-sheen);
+    }
+
+    /* Opaque dialogs and popovers: a barely-there tint gradient instead of flat white/black. */
+    [role='dialog'],
+    [role='alertdialog'],
+    [role='menu'],
+    [role='listbox'] {
+        background-image: var(--sx-surface-sheen);
+    }
+}
+
 :root {
     --background: 0 0% 100%;
     --foreground: 224 71.4% 4.1%;
@@ -46,12 +185,40 @@
     --ring: 217.2 91.2% 59.8%;
 }
 
-* {
-    font-family: 'Outfit', sans-serif;
-    border-color: var(--border);
+/*
+ * Base defaults live in @layer base so Tailwind utilities (border-*, font-*) can override them.
+ * --border holds bare HSL channels, so it must be wrapped in hsl(): the old unlayered
+ * `border-color: var(--border)` was an invalid colour that fell back to currentColor (black)
+ * and beat every border utility in the app.
+ */
+@layer base {
+    * {
+        font-family: 'Outfit', sans-serif;
+        border-color: hsl(var(--border));
+    }
 }
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Numeric data: equal-width digits so figures line up in columns and don't jitter. */
+.font-data {
+    font-variant-numeric: tabular-nums;
+}
+
+/* Staggered entrance for dashboard tiles; set --rise-delay inline per tile. */
+.sx-rise {
+    animation: sxRise 0.6s var(--ease-out-expo) both;
+    animation-delay: var(--rise-delay, 0ms);
+}
+
+@keyframes sxRise {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sx-rise { animation: none; }
+}
 
 .no-scrollbar::-webkit-scrollbar {
     display: none;
@@ -512,3 +679,12 @@
     animation: stiffSlideInUp 0.25s cubic-bezier(0.25, 1.1, 0.5, 1) forwards;
 }
 
+
+/* One-shot wave for the greeting emoji (only runs when motion is allowed via motion-safe:). */
+@keyframes wave {
+    0%, 60%, 100% { transform: rotate(0deg); }
+    10%, 30% { transform: rotate(14deg); }
+    20% { transform: rotate(-8deg); }
+    40% { transform: rotate(-4deg); }
+    50% { transform: rotate(10deg); }
+}

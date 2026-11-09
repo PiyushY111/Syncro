@@ -4,26 +4,26 @@ import { cva } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/50 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 active:scale-[0.98]",
   {
     variants: {
       variant: {
         default:
-          "bg-blue-600 text-white shadow-sm hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-500 shadow-blue-500/20",
+          "bg-brand text-white shadow-[0_8px_20px_-10px_rgba(98,70,234,0.7)] hover:bg-brand-strong hover:-translate-y-px",
         destructive:
           "bg-rose-600 text-white shadow-sm hover:bg-rose-700 dark:bg-rose-900/80 dark:text-rose-100 dark:hover:bg-rose-800",
         outline:
-          "border border-slate-200 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900 dark:border-zinc-800 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 dark:hover:text-white",
+          "border border-white/70 bg-white/60 text-slate-700 shadow-sm backdrop-blur-md hover:bg-white hover:text-slate-900 dark:border-white/[0.08] dark:bg-white/[0.04] dark:text-zinc-200 dark:hover:bg-white/[0.08] dark:hover:text-white",
         secondary:
-          "bg-slate-100 text-slate-900 hover:bg-slate-200/80 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700/80",
+          "bg-slate-500/[0.08] text-slate-900 hover:bg-slate-500/[0.14] dark:bg-white/[0.06] dark:text-zinc-100 dark:hover:bg-white/10",
         ghost:
-          "text-slate-600 hover:bg-slate-100 hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-zinc-800/60 dark:hover:text-zinc-100",
-        link: "text-blue-600 underline-offset-4 hover:underline dark:text-blue-400",
+          "text-slate-600 hover:bg-slate-500/[0.08] hover:text-slate-900 dark:text-zinc-400 dark:hover:bg-white/[0.06] dark:hover:text-zinc-100",
+        link: "text-brand underline-offset-4 hover:underline dark:text-lime",
       },
       size: {
         default: "h-9 px-4 py-2",
-        sm: "h-8 rounded-md px-3 text-xs",
-        lg: "h-11 rounded-lg px-8 text-base",
+        sm: "h-8 rounded-lg px-3 text-xs",
+        lg: "h-11 rounded-xl px-8 text-base",
         icon: "h-9 w-9 p-0",
       },
     },

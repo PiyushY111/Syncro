@@ -35,7 +35,7 @@ const SettingsPage = lazy(() => import('@/pages/settings/Settings'));
 
 const PageFallback = () => (
     <div className="flex h-[calc(100vh-4rem)] w-full items-center justify-center bg-transparent">
-        <Loader2 className="size-8 animate-spin text-blue-500" />
+        <Loader2 className="size-8 animate-spin text-brand dark:text-violet-300" />
     </div>
 );
 
