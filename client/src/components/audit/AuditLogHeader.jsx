@@ -11,15 +11,15 @@ export default function AuditLogHeader({ search, setSearch, entityFilter, setEnt
     const severities = ['ALL', 'INFO', 'WARNING', 'CRITICAL'];
 
     return (
-        <div className="flex flex-col gap-4 bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+        <div className="sx-glass sx-rise flex flex-col gap-4 p-6 rounded-3xl">
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                    <div className="sx-tile sx-tile-rose">
                         <History className="size-6" />
                     </div>
                     <div>
-                        <h1 className="text-xl font-bold text-zinc-900 dark:text-zinc-100">Audit Logs & System History</h1>
-                        <p className="text-xs text-zinc-500">Immutable platform audit events, version diffing, and change tracking</p>
+                        <h1 className="text-2xl font-semibold tracking-tight text-slate-900 dark:text-white">Audit Logs & System History</h1>
+                        <p className="mt-0.5 text-sm text-slate-500 dark:text-zinc-400">Immutable platform audit events, version diffing, and change tracking</p>
                     </div>
                 </div>
 
@@ -45,7 +45,7 @@ export default function AuditLogHeader({ search, setSearch, entityFilter, setEnt
                 </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-zinc-100 dark:border-zinc-800/80 pt-3 text-xs">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-slate-900/[0.05] dark:border-white/[0.07] pt-3 text-xs">
                 <div className="relative flex-1 max-w-sm">
                     <Search className="absolute left-3 top-2.5 size-4 text-zinc-400" />
                     <input
@@ -53,17 +53,17 @@ export default function AuditLogHeader({ search, setSearch, entityFilter, setEnt
                         placeholder="Search logs by user or entity name..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-9 pr-3 py-1.5 bg-zinc-50 dark:bg-zinc-800/60 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-zinc-100 focus:outline-hidden focus:border-purple-500"
+                        className="w-full pl-9 pr-3 py-1.5 bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-zinc-100 focus:outline-hidden focus:border-brand"
                     />
                 </div>
 
                 <div className="flex items-center gap-2 flex-wrap">
-                    <div className="flex items-center gap-1 bg-zinc-100 dark:bg-zinc-800 p-1 rounded-lg">
+                    <div className="flex items-center gap-1 bg-slate-500/[0.08] dark:bg-white/[0.06] p-1 rounded-lg">
                         {categories.map((c) => (
                             <button
                                 key={c}
                                 onClick={() => setEntityFilter(c)}
-                                className={`px-2.5 py-1 rounded-md font-medium text-[11px] transition cursor-pointer ${entityFilter === c ? 'bg-purple-600 text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
+                                className={`px-2.5 py-1 rounded-md font-medium text-[11px] transition cursor-pointer ${entityFilter === c ? 'bg-brand text-white shadow-xs' : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'}`}
                             >
                                 {c}
                             </button>
@@ -73,7 +73,7 @@ export default function AuditLogHeader({ search, setSearch, entityFilter, setEnt
                     <select
                         value={severityFilter}
                         onChange={(e) => setSeverityFilter(e.target.value)}
-                        className="px-2.5 py-1.5 rounded-lg bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 text-zinc-800 dark:text-zinc-200 font-medium cursor-pointer"
+                        className="px-2.5 py-1.5 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-zinc-800 dark:text-zinc-200 font-medium cursor-pointer"
                     >
                         {severities.map((s) => (
                             <option key={s} value={s}>{s === 'ALL' ? 'All Severities' : s}</option>

@@ -8,7 +8,7 @@ export default function UserDirectoryTab({
     onToggleSuperAdmin
 }) {
     return (
-        <div className="p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
+        <div className="sx-glass p-6 rounded-3xl space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">Registered Users Directory</h3>
@@ -23,7 +23,7 @@ export default function UserDirectoryTab({
                             value={userSearch}
                             onChange={(e) => setUserSearch(e.target.value)}
                             placeholder="Search name or email..."
-                            className="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:outline-none"
+                            className="pl-8 pr-3 py-1.5 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-slate-900 dark:text-white focus:outline-none"
                         />
                     </div>
                 </div>
@@ -32,7 +32,7 @@ export default function UserDirectoryTab({
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
                     <thead>
-                        <tr className="border-b border-slate-200 dark:border-zinc-800 text-slate-500">
+                        <tr className="border-b border-slate-900/[0.07] dark:border-white/[0.07] text-slate-500">
                             <th className="pb-3 font-semibold">User</th>
                             <th className="pb-3 font-semibold">Status</th>
                             <th className="pb-3 font-semibold">Super-Admin</th>
@@ -40,9 +40,9 @@ export default function UserDirectoryTab({
                             <th className="pb-3 font-semibold text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+                    <tbody className="divide-y divide-slate-900/[0.06] dark:divide-white/[0.06]">
                         {allUsers.map((u) => (
-                            <tr key={u.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30">
+                            <tr key={u.id} className="hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07]">
                                 <td className="py-3">
                                     <div className="font-bold text-slate-900 dark:text-white">{u.name}</div>
                                     <div className="text-[11px] text-slate-500 font-mono">{u.email}</div>
@@ -62,7 +62,7 @@ export default function UserDirectoryTab({
                                 </td>
                                 <td className="py-3">
                                     {u.isSuperAdmin ? (
-                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300">
+                                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300">
                                             👑 SUPER ADMIN
                                         </span>
                                     ) : (
@@ -79,7 +79,7 @@ export default function UserDirectoryTab({
                                 <td className="py-3 text-right">
                                     <button
                                         onClick={() => onToggleSuperAdmin(u.id)}
-                                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition cursor-pointer"
+                                        className="px-2.5 py-1 rounded-lg text-[11px] font-semibold bg-slate-500/[0.08] hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.07] text-slate-700 dark:text-zinc-200 transition cursor-pointer"
                                     >
                                         {u.isSuperAdmin ? 'Revoke SuperAdmin' : 'Make SuperAdmin'}
                                     </button>

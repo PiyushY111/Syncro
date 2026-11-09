@@ -4,30 +4,30 @@ export default function AuditLogTable({ logs = [], onOpenDiff }) {
     const getSeverityBadge = (s) => {
         if (s === 'CRITICAL') return 'bg-rose-500/10 text-rose-500 border-rose-500/20';
         if (s === 'WARNING') return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
-        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
+        return 'bg-brand/10 text-brand dark:text-violet-300 border-blue-500/20';
     };
 
     const getActionBadge = (a) => {
         if (a === 'CREATE') return 'bg-emerald-500/10 text-emerald-600';
         if (a === 'DELETE') return 'bg-rose-500/10 text-rose-600';
-        if (a === 'ROLLBACK') return 'bg-purple-500/10 text-purple-600 font-bold';
+        if (a === 'ROLLBACK') return 'bg-brand/10 text-brand dark:text-violet-300 font-bold';
         if (a === 'ROLE_CHANGE') return 'bg-amber-500/10 text-amber-600 font-bold';
         return 'bg-zinc-500/10 text-zinc-600 dark:text-zinc-400';
     };
 
     if (logs.length === 0) {
         return (
-            <div className="p-10 text-center bg-white dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 text-zinc-500 text-xs">
+            <div className="sx-glass p-10 text-center rounded-2xl text-zinc-500 text-xs">
                 No audit log records found.
             </div>
         );
     }
 
     return (
-        <div className="bg-white dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-x-auto">
+        <div className="bg-white/60 dark:bg-white/[0.03] rounded-xl border border-slate-900/[0.07] dark:border-white/[0.07] overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
                 <thead>
-                    <tr className="border-b border-zinc-200 dark:border-zinc-800 bg-zinc-50/50 dark:bg-zinc-800/40 text-zinc-500">
+                    <tr className="border-b border-slate-900/[0.07] dark:border-white/[0.07] bg-slate-500/[0.05] dark:bg-white/[0.06] text-zinc-500">
                         <th className="p-3 font-semibold">Actor</th>
                         <th className="p-3 font-semibold">Action</th>
                         <th className="p-3 font-semibold">Entity</th>
@@ -36,12 +36,12 @@ export default function AuditLogTable({ logs = [], onOpenDiff }) {
                         <th className="p-3 font-semibold text-right">Details</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-zinc-100 dark:divide-zinc-800/60">
+                <tbody className="divide-y divide-slate-900/[0.06] dark:divide-white/[0.06]">
                     {logs.map((log) => (
-                        <tr key={log.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/20 transition">
+                        <tr key={log.id} className="hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07] transition">
                             <td className="p-3">
                                 <div className="flex items-center gap-2.5">
-                                    <div className="size-7 rounded-full bg-purple-500/10 text-purple-600 flex items-center justify-center font-bold text-xs">
+                                    <div className="size-7 rounded-full bg-brand/10 text-brand dark:text-violet-300 flex items-center justify-center font-bold text-xs">
                                         {log.user?.name ? log.user.name[0].toUpperCase() : 'U'}
                                     </div>
                                     <div>
@@ -72,7 +72,7 @@ export default function AuditLogTable({ logs = [], onOpenDiff }) {
                             <td className="p-3 text-right">
                                 <button
                                     onClick={() => onOpenDiff(log)}
-                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 dark:bg-zinc-800 hover:bg-purple-600 hover:text-white text-zinc-700 dark:text-zinc-300 font-medium transition cursor-pointer"
+                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-500/[0.08] dark:bg-white/[0.06] hover:bg-brand-strong hover:text-white text-zinc-700 dark:text-zinc-300 font-medium transition cursor-pointer"
                                 >
                                     <Eye className="size-3.5" /> Diff
                                 </button>

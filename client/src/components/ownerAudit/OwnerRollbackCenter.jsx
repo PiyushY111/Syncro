@@ -16,7 +16,7 @@ export default function OwnerRollbackCenter({ logs = [], onRefresh }) {
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900/60 rounded-xl border border-zinc-200 dark:border-zinc-800 p-5 space-y-4 text-xs">
+        <div className="sx-glass rounded-2xl p-5 space-y-4 text-xs">
             <div className="flex items-center justify-between">
                 <div>
                     <h3 className="font-bold text-zinc-900 dark:text-zinc-100 text-sm">System-Wide Time Travel Rollback Management</h3>
@@ -24,11 +24,11 @@ export default function OwnerRollbackCenter({ logs = [], onRefresh }) {
                 </div>
             </div>
 
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60 max-h-64 overflow-y-auto">
+            <div className="divide-y divide-slate-900/[0.06] dark:divide-white/[0.06] max-h-64 overflow-y-auto">
                 {rollbackableLogs.map((log) => (
                     <div key={log.id} className="py-2.5 flex items-center justify-between gap-3">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 rounded-lg bg-purple-500/10 text-purple-600">
+                            <div className="p-2 rounded-lg bg-brand/10 text-brand dark:text-violet-300">
                                 <Clock className="size-4" />
                             </div>
                             <div>
@@ -39,7 +39,7 @@ export default function OwnerRollbackCenter({ logs = [], onRefresh }) {
 
                         <button
                             onClick={() => handleExecuteRollback(log.id)}
-                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-700 text-white font-semibold cursor-pointer"
+                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-brand hover:bg-brand-strong text-white font-semibold cursor-pointer"
                         >
                             <RotateCcw className="size-3.5" /> Restore Version
                         </button>

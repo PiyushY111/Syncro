@@ -25,7 +25,7 @@ export default function OwnerSecurityAlerts({ logs = [] }) {
                 <p className="text-[10px] opacity-80">Member role updates recorded</p>
             </div>
 
-            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 text-purple-600 dark:text-purple-400 space-y-1">
+            <div className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/20 text-brand dark:text-violet-300 space-y-1">
                 <div className="flex items-center justify-between">
                     <span className="font-semibold text-xs">Entity Deletions</span>
                     <UserX className="size-4" />

@@ -34,7 +34,7 @@ export default function OwnerExportPanel({ logs = [] }) {
     return (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-gradient-to-r from-purple-900/40 via-indigo-900/40 to-zinc-900 border border-purple-500/20 text-white text-xs">
             <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-purple-500/20 text-purple-300">
+                <div className="p-2.5 rounded-xl bg-brand/10 text-purple-300">
                     <FileSpreadsheet className="size-6" />
                 </div>
                 <div>
@@ -45,7 +45,7 @@ export default function OwnerExportPanel({ logs = [] }) {
 
             <button
                 onClick={handleExportCSV}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-zinc-900 hover:bg-zinc-100 font-bold transition shadow-md cursor-pointer"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white text-zinc-900 hover:bg-slate-500/10 font-bold transition shadow-md cursor-pointer"
             >
                 <Download className="size-4" /> Export CSV Compliance Report
             </button>

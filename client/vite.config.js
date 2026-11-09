@@ -15,4 +15,19 @@ export default defineConfig({
       '@': path.resolve(__dirname, './src'),
     },
   },
+  build: {
+    rollupOptions: {
+      output: {
+        // Long-lived vendor chunks: app deploys don't invalidate the cached framework code.
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return undefined
+          if (/[\\/]node_modules[\\/](react|react-dom|scheduler|react-router|react-router-dom)[\\/]/.test(id)) return 'vendor-react'
+          if (/[\\/]node_modules[\\/](@reduxjs|redux|react-redux|immer|reselect)[\\/]/.test(id)) return 'vendor-state'
+          if (/[\\/]node_modules[\\/](@radix-ui|@floating-ui)[\\/]/.test(id)) return 'vendor-ui'
+          if (/[\\/]node_modules[\\/](socket\.io-client|engine\.io-client|socket\.io-parser|axios)[\\/]/.test(id)) return 'vendor-net'
+          return undefined
+        },
+      },
+    },
+  },
 })

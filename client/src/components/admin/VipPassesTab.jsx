@@ -13,7 +13,7 @@ export default function VipPassesTab({
     return (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* VIP Generator */}
-            <div className="lg:col-span-1 p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <div className="sx-glass lg:col-span-1 p-6 rounded-3xl space-y-4">
                 <div className="flex items-center gap-2">
                     <KeyRound className="size-5 text-amber-500" />
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">Create VIP Invite Pass</h3>
@@ -32,7 +32,7 @@ export default function VipPassesTab({
                             value={newVipForm.code}
                             onChange={(e) => setNewVipForm({ ...newVipForm, code: e.target.value.toUpperCase() })}
                             placeholder="e.g. VIP-FOUNDER-2026"
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 font-mono uppercase text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 font-mono uppercase text-slate-900 dark:text-white focus:ring-2 focus:ring-brand/25 focus:outline-none"
                         />
                     </div>
 
@@ -41,7 +41,7 @@ export default function VipPassesTab({
                         <select
                             value={newVipForm.scope}
                             onChange={(e) => setNewVipForm({ ...newVipForm, scope: e.target.value })}
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand/25 focus:outline-none"
                         >
                             <option value="ALL_ACCESS">All Access (Account + Org Creation)</option>
                             <option value="ACCOUNT_ONLY">Account Registration Only</option>
@@ -57,7 +57,7 @@ export default function VipPassesTab({
                                 min="0"
                                 value={newVipForm.maxUses}
                                 onChange={(e) => setNewVipForm({ ...newVipForm, maxUses: parseInt(e.target.value) || 0 })}
-                                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand/25 focus:outline-none"
                             />
                         </div>
                         <div className="space-y-1">
@@ -66,7 +66,7 @@ export default function VipPassesTab({
                                 type="date"
                                 value={newVipForm.expiresAt}
                                 onChange={(e) => setNewVipForm({ ...newVipForm, expiresAt: e.target.value })}
-                                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                                className="w-full px-3 py-2 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand/25 focus:outline-none"
                             />
                         </div>
                     </div>
@@ -78,14 +78,14 @@ export default function VipPassesTab({
                             value={newVipForm.note}
                             onChange={(e) => setNewVipForm({ ...newVipForm, note: e.target.value })}
                             placeholder="e.g. For Beta Reviewers squad"
-                            className="w-full px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-zinc-800 border border-slate-200 dark:border-zinc-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+                            className="w-full px-3 py-2 text-xs rounded-xl bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand/25 focus:outline-none"
                         />
                     </div>
 
                     <button
                         type="submit"
                         disabled={isCreatingVip}
-                        className="w-full py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-indigo-500/20 disabled:opacity-50 cursor-pointer"
+                        className="w-full py-2.5 rounded-xl bg-brand hover:bg-brand-strong text-white font-semibold text-xs flex items-center justify-center gap-2 transition shadow-md shadow-brand/20 disabled:opacity-50 cursor-pointer"
                     >
                         <Sparkles className="size-4" />
                         {isCreatingVip ? 'Generating...' : 'Generate VIP Pass'}
@@ -94,7 +94,7 @@ export default function VipPassesTab({
             </div>
 
             {/* Active VIP Codes Table */}
-            <div className="lg:col-span-2 p-6 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm space-y-4">
+            <div className="sx-glass lg:col-span-2 p-6 rounded-3xl space-y-4">
                 <div className="flex items-center justify-between">
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">Active VIP Passes ({vipCodes.length})</h3>
                 </div>
@@ -105,7 +105,7 @@ export default function VipPassesTab({
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs">
                             <thead>
-                                <tr className="border-b border-slate-200 dark:border-zinc-800 text-slate-500">
+                                <tr className="border-b border-slate-900/[0.07] dark:border-white/[0.07] text-slate-500">
                                     <th className="pb-3 font-semibold">Code / Link</th>
                                     <th className="pb-3 font-semibold">Scope</th>
                                     <th className="pb-3 font-semibold">Redemptions</th>
@@ -113,16 +113,16 @@ export default function VipPassesTab({
                                     <th className="pb-3 font-semibold text-right">Action</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60">
+                            <tbody className="divide-y divide-slate-900/[0.06] dark:divide-white/[0.06]">
                                 {vipCodes.map((vip) => (
-                                    <tr key={vip.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-800/30">
-                                        <td className="py-3 font-mono font-bold text-indigo-600 dark:text-indigo-400">
+                                    <tr key={vip.id} className="hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07]">
+                                        <td className="py-3 font-mono font-bold text-brand dark:text-violet-300">
                                             <div className="flex items-center gap-2">
                                                 <span>{vip.code}</span>
                                                 <button
                                                     onClick={() => onCopyVipLink(vip.code)}
                                                     title="Copy Invite Link"
-                                                    className="p-1 rounded bg-slate-100 hover:bg-slate-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-600 dark:text-zinc-300 transition cursor-pointer"
+                                                    className="p-1 rounded bg-slate-500/[0.08] hover:bg-slate-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.07] text-slate-600 dark:text-zinc-300 transition cursor-pointer"
                                                 >
                                                     <Copy className="size-3" />
                                                 </button>
@@ -140,7 +140,7 @@ export default function VipPassesTab({
                                                     ACTIVE
                                                 </span>
                                             ) : (
-                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 dark:bg-zinc-800 text-slate-500">
+                                                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-500/[0.08] dark:bg-white/[0.06] text-slate-500">
                                                     EXPIRED
                                                 </span>
                                             )}

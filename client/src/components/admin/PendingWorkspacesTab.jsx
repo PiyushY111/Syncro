@@ -12,8 +12,8 @@ export default function PendingWorkspacesTab({ pendingWorkspaces, onApproveWorks
             </div>
 
             {pendingWorkspaces.length === 0 ? (
-                <div className="p-12 text-center rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800">
-                    <CheckCircle2 className="size-12 text-blue-500 mx-auto mb-3" />
+                <div className="sx-glass p-12 text-center rounded-3xl">
+                    <CheckCircle2 className="size-12 text-brand dark:text-violet-300 mx-auto mb-3" />
                     <h3 className="text-base font-bold text-slate-900 dark:text-white">No Pending Workspace Requests</h3>
                     <p className="text-xs text-slate-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto">
                         All organization and team space provisioning requests have been processed.
@@ -24,12 +24,12 @@ export default function PendingWorkspacesTab({ pendingWorkspaces, onApproveWorks
                     {pendingWorkspaces.map((pWb) => (
                         <div
                             key={pWb.id}
-                            className="p-5 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm flex flex-col justify-between hover:border-blue-500/50 transition"
+                            className="sx-glass p-5 rounded-3xl flex flex-col justify-between hover:border-blue-500/50 transition"
                         >
                             <div className="space-y-3">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <div className="size-10 rounded-2xl bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 font-bold flex items-center justify-center text-base border border-blue-200 dark:border-blue-800">
+                                        <div className="size-10 rounded-2xl bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300 font-bold flex items-center justify-center text-base border border-brand/25 dark:border-brand/30">
                                             🏢
                                         </div>
                                         <div>
@@ -37,13 +37,13 @@ export default function PendingWorkspacesTab({ pendingWorkspaces, onApproveWorks
                                             <p className="text-xs text-slate-500 font-mono">slug: {pWb.slug}</p>
                                         </div>
                                     </div>
-                                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300">
+                                    <span className="text-[10px] px-2 py-0.5 rounded-full font-bold bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300">
                                         WAITING PROVISION
                                     </span>
                                 </div>
 
                                 {pWb.description && (
-                                    <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-50 dark:bg-zinc-800/40 p-2.5 rounded-xl border border-slate-100 dark:border-zinc-800">
+                                    <p className="text-xs text-slate-600 dark:text-zinc-300 bg-slate-500/[0.05] dark:bg-white/[0.06] p-2.5 rounded-xl border border-slate-900/[0.05] dark:border-white/[0.07]">
                                         {pWb.description}
                                     </p>
                                 )}
@@ -56,17 +56,17 @@ export default function PendingWorkspacesTab({ pendingWorkspaces, onApproveWorks
                                 </div>
                             </div>
 
-                            <div className="flex items-center gap-2 pt-5 border-t border-slate-100 dark:border-zinc-800 mt-4">
+                            <div className="flex items-center gap-2 pt-5 border-t border-slate-900/[0.05] dark:border-white/[0.07] mt-4">
                                 <button
                                     onClick={() => onApproveWorkspace(pWb.id)}
-                                    className="flex-1 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer"
+                                    className="flex-1 py-2 rounded-xl bg-brand hover:bg-brand-strong text-white font-semibold text-xs flex items-center justify-center gap-1.5 transition shadow-sm cursor-pointer"
                                 >
                                     <Check className="size-3.5" />
                                     Approve & Provision
                                 </button>
                                 <button
                                     onClick={() => onRejectWorkspace(pWb.id)}
-                                    className="px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-rose-50 dark:bg-zinc-800 dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-zinc-300 dark:hover:text-rose-400 font-semibold text-xs flex items-center justify-center gap-1 transition cursor-pointer"
+                                    className="px-3.5 py-2 rounded-xl bg-slate-500/[0.08] hover:bg-rose-50 dark:bg-white/[0.06] dark:hover:bg-rose-950/40 text-slate-600 hover:text-rose-600 dark:text-zinc-300 dark:hover:text-rose-400 font-semibold text-xs flex items-center justify-center gap-1 transition cursor-pointer"
                                 >
                                     <XCircle className="size-3.5" />
                                     Decline
