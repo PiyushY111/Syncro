@@ -1,8 +1,8 @@
+// Must stay the first import so .env is loaded before any module reads process.env.
+import './src/config/env.js'
+
 import dns from 'dns'
 dns.setDefaultResultOrder('ipv4first')
-
-import dotenv from 'dotenv'
-dotenv.config({ quiet: true })
 
 import http from 'http'
 import logger from './src/utils/logger/logger.js'

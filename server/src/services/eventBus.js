@@ -41,6 +41,15 @@ export const eventBus = new EventBus();
 // Direct fallback listeners when Inngest is disabled or offline
 import sendEmail from '../config/nodemailer.js';
 
+// sendEmail resolves to null when it skips sending (e.g. missing config), so only log success on a real result.
+const logEmailOutcome = (result, label, email) => {
+    if (result) {
+        logger.info(`[EventBus Direct Fallback] ${label} email sent to ${email}`, { email });
+    } else {
+        logger.warn(`[EventBus Direct Fallback] ${label} email NOT sent to ${email}`, { email });
+    }
+};
+
 eventBus.on('app/auth.login_code_requested', async (data) => {
     const { email, verificationCode, isTester } = data;
     if (isTester) return;
@@ -59,8 +68,8 @@ eventBus.on('app/auth.login_code_requested', async (data) => {
     `;
 
     try {
-        await sendEmail({ to: email, subject, text, html });
-        logger.info(`[EventBus Direct Fallback] Verification code email sent to ${email}`, { email });
+        const result = await sendEmail({ to: email, subject, text, html });
+        logEmailOutcome(result, 'Verification code', email);
     } catch (err) {
         logger.error('[EventBus Direct Fallback Email Error]', { error: err.message, email });
     }
@@ -84,8 +93,8 @@ eventBus.on('app/auth.registered', async (data) => {
     `;
 
     try {
-        await sendEmail({ to: email, subject, text, html });
-        logger.info(`[EventBus Direct Fallback] Sign-up verification code email sent to ${email}`, { email });
+        const result = await sendEmail({ to: email, subject, text, html });
+        logEmailOutcome(result, 'Sign-up verification code', email);
     } catch (err) {
         logger.error('[EventBus Direct Fallback Email Error]', { error: err.message, email });
     }
