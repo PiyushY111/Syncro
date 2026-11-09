@@ -26,7 +26,7 @@ import {
   validateVerifyLogin,
   validateResendCode,
 } from '../validators/authValidators.js';
-import { authLimiter } from '../middlewares/rateLimiter.js';
+import { authLimiter, refreshLimiter } from '../middlewares/rateLimiter.js';
 import { verifyCsrfToken } from '../middlewares/csrf.js';
 
 const authRouter = express.Router();
@@ -37,7 +37,7 @@ authRouter.post('/login', authLimiter, validate(validateLogin), login);
 authRouter.post('/verify-login', authLimiter, validate(validateVerifyLogin), verifyLogin);
 authRouter.post('/verify', authLimiter, validate(validateVerifyLogin), verifyLogin);
 authRouter.post('/resend-code', authLimiter, validate(validateResendCode), resendCode);
-authRouter.post('/refresh', authLimiter, refreshSession);
+authRouter.post('/refresh', refreshLimiter, refreshSession);
 authRouter.post('/logout', verifyCsrfToken, logoutSession);
 
 // Password Recovery Flow
