@@ -73,8 +73,8 @@ export default function ProjectSettings({ project }) {
         if (project) setFormData(project);
     }, [project]);
 
-    const inputClasses = "w-full px-3 py-2 rounded mt-2 border text-sm dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 text-zinc-900 dark:text-zinc-300 disabled:opacity-60 disabled:cursor-not-allowed";
-    const cardClasses = "rounded-lg border p-6 not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border-zinc-300 dark:border-zinc-800";
+    const inputClasses = "w-full px-3 py-2 rounded mt-2 border text-sm dark:bg-white/[0.03] border-slate-900/10 dark:border-white/10 text-zinc-900 dark:text-zinc-300 disabled:opacity-60 disabled:cursor-not-allowed";
+    const cardClasses = "rounded-lg border p-6 not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border-slate-900/10 dark:border-white/[0.07]";
     const labelClasses = "text-sm text-zinc-600 dark:text-zinc-400";
 
     return (
@@ -138,7 +138,7 @@ export default function ProjectSettings({ project }) {
                             </button>
                         )}
                         {hasEditPermission && (
-                            <button type="submit" disabled={isSubmitting} className="ml-auto flex items-center text-sm justify-center gap-2 bg-gradient-to-br from-blue-500 to-blue-600 text-white px-4 py-2 rounded cursor-pointer">
+                            <button type="submit" disabled={isSubmitting} className="ml-auto flex items-center text-sm justify-center gap-2 bg-gradient-to-br from-[#7c5cff] to-brand text-white px-4 py-2 rounded cursor-pointer">
                                 <Save className="size-4" /> {isSubmitting ? "Saving..." : "Save Changes"}
                             </button>
                         )}
