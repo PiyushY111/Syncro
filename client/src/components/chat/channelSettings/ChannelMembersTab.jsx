@@ -42,12 +42,12 @@ export default function ChannelMembersTab({ channel, workspaceMembers = [], onCh
             <h4 className="font-semibold text-[11px] text-zinc-400 uppercase tracking-wider">Channel Members ({channel.members?.length || 0})</h4>
 
             {nonMembers.length > 0 && (
-                <div className="flex gap-2 bg-zinc-50 border border-zinc-200 p-3 rounded-lg">
-                    <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)} className="flex-1 bg-white border border-zinc-200 rounded-lg px-3 py-2 text-sm text-zinc-700 focus:outline-none focus:border-blue-400 transition">
+                <div className="flex gap-2 bg-slate-500/[0.05] border border-slate-900/[0.07] p-3 rounded-lg">
+                    <select value={selectedUserId} onChange={(e) => setSelectedUserId(e.target.value)} className="flex-1 bg-white/70 border border-slate-900/[0.07] rounded-xl px-3 py-2 text-sm text-zinc-700 focus:outline-none focus:border-brand transition">
                         <option value="">Select workspace member to add...</option>
                         {nonMembers.map(m => (<option key={m.id} value={m.user?.id || m.userId}>{m.user?.name || "Member"}</option>))}
                     </select>
-                    <button onClick={handleAddMember} disabled={!selectedUserId} className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg disabled:opacity-40 flex items-center gap-1.5 cursor-pointer transition text-sm">
+                    <button onClick={handleAddMember} disabled={!selectedUserId} className="px-4 py-2 bg-brand hover:bg-brand-strong text-white font-medium rounded-lg disabled:opacity-40 flex items-center gap-1.5 cursor-pointer transition text-sm">
                         <UserPlus className="size-4" /> Add
                     </button>
                 </div>
@@ -57,9 +57,9 @@ export default function ChannelMembersTab({ channel, workspaceMembers = [], onCh
                 {channel.members?.map((m) => {
                     const isAdmin = adminIds.includes(m.id);
                     return (
-                        <div key={m.id} className="group flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-zinc-50 transition-colors">
+                        <div key={m.id} className="group flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-slate-500/[0.06] transition-colors">
                             <div className="flex items-center gap-3">
-                                <div className="size-8 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shrink-0">
+                                <div className="size-8 rounded-full bg-gradient-to-br from-[#7c5cff] to-brand text-white flex items-center justify-center font-bold text-xs shrink-0">
                                     {m.name ? m.name[0].toUpperCase() : 'U'}
                                 </div>
                                 <div>
@@ -72,13 +72,13 @@ export default function ChannelMembersTab({ channel, workspaceMembers = [], onCh
                             </div>
 
                             <div className="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button onClick={() => toggleAdminRole(m.id)} className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 cursor-pointer transition" title={isAdmin ? "Remove Admin" : "Make Admin"}>
+                                <button onClick={() => toggleAdminRole(m.id)} className="p-1.5 rounded-lg hover:bg-slate-500/10 text-zinc-400 cursor-pointer transition" title={isAdmin ? "Remove Admin" : "Make Admin"}>
                                     {isAdmin ? <ShieldAlert className="size-4 text-amber-500" /> : <ShieldCheck className="size-4 text-emerald-500" />}
                                 </button>
-                                <button onClick={() => onSelectDM && onSelectDM(m)} className="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-400 cursor-pointer transition" title="Message Privately">
-                                    <MessageSquare className="size-4 text-blue-500" />
+                                <button onClick={() => onSelectDM && onSelectDM(m)} className="p-1.5 rounded-lg hover:bg-slate-500/10 text-zinc-400 cursor-pointer transition" title="Message Privately">
+                                    <MessageSquare className="size-4 text-brand dark:text-violet-300" />
                                 </button>
-                                <button onClick={() => handleRemoveMember(m.id)} className="p-1.5 rounded-lg hover:bg-zinc-100 text-rose-400 cursor-pointer transition" title="Remove from Group">
+                                <button onClick={() => handleRemoveMember(m.id)} className="p-1.5 rounded-lg hover:bg-slate-500/10 text-rose-400 cursor-pointer transition" title="Remove from Group">
                                     <UserMinus className="size-4" />
                                 </button>
                             </div>

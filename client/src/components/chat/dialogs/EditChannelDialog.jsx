@@ -30,7 +30,7 @@ export default function EditChannelDialog({
                             value={editChannelName}
                             onChange={(e) => setEditChannelName(e.target.value)}
                             placeholder="e.g. general"
-                            className="w-full rounded border px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full rounded border px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-1 focus:ring-brand/25"
                             style={{
                                 backgroundColor: isDark ? "#18181B" : "#FFFFFF",
                                 color: colors.mainText,
@@ -45,7 +45,7 @@ export default function EditChannelDialog({
                             value={editChannelDesc}
                             onChange={(e) => setEditChannelDesc(e.target.value)}
                             placeholder="Brief details about discussions"
-                            className="w-full rounded border px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                            className="w-full rounded border px-3 py-2 text-sm mt-1 focus:outline-none focus:ring-1 focus:ring-brand/25"
                             style={{
                                 backgroundColor: isDark ? "#18181B" : "#FFFFFF",
                                 color: colors.mainText,
@@ -57,7 +57,7 @@ export default function EditChannelDialog({
                         <button 
                             type="button" 
                             onClick={() => setIsEditChannelOpen(false)} 
-                            className="rounded border px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                            className="rounded border px-4 py-2 text-xs hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                             style={{ color: colors.mainText, borderColor: colors.mainBorder }}
                         >
                             Cancel
@@ -65,7 +65,7 @@ export default function EditChannelDialog({
                         <button 
                             type="submit" 
                             disabled={!editChannelName.trim()} 
-                            className="rounded px-4 py-2 text-xs bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
+                            className="rounded px-4 py-2 text-xs bg-brand text-white hover:bg-brand-strong transition cursor-pointer"
                         >
                             Save Changes
                         </button>

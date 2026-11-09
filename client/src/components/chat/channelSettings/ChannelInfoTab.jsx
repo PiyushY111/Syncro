@@ -57,18 +57,18 @@ export default function ChannelInfoTab({ channel, onChannelUpdated, onChannelDel
     return (
         <div className="space-y-5 text-sm">
             {/* Channel profile */}
-            <div className="text-center pb-4 border-b border-zinc-100">
+            <div className="text-center pb-4 border-b border-slate-900/[0.05]">
                 <ChannelIcon channel={channel} size="lg" className="mx-auto mb-3" />
                 <h3 className="font-bold text-lg text-zinc-900">#{channel.name}</h3>
                 <p className="text-zinc-400 text-xs mt-1">{channel.members?.length || 1} members • Public Channel</p>
 
                 <div className="flex items-center justify-center gap-3 mt-4">
-                    <button onClick={() => setIsMuted(!isMuted)} className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 text-zinc-600 text-xs font-medium transition cursor-pointer">
+                    <button onClick={() => setIsMuted(!isMuted)} className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-500/[0.05] hover:bg-slate-500/10 text-zinc-600 text-xs font-medium transition cursor-pointer">
                         <Volume2 className="size-4" />
                         {isMuted ? 'Unmute' : 'Mute'}
                     </button>
-                    <button onClick={handleExport} className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-lg bg-zinc-50 hover:bg-zinc-100 text-zinc-600 text-xs font-medium transition cursor-pointer">
-                        <Download className="size-4 text-blue-500" />
+                    <button onClick={handleExport} className="flex flex-col items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-500/[0.05] hover:bg-slate-500/10 text-zinc-600 text-xs font-medium transition cursor-pointer">
+                        <Download className="size-4 text-brand dark:text-violet-300" />
                         Export
                     </button>
                 </div>
@@ -76,18 +76,18 @@ export default function ChannelInfoTab({ channel, onChannelUpdated, onChannelDel
 
             {/* About section */}
             {isEditing ? (
-                <div className="space-y-3 border border-zinc-200 rounded-lg p-4">
-                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Channel Name" className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 transition" />
-                    <input type="url" value={iconUrl} onChange={(e) => setIconUrl(e.target.value)} placeholder="Channel Icon Image URL" className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm focus:outline-none focus:border-blue-400 transition" />
-                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-white border border-zinc-200 rounded-lg text-sm resize-none focus:outline-none focus:border-blue-400 transition" />
-                    <button onClick={handleSaveInfo} className="w-full py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg text-sm transition cursor-pointer">Save Info</button>
+                <div className="space-y-3 border border-slate-900/[0.07] rounded-lg p-4">
+                    <input type="text" value={name} onChange={(e) => setName(e.target.value)} placeholder="Channel Name" className="w-full px-3 py-2 bg-white/70 border border-slate-900/[0.07] rounded-xl text-sm focus:outline-none focus:border-brand transition" />
+                    <input type="url" value={iconUrl} onChange={(e) => setIconUrl(e.target.value)} placeholder="Channel Icon Image URL" className="w-full px-3 py-2 bg-white/70 border border-slate-900/[0.07] rounded-xl text-sm focus:outline-none focus:border-brand transition" />
+                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" rows={2} className="w-full px-3 py-2 bg-white/70 border border-slate-900/[0.07] rounded-xl text-sm resize-none focus:outline-none focus:border-brand transition" />
+                    <button onClick={handleSaveInfo} className="w-full py-2 bg-brand hover:bg-brand-strong text-white font-medium rounded-lg text-sm transition cursor-pointer">Save Info</button>
                 </div>
             ) : (
                 <div>
                     <div className="flex items-center justify-between mb-2">
                         <span className="font-semibold text-zinc-900">About Channel</span>
                         {(canManage || channel.creatorId === currentUser?.id) && (
-                            <button onClick={() => setIsEditing(true)} className="text-blue-500 text-xs font-medium flex items-center gap-1 hover:text-blue-600 cursor-pointer transition">
+                            <button onClick={() => setIsEditing(true)} className="text-brand dark:text-violet-300 text-xs font-medium flex items-center gap-1 hover:text-brand cursor-pointer transition">
                                 <Edit2 className="size-3" /> Edit
                             </button>
                         )}
@@ -97,9 +97,9 @@ export default function ChannelInfoTab({ channel, onChannelUpdated, onChannelDel
             )}
 
             {/* Danger actions */}
-            <div className="border-t border-zinc-100 pt-4 space-y-1">
+            <div className="border-t border-slate-900/[0.05] pt-4 space-y-1">
                 {(canManage || channel.creatorId === currentUser?.id) && (
-                    <button onClick={handleClearChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-700 hover:bg-zinc-50 font-medium transition cursor-pointer text-sm">
+                    <button onClick={handleClearChat} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-zinc-700 hover:bg-slate-500/[0.06] font-medium transition cursor-pointer text-sm">
                         <Trash2 className="size-4 text-amber-500" />
                         Clear Chat History
                     </button>

@@ -9,7 +9,7 @@ export default function ChatSidebar({
         <div className="w-64 flex flex-col flex-shrink-0 transition-colors duration-150" style={{ backgroundColor: colors.sidebarBg, color: colors.sidebarText }}>
             <div className="p-4 border-b flex items-center justify-between" style={{ borderBottomColor: colors.sidebarHeaderBorder }}>
                 <h3 className="font-bold flex items-center gap-2 text-sm tracking-tight" style={{ color: colors.sidebarText }}>
-                    <MessageSquare className="size-4.5 text-indigo-500" /> Workspace Chat
+                    <MessageSquare className="size-4.5 text-brand dark:text-violet-300" /> Workspace Chat
                 </h3>
             </div>
 

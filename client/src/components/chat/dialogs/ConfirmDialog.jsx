@@ -18,7 +18,7 @@ export default function ConfirmDialog({
             >
                 <h2 className="text-lg font-bold mb-2 text-red-600 dark:text-red-500 flex items-center gap-2">
                     {confirmModal.type === "join_channel" ? (
-                        <Users className="size-5 text-indigo-600 dark:text-indigo-400" />
+                        <Users className="size-5 text-brand dark:text-violet-300" />
                     ) : (
                         <Trash2 className="size-5 text-red-600" />
                     )}
@@ -35,7 +35,7 @@ export default function ConfirmDialog({
                     <button
                         type="button"
                         onClick={() => setConfirmModal({ isOpen: false, type: "", targetId: "", targetName: "" })}
-                        className="rounded border px-4 py-2 text-xs hover:bg-slate-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                        className="rounded border px-4 py-2 text-xs hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                         style={{ color: colors.mainText, borderColor: colors.mainBorder }}
                     >
                         Cancel

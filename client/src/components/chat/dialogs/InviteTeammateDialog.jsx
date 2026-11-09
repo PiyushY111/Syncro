@@ -40,7 +40,7 @@ export default function InviteTeammateDialog({
                                     {candidate.user.image ? (
                                         <img src={candidate.user.image} className="size-6.5 rounded-full object-cover" alt="avatar" />
                                     ) : (
-                                        <div className="size-6.5 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white flex items-center justify-center text-[10px] font-bold">
+                                        <div className="size-6.5 rounded-full bg-gradient-to-br from-[#7c5cff] to-brand text-white flex items-center justify-center text-[10px] font-bold">
                                             {candidate.user.name[0].toUpperCase()}
                                         </div>
                                     )}
@@ -50,7 +50,7 @@ export default function InviteTeammateDialog({
                                 </div>
                                 <button
                                     onClick={() => handleAddTeammate(candidate.user.id)}
-                                    className="bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold px-2.5 py-1 rounded cursor-pointer transition"
+                                    className="bg-brand hover:bg-brand-strong text-white text-[10px] font-semibold px-2.5 py-1 rounded cursor-pointer transition"
                                 >
                                     Add
                                 </button>
