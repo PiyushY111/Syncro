@@ -13,6 +13,7 @@ export default defineConfig({
       'tests/permissions.test.js',
       'tests/rateLimit2FA.test.js',
       'tests/redis.test.js',
+      'tests/redisGuard.test.js',
       'tests/subteam.test.js',
       'tests/workspace.test.js'
     ],

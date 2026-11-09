@@ -1,5 +1,17 @@
 import { Redis } from "@upstash/redis";
 import logger from "../utils/logger/logger.js";
+import { createRedisGuard } from "./redisGuard.js";
+
+const REDIS_CALL_TIMEOUT_MS = Number(process.env.REDIS_CALL_TIMEOUT_MS) || 1500;
+const REDIS_COOLDOWN_MS = Number(process.env.REDIS_COOLDOWN_MS) || 30_000;
+
+// One fast failure, then memory fallback for a cooldown window, instead of multi-second stalls per request.
+const guard = createRedisGuard({
+    timeoutMs: REDIS_CALL_TIMEOUT_MS,
+    cooldownMs: REDIS_COOLDOWN_MS,
+    onTrip: (err) => logger.warn("[REDIS UNAVAILABLE] Using in-memory fallback temporarily", { error: err.message, cooldownMs: REDIS_COOLDOWN_MS }),
+});
+const call = (operation) => guard.run(operation);
 
 let redisClient = null;
 
@@ -8,7 +20,7 @@ try {
     const token = process.env.UPSTASH_REDIS_REST_TOKEN;
 
     if (url && token) {
-        redisClient = new Redis({ url, token });
+        redisClient = new Redis({ url, token, retry: { retries: 1, backoff: () => 100 } });
     }
 } catch (err) {
     logger.warn("[REDIS WARNING] Upstash Redis initialization failed, falling back to memory.", { error: err.message });
@@ -20,7 +32,7 @@ const memoryStore = new Map();
 export const redisCache = {
     get: async (key) => {
         try {
-            if (redisClient) return await redisClient.get(key);
+            if (redisClient) return await call(() => redisClient.get(key));
             return memoryStore.get(key) || null;
         } catch (e) {
             return memoryStore.get(key) || null;
@@ -29,7 +41,7 @@ export const redisCache = {
     set: async (key, value, exSeconds = 3600) => {
         try {
             if (redisClient) {
-                return await redisClient.set(key, value, { ex: exSeconds });
+                return await call(() => redisClient.set(key, value, { ex: exSeconds }));
             }
             memoryStore.set(key, value);
             return "OK";
@@ -40,7 +52,7 @@ export const redisCache = {
     },
     del: async (key) => {
         try {
-            if (redisClient) return await redisClient.del(key);
+            if (redisClient) return await call(() => redisClient.del(key));
             memoryStore.delete(key);
             return 1;
         } catch (e) {
@@ -51,7 +63,7 @@ export const redisCache = {
     setNx: async (key, value, exSeconds = 10) => {
         try {
             if (redisClient) {
-                const res = await redisClient.set(key, value, { nx: true, ex: exSeconds });
+                const res = await call(() => redisClient.set(key, value, { nx: true, ex: exSeconds }));
                 return res === "OK" || res === 1;
             }
             if (memoryStore.has(key)) return false;
@@ -75,7 +87,7 @@ export const redisCache = {
     },
     incr: async (key) => {
         try {
-            if (redisClient) return await redisClient.incr(key);
+            if (redisClient) return await call(() => redisClient.incr(key));
         } catch {}
         const val = Number(memoryStore.get(key) || 0) + 1;
         memoryStore.set(key, val);
@@ -84,14 +96,14 @@ export const redisCache = {
     incrWithTtl: async (key, exSeconds = 60) => {
         try {
             if (redisClient) {
-                const val = await redisClient.incr(key);
+                const val = await call(() => redisClient.incr(key));
                 if (val === 1) {
-                    await redisClient.expire(key, exSeconds);
+                    await call(() => redisClient.expire(key, exSeconds));
                 }
                 return val;
             }
-        } catch (e) {
-            logger.error("[REDIS INCR ERROR]", { error: e.message, key });
+        } catch {
+            // Guard already logged the outage once; fall through to the in-memory counter.
         }
         const val = Number(memoryStore.get(key) || 0) + 1;
         memoryStore.set(key, val);
@@ -101,10 +113,10 @@ export const redisCache = {
     publish: async (channel, message) => {
         try {
             if (redisClient) {
-                return await redisClient.publish(channel, typeof message === 'object' ? JSON.stringify(message) : message);
+                return await call(() => redisClient.publish(channel, typeof message === 'object' ? JSON.stringify(message) : message));
             }
-        } catch (e) {
-            logger.error("[REDIS PUBLISH ERROR]", { error: e.message, channel });
+        } catch {
+            // Best effort: cross-instance cache invalidation is skipped while Redis is unavailable.
         }
     }
 };
