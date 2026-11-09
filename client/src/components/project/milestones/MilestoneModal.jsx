@@ -43,8 +43,8 @@ export default function MilestoneModal({ isOpen, onClose, onSave, editingMilesto
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
-            <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl max-w-md w-full p-5 space-y-4 shadow-xl">
-                <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800 pb-3">
+            <div className="bg-white dark:bg-[#14161f] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl max-w-md w-full p-5 space-y-4 shadow-xl">
+                <div className="flex items-center justify-between border-b border-slate-900/[0.05] dark:border-white/[0.07] pb-3">
                     <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
                         {editingMilestone ? 'Edit Milestone' : 'Create New Milestone'}
                     </h3>
@@ -62,7 +62,7 @@ export default function MilestoneModal({ isOpen, onClose, onSave, editingMilesto
                             placeholder="e.g., MVP Launch"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
+                            className="w-full px-3 py-2 bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-white"
                         />
                     </div>
                     <div>
@@ -72,7 +72,7 @@ export default function MilestoneModal({ isOpen, onClose, onSave, editingMilesto
                             placeholder="Key goals & deliverables..."
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
+                            className="w-full px-3 py-2 bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-white"
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -83,7 +83,7 @@ export default function MilestoneModal({ isOpen, onClose, onSave, editingMilesto
                                 required
                                 value={dueDate}
                                 onChange={(e) => setDueDate(e.target.value)}
-                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
+                                className="w-full px-3 py-2 bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-white"
                             />
                         </div>
                         <div>
@@ -91,7 +91,7 @@ export default function MilestoneModal({ isOpen, onClose, onSave, editingMilesto
                             <select
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value)}
-                                className="w-full px-3 py-2 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-lg text-zinc-900 dark:text-white"
+                                className="w-full px-3 py-2 bg-slate-500/[0.05] dark:bg-white/[0.06] border border-slate-900/[0.07] dark:border-white/10 rounded-lg text-zinc-900 dark:text-white"
                             >
                                 <option value="PLANNED">PLANNED</option>
                                 <option value="IN_PROGRESS">IN_PROGRESS</option>
@@ -108,15 +108,15 @@ export default function MilestoneModal({ isOpen, onClose, onSave, editingMilesto
                                     type="button"
                                     key={c}
                                     onClick={() => setColor(c)}
-                                    className={`size-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-2 ring-blue-500 scale-110' : ''}`}
+                                    className={`size-6 rounded-full transition ${color === c ? 'ring-2 ring-offset-2 ring-brand/40 scale-110' : ''}`}
                                     style={{ backgroundColor: c }}
                                 />
                             ))}
                         </div>
                     </div>
-                    <div className="flex justify-end gap-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
-                        <button type="button" onClick={onClose} className="px-3 py-1.5 rounded-lg border border-zinc-200 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300">Cancel</button>
-                        <button type="submit" disabled={isSubmitting} className="px-3.5 py-1.5 rounded-lg bg-blue-600 text-white font-medium hover:bg-blue-700 disabled:opacity-50 cursor-pointer">{isSubmitting ? "Saving..." : "Save"}</button>
+                    <div className="flex justify-end gap-2 pt-3 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
+                        <button type="button" onClick={onClose} className="px-3 py-1.5 rounded-lg border border-slate-900/[0.07] dark:border-white/10 text-zinc-700 dark:text-zinc-300">Cancel</button>
+                        <button type="submit" disabled={isSubmitting} className="px-3.5 py-1.5 rounded-lg bg-brand text-white font-medium hover:bg-brand-strong disabled:opacity-50 cursor-pointer">{isSubmitting ? "Saving..." : "Save"}</button>
                     </div>
                 </form>
             </div>

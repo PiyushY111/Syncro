@@ -70,7 +70,7 @@ export default function ProjectCalendar({ tasks = [], projectId }) {
 
     return (
         <div className="space-y-6 text-left">
-            <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-2xs space-y-4">
+            <div className="sx-glass rounded-2xl p-4 space-y-4">
                 <CalendarToolbar currentMonth={currentMonth} calendarView={calendarView} setCalendarView={setCalendarView} handlePrev={handlePrev} handleNext={handleNext} handleToday={handleToday} onAddTaskForDate={handleAddTaskForDate} selectedDate={selectedDate} filteredCount={filteredTasks.length} />
                 <CalendarFilters searchQuery={searchQuery} setSearchQuery={setSearchQuery} typeFilter={typeFilter} setTypeFilter={setTypeFilter} priorityFilter={priorityFilter} setPriorityFilter={setPriorityFilter} />
             </div>
@@ -82,7 +82,7 @@ export default function ProjectCalendar({ tasks = [], projectId }) {
             ) : (
                 <div className="grid lg:grid-cols-3 gap-6">
                     <div className="lg:col-span-2 space-y-6">
-                        <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-2xs">
+                        <div className="sx-glass rounded-2xl p-4">
                             <div className="grid grid-cols-7 text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-3 text-center uppercase tracking-wider">
                                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (<div key={day}>{day}</div>))}
                             </div>

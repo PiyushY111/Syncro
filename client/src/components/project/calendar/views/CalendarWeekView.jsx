@@ -4,7 +4,7 @@ import { User, Plus, Bug, Zap, Square, GitCommit, MessageSquare, CheckCircle2 } 
 const typeIcons = { BUG: Bug, FEATURE: Zap, TASK: Square, IMPROVEMENT: GitCommit, OTHER: MessageSquare };
 const priorityBorders = { LOW: "border-l-4 border-l-zinc-400", MEDIUM: "border-l-4 border-l-amber-500", HIGH: "border-l-4 border-l-red-500" };
 const priorityBadges = {
-    LOW: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    LOW: "bg-slate-500/[0.08] text-zinc-700 dark:bg-white/[0.06] dark:text-zinc-300",
     MEDIUM: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300",
     HIGH: "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300",
 };
@@ -25,18 +25,18 @@ export default function CalendarWeekView({ currentMonth, tasks, selectedDate, se
                 return (
                     <div key={day.toISOString()} onClick={() => setSelectedDate(day)}
                         className={`flex flex-col min-h-[360px] rounded-xl border p-3 transition-all ${
-                            isSelected ? "border-blue-500 bg-blue-50/40 dark:bg-blue-950/20" : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60"
+                            isSelected ? "border-brand dark:border-lime bg-blue-50/40 dark:bg-brand/15" : "border-slate-900/[0.07] dark:border-white/[0.07] bg-white/60 dark:bg-white/[0.03]"
                         }`}
                     >
-                        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 pb-2 mb-3">
+                        <div className="flex items-center justify-between border-b border-slate-900/[0.07] dark:border-white/[0.07] pb-2 mb-3">
                             <div>
                                 <p className="text-xs font-semibold text-zinc-500 uppercase">{format(day, "EEE")}</p>
                                 <span className={`inline-flex items-center justify-center size-7 text-sm font-bold rounded-full mt-0.5 ${
-                                    isToday ? "bg-blue-600 text-white" : "text-zinc-900 dark:text-zinc-100"
+                                    isToday ? "bg-brand text-white" : "text-zinc-900 dark:text-zinc-100"
                                 }`}>{format(day, "d")}</span>
                             </div>
                             <button type="button" onClick={(e) => { e.stopPropagation(); onAddTaskForDate(dateStr); }} title="Add task"
-                                className="p-1 rounded text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer">
+                                className="p-1 rounded text-zinc-500 hover:text-brand hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer">
                                 <Plus className="size-4" />
                             </button>
                         </div>
@@ -50,7 +50,7 @@ export default function CalendarWeekView({ currentMonth, tasks, selectedDate, se
                                     const isOverdue = !isDone && isBefore(new Date(task.due_date), today) && !isSameDay(new Date(task.due_date), today);
                                     return (
                                         <div key={task.id} onClick={(e) => { e.stopPropagation(); onTaskClick(task); }}
-                                            className={`p-2.5 rounded-lg bg-zinc-50 dark:bg-zinc-800/60 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer ${
+                                            className={`p-2.5 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.06] hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer ${
                                                 priorityBorders[task.priority] || "border-l-4 border-l-zinc-300"
                                             } ${isOverdue ? "bg-red-50/50 dark:bg-red-950/20" : ""}`}
                                         >

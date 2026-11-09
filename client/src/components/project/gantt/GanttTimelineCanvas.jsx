@@ -20,11 +20,11 @@ export default function GanttTimelineCanvas({ chartBodyRef, handleScroll, timeli
         const color = STATUS_COLOR[task.status] || STATUS_COLOR.TODO;
         const start = task.start_date ? new Date(task.start_date) : new Date(task.createdAt);
         const due = new Date(task.due_date);
-        return <div key={task.id} className="relative flex h-12 items-center border-b border-slate-100">
+        return <div key={task.id} className="relative flex h-12 items-center border-b border-slate-900/[0.05]">
             <button type="button" onClick={() => handleOpenEdit(task)} style={{ left: `${geometry.left}px`, width: `${Math.max(geometry.width, columnWidth)}px` }} className={`group absolute flex h-8 items-center overflow-hidden rounded-full px-3 text-left shadow-sm transition hover:-translate-y-px hover:shadow-md ${isCritical ? 'bg-rose-400 ring-2 ring-rose-200' : color.bar}`}>
                 <span style={{ width: color.percent }} className={`absolute inset-y-0 left-0 opacity-55 ${color.fill}`} />
                 <span className="relative z-10 flex w-full items-center justify-between gap-3 truncate text-xs font-semibold text-slate-700"><span className="truncate">{task.title}</span><span className="text-[10px] text-slate-600/80">{geometry.durationDays}d</span></span>
-                <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 hidden w-56 -translate-x-1/2 rounded-xl border border-slate-200 bg-white p-3 text-left shadow-xl group-hover:block"><span className="block text-xs font-bold text-slate-800">{task.title}</span><span className="mt-1 flex items-center gap-1 text-[10px] text-slate-500"><Clock className="size-3 text-violet-500" />{format(start, 'MMM d')} – {format(due, 'MMM d, yyyy')}</span>{onViewInCalendar && <span className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-violet-600"><CalendarIcon className="size-3" />Open in calendar</span>}</span>
+                <span className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 hidden w-56 -translate-x-1/2 rounded-2xl border border-slate-900/[0.07] bg-white p-3 text-left shadow-xl group-hover:block"><span className="block text-xs font-bold text-slate-800">{task.title}</span><span className="mt-1 flex items-center gap-1 text-[10px] text-slate-500"><Clock className="size-3 text-violet-500" />{format(start, 'MMM d')} – {format(due, 'MMM d, yyyy')}</span>{onViewInCalendar && <span className="mt-2 flex items-center gap-1 text-[10px] font-semibold text-violet-600"><CalendarIcon className="size-3" />Open in calendar</span>}</span>
             </button>
         </div>;
     };
@@ -33,10 +33,10 @@ export default function GanttTimelineCanvas({ chartBodyRef, handleScroll, timeli
         <div ref={chartBodyRef} onScroll={handleScroll} className="relative flex-1 overflow-auto bg-white">
             <div style={{ width: `${timelineDays.length * columnWidth}px` }} className="relative min-h-full">
                 <GanttMilestoneHeader timelineDays={timelineDays} columnWidth={columnWidth} milestones={milestones} selectedDate={selectedDate} onSelectDate={onSelectDate} />
-                <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[52px] z-0 flex">{timelineDays.map((day, index) => <div key={index} style={{ width: `${columnWidth}px` }} className={`h-full border-r ${day.getDay() === 0 || day.getDay() === 6 ? 'bg-slate-50/80 border-slate-100' : 'border-slate-100'}`} />)}</div>
-                {selectedIndex >= 0 && <div style={{ left: `${selectedIndex * columnWidth + columnWidth / 2}px` }} className="pointer-events-none absolute bottom-0 top-[52px] z-20 border-l-2 border-dashed border-blue-500" />}
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 top-[52px] z-0 flex">{timelineDays.map((day, index) => <div key={index} style={{ width: `${columnWidth}px` }} className={`h-full border-r ${day.getDay() === 0 || day.getDay() === 6 ? 'bg-slate-500/[0.05] border-slate-900/[0.05]' : 'border-slate-900/[0.05]'}`} />)}</div>
+                {selectedIndex >= 0 && <div style={{ left: `${selectedIndex * columnWidth + columnWidth / 2}px` }} className="pointer-events-none absolute bottom-0 top-[52px] z-20 border-l-2 border-dashed border-brand dark:border-lime" />}
                 <GanttDependencyLayer dependencyLines={dependencyLines} />
-                <div className="relative z-10">{groupByStatus ? statusGroups.map((group) => <div key={group.status}>{<div className="h-10 border-b border-slate-100 bg-slate-50/80" />}{expandedGroups[group.status] !== false && group.tasks.map(taskBar)}</div>) : filteredTasks.map(taskBar)}</div>
+                <div className="relative z-10">{groupByStatus ? statusGroups.map((group) => <div key={group.status}>{<div className="h-10 border-b border-slate-900/[0.05] bg-slate-500/[0.05]" />}{expandedGroups[group.status] !== false && group.tasks.map(taskBar)}</div>) : filteredTasks.map(taskBar)}</div>
             </div>
         </div>
     );

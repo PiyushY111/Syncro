@@ -5,7 +5,7 @@ import AnalyticsCharts from './AnalyticsCharts';
 
 const PRIORITY_COLORS = {
     LOW: "text-red-600 bg-red-200 dark:text-red-500 dark:bg-red-600",
-    MEDIUM: "text-blue-600 bg-blue-200 dark:text-blue-500 dark:bg-blue-600",
+    MEDIUM: "text-brand bg-blue-200 dark:text-blue-500 dark:bg-brand",
     HIGH: "text-emerald-600 bg-emerald-200 dark:text-emerald-500 dark:bg-emerald-600",
 };
 
@@ -48,7 +48,7 @@ export default function ProjectAnalytics({ project, tasks }) {
             <AnalyticsMetrics stats={stats} project={project} completionRate={completionRate} />
             <AnalyticsCharts statusData={statusData} typeData={typeData} />
 
-            <div className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-zinc-300 dark:border-zinc-800 rounded-lg p-6">
+            <div className="not-dark:bg-white dark:bg-gradient-to-br dark:from-zinc-800/70 dark:to-zinc-900/50 border border-slate-900/10 dark:border-white/[0.07] rounded-lg p-6">
                 <h2 className="text-zinc-900 dark:text-white mb-4 font-medium">Tasks by Priority</h2>
                 <div className="space-y-4">
                     {priorityData.map((p) => (
@@ -60,10 +60,10 @@ export default function ProjectAnalytics({ project, tasks }) {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-zinc-600 dark:text-zinc-400 text-sm">{p.value} tasks</span>
-                                    <span className="px-2 py-0.5 border border-zinc-400 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 text-xs rounded">{p.percentage}%</span>
+                                    <span className="px-2 py-0.5 border border-zinc-400 dark:border-white/10 text-zinc-600 dark:text-zinc-400 text-xs rounded">{p.percentage}%</span>
                                 </div>
                             </div>
-                            <div className="w-full bg-zinc-300 dark:bg-zinc-800 rounded-full h-1.5">
+                            <div className="w-full bg-zinc-300 dark:bg-white/[0.06] rounded-full h-1.5">
                                 <div className={`h-1.5 rounded-full ${PRIORITY_COLORS[p.name]}`} style={{ width: `${p.percentage}%` }} />
                             </div>
                         </div>

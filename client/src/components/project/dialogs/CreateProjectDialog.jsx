@@ -51,7 +51,7 @@ export default function CreateProjectDialog({ isDialogOpen, setIsDialogOpen }) {
                 <DialogHeader>
                     <DialogTitle className="text-xl font-bold">Create New Project</DialogTitle>
                     <DialogDescription>
-                        Set up a new project in <span className="font-semibold text-blue-600 dark:text-blue-400">{currentWorkspace?.name || 'Workspace'}</span>.
+                        Set up a new project in <span className="font-semibold text-brand dark:text-violet-300">{currentWorkspace?.name || 'Workspace'}</span>.
                     </DialogDescription>
                 </DialogHeader>
 
@@ -87,7 +87,7 @@ export default function CreateProjectDialog({ isDialogOpen, setIsDialogOpen }) {
                             <select 
                                 value={formData.status} 
                                 onChange={(e) => setFormData({ ...formData, status: e.target.value })} 
-                                className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-medium focus:ring-2 focus:ring-blue-500/30 outline-none"
+                                className="w-full h-9 px-3 rounded-lg border border-slate-900/[0.07] dark:border-white/[0.07] bg-white/70 dark:bg-white/[0.04] text-xs font-medium focus:ring-2 focus:ring-brand/25 outline-none"
                             >
                                 <option value="PLANNING">Planning</option>
                                 <option value="ACTIVE">Active</option>
@@ -101,7 +101,7 @@ export default function CreateProjectDialog({ isDialogOpen, setIsDialogOpen }) {
                             <select 
                                 value={formData.priority} 
                                 onChange={(e) => setFormData({ ...formData, priority: e.target.value })} 
-                                className="w-full h-9 px-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-xs font-medium focus:ring-2 focus:ring-blue-500/30 outline-none"
+                                className="w-full h-9 px-3 rounded-lg border border-slate-900/[0.07] dark:border-white/[0.07] bg-white/70 dark:bg-white/[0.04] text-xs font-medium focus:ring-2 focus:ring-brand/25 outline-none"
                             >
                                 <option value="LOW">Low Priority</option>
                                 <option value="MEDIUM">Medium Priority</option>
@@ -130,7 +130,7 @@ export default function CreateProjectDialog({ isDialogOpen, setIsDialogOpen }) {
                         <Button 
                             type="submit" 
                             disabled={isSubmitting || !currentWorkspace}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-medium"
+                            className="bg-brand hover:bg-brand-strong text-white font-medium"
                         >
                             {isSubmitting ? "Creating..." : "Create Project"}
                         </Button>

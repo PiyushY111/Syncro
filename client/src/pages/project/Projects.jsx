@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
+import PageHeader from '@/components/layout/PageHeader';
 
 export default function Projects() {
     const projects = useSelector(
@@ -40,25 +41,19 @@ export default function Projects() {
 
     return (
         <div className="space-y-8 max-w-7xl mx-auto pb-12 animate-fade-in">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-200/80 dark:border-zinc-800/80">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">
-                        Projects
-                    </h1>
-                    <p className="text-sm text-slate-500 dark:text-zinc-400 mt-1">
-                        Manage, organize, and monitor workspace initiatives and deliverables.
-                    </p>
-                </div>
-                <Button 
-                    onClick={() => setIsDialogOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-medium shadow-md shadow-blue-500/20 shrink-0 gap-2"
-                >
-                    <Plus className="h-4 w-4" />
-                    <span>New Project</span>
-                </Button>
-                <CreateProjectDialog isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
-            </div>
+            <PageHeader
+                icon={FolderOpen}
+                eyebrow={`${projects.length} project${projects.length === 1 ? '' : 's'} in this workspace`}
+                title="Projects"
+                description="Plan, organize and track every initiative in one place."
+                actions={
+                    <Button onClick={() => setIsDialogOpen(true)} className="gap-2">
+                        <Plus className="h-4 w-4" />
+                        <span>New project</span>
+                    </Button>
+                }
+            />
+            <CreateProjectDialog isDialogOpen={isDialogOpen} setIsDialogOpen={setIsDialogOpen} />
 
             {/* Search and Filters */}
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -67,7 +62,7 @@ export default function Projects() {
                     <Input 
                         onChange={(e) => setSearchTerm(e.target.value)} 
                         value={searchTerm} 
-                        className="pl-9 bg-white dark:bg-zinc-900 border-slate-200/80 dark:border-zinc-800" 
+                        className="pl-9 bg-white/60 dark:bg-white/[0.03] border-slate-900/[0.07] dark:border-white/[0.07]" 
                         placeholder="Search projects..." 
                     />
                 </div>
@@ -77,7 +72,7 @@ export default function Projects() {
                         <select 
                             value={filters.status} 
                             onChange={(e) => setFilters({ ...filters, status: e.target.value })} 
-                            className="h-9 px-3 py-1 rounded-lg border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 text-xs font-medium focus:ring-2 focus:ring-blue-500/30 outline-none shadow-2xs cursor-pointer" 
+                            className="h-9 px-3 py-1 rounded-lg border border-slate-900/[0.07] dark:border-white/[0.07] bg-white/70 dark:bg-white/[0.04] text-slate-800 dark:text-zinc-200 text-xs font-medium focus:ring-2 focus:ring-brand/25 outline-none shadow-2xs cursor-pointer" 
                         >
                             <option value="ALL">All Statuses</option>
                             <option value="ACTIVE">Active</option>
@@ -92,7 +87,7 @@ export default function Projects() {
                         <select 
                             value={filters.priority} 
                             onChange={(e) => setFilters({ ...filters, priority: e.target.value })} 
-                            className="h-9 px-3 py-1 rounded-lg border border-slate-200/80 dark:border-zinc-800 bg-white dark:bg-zinc-900 text-slate-800 dark:text-zinc-200 text-xs font-medium focus:ring-2 focus:ring-blue-500/30 outline-none shadow-2xs cursor-pointer" 
+                            className="h-9 px-3 py-1 rounded-lg border border-slate-900/[0.07] dark:border-white/[0.07] bg-white/70 dark:bg-white/[0.04] text-slate-800 dark:text-zinc-200 text-xs font-medium focus:ring-2 focus:ring-brand/25 outline-none shadow-2xs cursor-pointer" 
                         >
                             <option value="ALL">All Priorities</option>
                             <option value="HIGH">High Priority</option>
@@ -116,10 +111,10 @@ export default function Projects() {
 
             {/* Projects Grid */}
             {filteredProjects.length === 0 ? (
-                <Card className="border-dashed border-2 border-slate-200 dark:border-zinc-800">
+                <Card className="border-dashed border-2 border-slate-900/[0.07] dark:border-white/[0.07]">
                     <CardContent className="text-center py-16">
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-blue-50 dark:bg-zinc-800 flex items-center justify-center">
-                            <FolderOpen className="h-8 w-8 text-blue-600 dark:text-blue-400" />
+                        <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-brand-tint dark:bg-white/[0.06] flex items-center justify-center">
+                            <FolderOpen className="h-8 w-8 text-brand dark:text-violet-300" />
                         </div>
                         <h3 className="text-lg font-semibold text-slate-900 dark:text-zinc-100 mb-1">
                             No projects found
@@ -131,7 +126,7 @@ export default function Projects() {
                         </p>
                         <Button 
                             onClick={() => setIsDialogOpen(true)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                            className="bg-brand hover:bg-brand-strong text-white gap-2"
                         >
                             <Plus className="h-4 w-4" />
                             <span>Create Project</span>
