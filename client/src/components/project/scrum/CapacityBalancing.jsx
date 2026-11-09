@@ -34,9 +34,9 @@ export default function CapacityBalancing({ project, tasks, selectedSprint }) {
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col h-full lg:min-h-[500px]">
-            <h3 className="font-bold text-sm flex items-center gap-2 border-b border-zinc-250 dark:border-zinc-800 pb-3 mb-4">
-                <Users className="size-4 text-indigo-500" />
+        <div className="sx-glass p-5 rounded-2xl flex flex-col h-full lg:min-h-[500px]">
+            <h3 className="font-bold text-sm flex items-center gap-2 border-b border-slate-900/10 dark:border-white/[0.07] pb-3 mb-4">
+                <Users className="size-4 text-brand dark:text-violet-300" />
                 Sprint Capacity Balancing
             </h3>
 
@@ -60,14 +60,14 @@ export default function CapacityBalancing({ project, tasks, selectedSprint }) {
                             const isOver = allocatedPoints > capacity;
 
                             return (
-                                <div key={user.id} className="space-y-2 border-b border-zinc-100 dark:border-zinc-850 pb-3 last:border-b-0 last:pb-0">
+                                <div key={user.id} className="space-y-2 border-b border-slate-900/[0.05] dark:border-white/[0.07] pb-3 last:border-b-0 last:pb-0">
                                     <div className="flex justify-between items-center text-xs">
                                         <span className="font-semibold truncate max-w-[60%]">{user.name}</span>
                                         
                                         {editingCapacityUserId === user.id ? (
                                             <div className="flex items-center gap-1">
-                                                <input type="number" defaultValue={capacity} onChange={(e) => setTempCapacity(e.target.value)} className="w-12 bg-white dark:bg-zinc-950 border border-zinc-350 dark:border-zinc-750 rounded text-center text-xs p-0.5" />
-                                                <button onClick={() => handleUpdateCapacity(selectedSprint.id, user.id)} className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded cursor-pointer">Set</button>
+                                                <input type="number" defaultValue={capacity} onChange={(e) => setTempCapacity(e.target.value)} className="w-12 bg-white/60 dark:bg-white/[0.02] border border-zinc-350 dark:border-zinc-750 rounded text-center text-xs p-0.5" />
+                                                <button onClick={() => handleUpdateCapacity(selectedSprint.id, user.id)} className="text-[10px] bg-brand text-white px-1.5 py-0.5 rounded cursor-pointer">Set</button>
                                                 <button onClick={() => setEditingCapacityUserId(null)} className="text-[10px] text-zinc-400 hover:text-zinc-200 cursor-pointer">X</button>
                                             </div>
                                         ) : (
@@ -80,7 +80,7 @@ export default function CapacityBalancing({ project, tasks, selectedSprint }) {
                                         )}
                                     </div>
 
-                                    <div className="w-full bg-zinc-150 dark:bg-zinc-800 h-2 rounded-full overflow-hidden">
+                                    <div className="w-full bg-zinc-150 dark:bg-white/[0.06] h-2 rounded-full overflow-hidden">
                                         <div style={{ width: `${Math.min(ratio, 100)}%` }} className={`h-full rounded-full transition-all duration-300 ${isOver ? 'bg-red-500' : ratio > 80 ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                                     </div>
 

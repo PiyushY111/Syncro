@@ -28,7 +28,7 @@ export default function RetroCard({ item, sprintId, socket, user }) {
     };
 
     return (
-        <div className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-lg border border-zinc-200 dark:border-zinc-850 space-y-2 text-left relative group">
+        <div className="bg-slate-500/[0.05] dark:bg-white/[0.02] p-3 rounded-lg border border-slate-900/[0.07] dark:border-white/[0.07] space-y-2 text-left relative group">
             <p className="text-xs font-medium text-zinc-800 dark:text-zinc-200 pr-4">{item.content}</p>
             
             <div className="flex justify-between items-center text-[10px] text-zinc-400">
@@ -39,8 +39,8 @@ export default function RetroCard({ item, sprintId, socket, user }) {
                         onClick={handleToggleVote} 
                         className={`flex items-center gap-1 px-1.5 py-0.5 rounded cursor-pointer transition-all ${
                             hasVoted 
-                                ? 'bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold' 
-                                : 'hover:bg-zinc-200 dark:hover:bg-zinc-800 text-zinc-400'
+                                ? 'bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300 font-bold' 
+                                : 'hover:bg-zinc-200 dark:hover:bg-white/[0.07] text-zinc-400'
                         }`}
                     >
                         <ThumbsUp className="size-2.5" />

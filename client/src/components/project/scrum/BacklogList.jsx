@@ -19,10 +19,10 @@ export default function BacklogList({ backlogTasks, handleTaskSprintAssign, onDr
     };
 
     return (
-        <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleTaskSprintAssign(e.dataTransfer.getData('text/task-id'), null)} className="bg-white dark:bg-zinc-900/40 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 min-h-[500px] flex flex-col">
-            <div className="flex justify-between items-center pb-3 border-b border-zinc-150 dark:border-zinc-800 mb-4">
+        <div onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleTaskSprintAssign(e.dataTransfer.getData('text/task-id'), null)} className="sx-glass p-4 rounded-2xl min-h-[500px] flex flex-col">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-900/[0.05] dark:border-white/[0.07] mb-4">
                 <h3 className="font-bold text-sm">Product Backlog ({backlogTasks.length})</h3>
-                <span className="text-[10px] bg-zinc-100 dark:bg-zinc-800 text-zinc-650 px-2 py-0.5 rounded font-bold">{backlogTasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0)} Total SP</span>
+                <span className="text-[10px] bg-slate-500/[0.08] dark:bg-white/[0.06] text-zinc-650 px-2 py-0.5 rounded font-bold">{backlogTasks.reduce((sum, t) => sum + (t.storyPoints || 0), 0)} Total SP</span>
             </div>
 
             <div className="flex-1 overflow-y-auto space-y-3 max-h-[460px] pr-1">
@@ -30,10 +30,10 @@ export default function BacklogList({ backlogTasks, handleTaskSprintAssign, onDr
                     <p className="text-xs text-zinc-400 text-center mt-20">Backlog is empty. Create tasks or drag them back here.</p>
                 ) : (
                     backlogTasks.map(task => (
-                        <div key={task.id} draggable onDragStart={(e) => onDragStart(e, task.id)} className="bg-zinc-50 dark:bg-zinc-950 p-3 rounded-lg border border-zinc-200 dark:border-zinc-850 cursor-grab hover:shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all text-left">
+                        <div key={task.id} draggable onDragStart={(e) => onDragStart(e, task.id)} className="bg-slate-500/[0.05] dark:bg-white/[0.02] p-3 rounded-lg border border-slate-900/[0.07] dark:border-white/[0.07] cursor-grab hover:shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all text-left">
                             <p className="text-xs font-semibold">{task.title}</p>
                             {task.description && <p className="text-[10px] text-zinc-450 dark:text-zinc-500 line-clamp-1 mt-1">{task.description}</p>}
-                            <div className="flex justify-between items-center mt-3 pt-2 border-t border-zinc-100 dark:border-zinc-855">
+                            <div className="flex justify-between items-center mt-3 pt-2 border-t border-slate-900/[0.05] dark:border-zinc-855">
                                 <div className="flex items-center gap-1.5">
                                     {task.assignee ? (
                                         <span className="text-[9px] text-zinc-500 font-medium flex items-center gap-1">
@@ -46,7 +46,7 @@ export default function BacklogList({ backlogTasks, handleTaskSprintAssign, onDr
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <span className="text-[10px] text-zinc-400">Points:</span>
-                                    <select value={task.storyPoints || ''} onChange={(e) => handleTaskEstimation(task.id, e.target.value)} className="text-[10px] bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded px-1.5 py-0.5 outline-none cursor-pointer font-bold">
+                                    <select value={task.storyPoints || ''} onChange={(e) => handleTaskEstimation(task.id, e.target.value)} className="text-[10px] bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] rounded px-1.5 py-0.5 outline-none cursor-pointer font-bold">
                                         <option value="">-</option>
                                         {[1, 2, 3, 5, 8, 13, 21].map(v => (
                                             <option key={v} value={v}>{v}</option>

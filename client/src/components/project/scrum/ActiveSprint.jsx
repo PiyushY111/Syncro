@@ -65,7 +65,7 @@ export default function ActiveSprint({ project, tasks, navigate }) {
 
     if (!activeSprint) {
         return (
-            <div className="bg-white dark:bg-zinc-900/40 border border-zinc-200 dark:border-zinc-800 rounded-xl p-16 text-center text-zinc-500 max-w-4xl mx-auto mt-10">
+            <div className="sx-glass rounded-2xl p-16 text-center text-zinc-500 max-w-4xl mx-auto mt-10">
                 <Kanban className="size-12 mx-auto text-zinc-300 dark:text-zinc-700 mb-4 animate-pulse" />
                 <h3 className="text-lg font-bold text-zinc-750 dark:text-zinc-250">No Active Sprint</h3>
                 <p className="text-sm text-zinc-400 mt-2 max-w-md mx-auto">There is no active sprint running for this project. Go to the <strong>Backlog & Planning</strong> tab to initialize and start a sprint.</p>
@@ -80,13 +80,13 @@ export default function ActiveSprint({ project, tasks, navigate }) {
     const columns = stages.map(stageId => ({
         id: stageId,
         title: stageId.replace(/_/g, " "),
-        border: stageId === "TODO" ? "border-zinc-200 dark:border-zinc-800" : stageId === "IN_PROGRESS" ? "border-blue-200 dark:border-blue-950" : stageId === "DONE" ? "border-emerald-200 dark:border-emerald-950" : "border-purple-200 dark:border-purple-950"
+        border: stageId === "TODO" ? "border-slate-900/[0.07] dark:border-white/[0.07]" : stageId === "IN_PROGRESS" ? "border-brand/25 dark:border-blue-950" : stageId === "DONE" ? "border-emerald-200 dark:border-emerald-950" : "border-brand/25 dark:border-purple-950"
     }));
 
     return (
         <div className="space-y-6 text-zinc-900 dark:text-white text-left">
             {/* Active Sprint Header Banner */}
-            <div className="bg-white dark:bg-zinc-900/60 p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="sx-glass p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div className="space-y-1.5 flex-1">
                     <div className="flex items-center gap-2">
                         <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
@@ -108,7 +108,7 @@ export default function ActiveSprint({ project, tasks, navigate }) {
                 
                 <div className="flex items-center gap-3">
                     {/* Completion bar */}
-                    <div className="w-32 bg-zinc-200 dark:bg-zinc-800 h-2 rounded-full overflow-hidden hidden sm:block">
+                    <div className="w-32 bg-zinc-200 dark:bg-white/[0.06] h-2 rounded-full overflow-hidden hidden sm:block">
                         <div style={{ width: `${percent}%` }} className="h-full bg-emerald-500 rounded-full" />
                     </div>
                     <button onClick={handleCompleteSprint} className="flex items-center gap-1.5 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-semibold cursor-pointer">
