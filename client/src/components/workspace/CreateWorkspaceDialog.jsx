@@ -120,7 +120,7 @@ const CreateWorkspaceDialog = ({ isDialogOpen, setIsDialogOpen }) => {
                         <Button
                             type="submit"
                             disabled={isSubmitting}
-                            className="bg-blue-600 hover:bg-blue-700 text-white gap-2"
+                            className="bg-brand hover:bg-brand-strong text-white gap-2"
                         >
                             <Plus className="h-4 w-4" />
                             {isSubmitting ? 'Creating...' : 'Create Workspace'}

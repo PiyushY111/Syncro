@@ -6,25 +6,28 @@ import WorkspaceSettingsForm from '@/components/settings/WorkspaceSettingsForm';
 import WorkspaceDeleteModal from '@/components/settings/WorkspaceDeleteModal';
 import WorkspaceRequestsTab from '@/components/settings/WorkspaceRequestsTab';
 import useSettings from '@/hooks/useSettings';
+import PageHeader from '@/components/layout/PageHeader';
 
 export default function SettingsPage() {
     const settings = useSettings();
 
     return (
-        <div className="space-y-6 max-w-4xl mx-auto">
-            {/* Header */}
-            <div className="text-left">
-                <h1 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-1">Settings</h1>
-                <p className="text-gray-500 dark:text-zinc-400 text-sm">Manage your profile account settings, workspace requests, and configurations.</p>
-            </div>
+        <div className="space-y-8 max-w-4xl mx-auto pb-12">
+            <PageHeader
+                icon={Settings2}
+                tone="amber"
+                eyebrow="Account & workspace"
+                title="Settings"
+                description="Your profile, security, workspace requests and configuration."
+            />
 
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 dark:border-zinc-800 gap-4 text-left overflow-x-auto">
+            <div className="flex border-b border-slate-900/[0.07] dark:border-white/[0.07] gap-4 text-left overflow-x-auto">
                 <button
                     onClick={() => settings.setActiveTab('profile')}
                     className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                         settings.activeTab === 'profile'
-                            ? 'border-blue-500 text-blue-600 dark:text-blue-400 font-semibold'
+                            ? 'border-brand dark:border-lime text-brand dark:text-violet-300 font-semibold'
                             : 'border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200'
                     }`}
                 >
@@ -35,7 +38,7 @@ export default function SettingsPage() {
                     onClick={() => settings.setActiveTab('requests')}
                     className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                         settings.activeTab === 'requests'
-                            ? 'border-blue-500 text-blue-600 dark:text-blue-400 font-semibold'
+                            ? 'border-brand dark:border-lime text-brand dark:text-violet-300 font-semibold'
                             : 'border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200'
                     }`}
                 >
@@ -47,7 +50,7 @@ export default function SettingsPage() {
                         onClick={() => settings.setActiveTab('workspace')}
                         className={`flex items-center gap-2 pb-3 px-1 text-sm font-medium border-b-2 transition-all cursor-pointer whitespace-nowrap ${
                             settings.activeTab === 'workspace'
-                                ? 'border-blue-500 text-blue-600 dark:text-blue-400 font-semibold'
+                                ? 'border-brand dark:border-lime text-brand dark:text-violet-300 font-semibold'
                                 : 'border-transparent text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-200'
                     }`}
                     >
@@ -58,10 +61,10 @@ export default function SettingsPage() {
             </div>
 
             {/* Content Area */}
-            <div className="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl p-6 shadow-sm">
+            <div className="sx-glass rounded-2xl p-6">
                 {/* PROFILE TAB */}
                 {settings.activeTab === 'profile' && (
-                    <div className="space-y-8 divide-y divide-gray-200 dark:divide-zinc-800">
+                    <div className="space-y-8 divide-y divide-slate-900/[0.06] dark:divide-white/[0.06]">
                         <ProfileSettingsForm
                             profileName={settings.profileName}
                             setProfileName={settings.setProfileName}

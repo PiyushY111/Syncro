@@ -129,25 +129,25 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                 <div className="flex justify-between items-center">
                     <h2 className="text-sm font-semibold text-zinc-900 dark:text-white uppercase tracking-wider">Sub-Teams</h2>
                     {canManage && (
-                        <button onClick={() => setIsCreateOpen(!isCreateOpen)} className="p-1 rounded bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:opacity-80 transition cursor-pointer">
+                        <button onClick={() => setIsCreateOpen(!isCreateOpen)} className="p-1 rounded bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300 hover:opacity-80 transition cursor-pointer">
                             <Plus className="size-4" />
                         </button>
                     )}
                 </div>
 
                 {isCreateOpen && (
-                    <form onSubmit={handleCreateSubTeam} className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 shadow-sm space-y-3 animate-stiff-pop">
+                    <form onSubmit={handleCreateSubTeam} className="sx-glass p-4 rounded-2xl space-y-3 animate-stiff-pop">
                         <div>
                             <label className="block text-xs font-medium text-zinc-500 mb-1">Sub-Team Name</label>
-                            <input required type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Frontend Engineers" className="w-full text-sm rounded border border-zinc-300 dark:border-zinc-800 px-3 py-1.5 focus:outline-none focus:border-blue-500 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white" />
+                            <input required type="text" value={name} onChange={e => setName(e.target.value)} placeholder="e.g. Frontend Engineers" className="w-full text-sm rounded-xl border border-slate-900/10 dark:border-white/[0.07] px-3 py-1.5 focus:outline-none focus:border-brand bg-white/70 dark:bg-white/[0.04] text-zinc-900 dark:text-white" />
                         </div>
                         <div>
                             <label className="block text-xs font-medium text-zinc-500 mb-1">Description (Optional)</label>
-                            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this sub-team work on?" className="w-full text-sm rounded border border-zinc-300 dark:border-zinc-800 px-3 py-1.5 focus:outline-none focus:border-blue-500 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white h-16 resize-none" />
+                            <textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="What does this sub-team work on?" className="w-full text-sm rounded-xl border border-slate-900/10 dark:border-white/[0.07] px-3 py-1.5 focus:outline-none focus:border-brand bg-white/70 dark:bg-white/[0.04] text-zinc-900 dark:text-white h-16 resize-none" />
                         </div>
                         <div className="flex justify-end gap-2 text-xs pt-1">
-                            <button type="button" onClick={() => setIsCreateOpen(false)} className="px-3 py-1.5 rounded border border-zinc-300 text-zinc-600 hover:bg-zinc-50 cursor-pointer">Cancel</button>
-                            <button type="submit" className="px-3 py-1.5 rounded bg-blue-600 text-white hover:opacity-90 cursor-pointer font-medium">Create</button>
+                            <button type="button" onClick={() => setIsCreateOpen(false)} className="px-3 py-1.5 rounded border border-slate-900/10 text-zinc-600 hover:bg-slate-500/[0.06] cursor-pointer">Cancel</button>
+                            <button type="submit" className="px-3 py-1.5 rounded bg-brand text-white hover:opacity-90 cursor-pointer font-medium">Create</button>
                         </div>
                     </form>
                 )}
@@ -155,7 +155,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                 {loading ? (
                     <p className="text-sm text-zinc-500">Loading sub-teams...</p>
                 ) : subTeams.length === 0 ? (
-                    <div className="bg-zinc-50/50 dark:bg-zinc-900/30 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl p-6 text-center">
+                    <div className="bg-slate-500/[0.05] dark:bg-white/[0.03] border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-xl p-6 text-center">
                         <Users className="size-8 mx-auto text-zinc-400 mb-2" />
                         <p className="text-xs text-zinc-500">No sub-teams created yet</p>
                     </div>
@@ -164,14 +164,14 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                         {subTeams.map(team => (
                             <div key={team.id} onClick={() => setActiveSubTeam(team)} className={`p-4 rounded-xl border cursor-pointer transition-stiff flex items-center justify-between ${
                                 activeSubTeam?.id === team.id 
-                                    ? 'bg-blue-50/80 dark:bg-blue-900/10 border-blue-500/50' 
-                                    : 'bg-white dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300'
+                                    ? 'bg-blue-50/80 dark:bg-brand/15 border-blue-500/50' 
+                                    : 'bg-white dark:bg-white/[0.03] border-slate-900/[0.07] dark:border-white/[0.07] hover:border-zinc-300'
                             }`}>
                                 <div className="min-w-0">
                                     <h3 className="text-sm font-semibold text-zinc-900 dark:text-white truncate">{team.name}</h3>
                                     <p className="text-xs text-zinc-500 truncate mt-0.5">{team.members?.length || 0} members</p>
                                     {team.project && (
-                                        <div className="flex items-center gap-1 mt-1 text-[11px] text-blue-600 dark:text-blue-400 font-medium">
+                                        <div className="flex items-center gap-1 mt-1 text-[11px] text-brand dark:text-violet-300 font-medium">
                                             <Folder className="size-3" />
                                             <span className="truncate">{team.project.name}</span>
                                         </div>
@@ -187,7 +187,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
             {/* Active Sub-Team Detail View */}
             <div className="lg:col-span-2">
                 {activeSubTeam ? (
-                    <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl p-6 space-y-6 shadow-sm min-h-[400px] animate-stiff-pop">
+                    <div className="sx-glass rounded-2xl p-6 space-y-6 min-h-[400px] animate-stiff-pop">
                         <div className="flex justify-between items-start gap-4">
                             <div>
                                 <h2 className="text-lg font-bold text-zinc-900 dark:text-white">{activeSubTeam.name}</h2>
@@ -200,14 +200,14 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                             )}
                         </div>
 
-                        <hr className="border-zinc-200 dark:border-zinc-800" />
+                        <hr className="border-slate-900/[0.07] dark:border-white/[0.07]" />
 
                         {/* Project Assignment Section */}
                         <div className="space-y-2">
                             <h4 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Assigned Project</h4>
                             {canManage ? (
                                 <div className="flex items-center gap-2 max-w-md">
-                                    <select value={activeSubTeam.projectId || ''} onChange={e => handleProjectAssign(activeSubTeam.id, e.target.value)} className="w-full text-sm rounded border border-zinc-300 dark:border-zinc-800 px-3 py-1.5 focus:outline-none focus:border-blue-500 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
+                                    <select value={activeSubTeam.projectId || ''} onChange={e => handleProjectAssign(activeSubTeam.id, e.target.value)} className="w-full text-sm rounded-xl border border-slate-900/10 dark:border-white/[0.07] px-3 py-1.5 focus:outline-none focus:border-brand bg-white/70 dark:bg-white/[0.04] text-zinc-900 dark:text-white">
                                         <option value="">No Project Assigned (Public Access)</option>
                                         {currentWorkspace?.projects?.map(p => (
                                             <option key={p.id} value={p.id}>{p.name}</option>
@@ -224,7 +224,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                             </p>
                         </div>
 
-                        <hr className="border-zinc-200 dark:border-zinc-800" />
+                        <hr className="border-slate-900/[0.07] dark:border-white/[0.07]" />
 
                         {/* Sub-Team Members list */}
                         <div className="space-y-4">
@@ -235,13 +235,13 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                             {/* Add member box */}
                             {canManage && availableMembers.length > 0 && (
                                 <div className="flex items-center gap-2 max-w-md">
-                                    <select value={addingMemberId} onChange={e => setAddingMemberId(e.target.value)} className="w-full text-sm rounded border border-zinc-300 dark:border-zinc-800 px-3 py-1.5 focus:outline-none focus:border-blue-500 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-white">
+                                    <select value={addingMemberId} onChange={e => setAddingMemberId(e.target.value)} className="w-full text-sm rounded-xl border border-slate-900/10 dark:border-white/[0.07] px-3 py-1.5 focus:outline-none focus:border-brand bg-white/70 dark:bg-white/[0.04] text-zinc-900 dark:text-white">
                                         <option value="">Select workspace member...</option>
                                         {availableMembers.map(m => (
                                             <option key={m.userId} value={m.userId}>{m.user?.name} ({m.user?.email})</option>
                                         ))}
                                     </select>
-                                    <button onClick={() => handleAddMember(activeSubTeam.id)} className="flex items-center justify-center p-2 rounded bg-blue-600 hover:bg-blue-700 text-white cursor-pointer transition shrink-0" title="Add Member">
+                                    <button onClick={() => handleAddMember(activeSubTeam.id)} className="flex items-center justify-center p-2 rounded bg-brand hover:bg-brand-strong text-white cursor-pointer transition shrink-0" title="Add Member">
                                         <UserPlus className="size-4" />
                                     </button>
                                 </div>
@@ -250,9 +250,9 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                             {activeSubTeam.members?.length === 0 ? (
                                 <p className="text-xs text-zinc-500 py-2">No members in this sub-team yet.</p>
                             ) : (
-                                <div className="divide-y divide-zinc-100 dark:divide-zinc-800 border border-zinc-100 dark:border-zinc-850 rounded-xl overflow-hidden">
+                                <div className="divide-y divide-slate-900/[0.06] dark:divide-white/[0.06] border border-slate-900/[0.05] dark:border-white/[0.07] rounded-xl overflow-hidden">
                                     {activeSubTeam.members.map(member => (
-                                        <div key={member.id} className="flex items-center justify-between p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900/50 transition">
+                                        <div key={member.id} className="flex items-center justify-between p-3 hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.04] transition">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-700 flex items-center justify-center font-bold text-xs text-zinc-600 dark:text-zinc-300 uppercase overflow-hidden">
                                                     {member.user?.image ? (
@@ -278,7 +278,7 @@ export default function SubTeamsTab({ currentWorkspace, currentUserRole }) {
                         </div>
                     </div>
                 ) : (
-                    <div className="bg-zinc-50/50 dark:bg-zinc-900/20 border border-dashed border-zinc-200 dark:border-zinc-800 rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
+                    <div className="bg-slate-500/[0.05] dark:bg-white/[0.03] border border-dashed border-slate-900/[0.07] dark:border-white/[0.07] rounded-2xl p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
                         <Users className="size-12 text-zinc-400 mb-3" />
                         <h3 className="text-sm font-semibold text-zinc-900 dark:text-white">No Sub-Team Selected</h3>
                         <p className="text-xs text-zinc-500 mt-1 max-w-sm">Select a sub-team from the sidebar to view members, project assignments, or modify configuration details.</p>
