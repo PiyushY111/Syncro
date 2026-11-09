@@ -8,6 +8,7 @@ export default defineConfig({
       'tests/auth.test.js',
       'tests/chat.test.js',
       'tests/comment.test.js',
+      'tests/dbResilience.test.js',
       'tests/epic.test.js',
       'tests/inbox.test.js',
       'tests/permissions.test.js',

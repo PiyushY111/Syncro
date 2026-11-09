@@ -9,6 +9,7 @@ import logger from './src/utils/logger/logger.js'
 import { app } from './src/app.js'
 import { initSocketIO } from './src/socket/socketInit.js'
 import { basePrisma } from './src/config/prisma.js'
+import { resolveKeepWarmInterval, startDbKeepWarm } from './src/config/dbResilience.js'
 
 if (!process.env.JWT_SECRET) {
     logger.error("FATAL ERROR: JWT_SECRET environment variable is missing!");
@@ -28,8 +29,15 @@ const PORT = process.env.PORT || 5000;
 const httpServer = http.createServer(app);
 initSocketIO(httpServer);
 
+let stopDbKeepWarm = () => {};
+
 httpServer.listen(PORT, () => {
     logger.info(`Server and Socket.IO engine running on http://localhost:${PORT}`, { port: PORT });
+
+    // Stops Neon from suspending the compute between requests (see src/config/dbResilience.js).
+    const keepWarmMs = resolveKeepWarmInterval();
+    stopDbKeepWarm = startDbKeepWarm({ ping: () => basePrisma.$queryRaw`SELECT 1`, intervalMs: keepWarmMs, logger });
+    if (keepWarmMs) logger.info(`[DB KEEP-WARM] Pinging the database every ${Math.round(keepWarmMs / 1000)}s`, { intervalMs: keepWarmMs });
     
     // Render & Cloud Free Tier Keep-Alive Self-Ping Service
     const keepAliveUrl = process.env.RENDER_EXTERNAL_URL || process.env.SERVER_URL || process.env.BACKEND_URL;
@@ -51,6 +59,7 @@ httpServer.listen(PORT, () => {
 // Graceful Shutdown Handler for Zero-Downtime Connection Cleanup
 const gracefulShutdown = async (signal) => {
     logger.info(`[SERVER SHUTDOWN] Received ${signal}. Draining in-flight HTTP requests & database connections cleanly...`, { signal });
+    stopDbKeepWarm();
     httpServer.close(async () => {
         logger.info('[SERVER SHUTDOWN] HTTP server stopped accepting new connections.');
         try {

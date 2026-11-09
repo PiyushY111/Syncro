@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { PrismaClient } from '@prisma/client'
 import { encryptField, decryptField } from '../utils/crypto.js'
 import logger from '../utils/logger/logger.js'
+import { withReadRetry, RETRYABLE_READ_OPERATIONS } from './dbResilience.js'
 
 const rawConnectionString = process.env.DATABASE_URL
 if (!rawConnectionString) {
@@ -18,6 +19,10 @@ if (!/connection_limit=\d+/.test(connectionString)) {
 if (!/pool_timeout=\d+/.test(connectionString)) {
   const timeout = process.env.PRISMA_POOL_TIMEOUT || '15'
   paramsToAdd.push(`pool_timeout=${timeout}`)
+}
+// Neon cold starts can take a few seconds; the 5s default makes the first request after idle fail.
+if (!/connect_timeout=\d+/.test(connectionString)) {
+  paramsToAdd.push(`connect_timeout=${process.env.PRISMA_CONNECT_TIMEOUT || '15'}`)
 }
 if (!/pgbouncer=true/.test(connectionString) && connectionString.includes('-pooler')) {
   paramsToAdd.push('pgbouncer=true')
@@ -91,6 +96,14 @@ const encryptModelData = (model, data) => {
   return copy
 }
 
+// Reads that hit a connection Neon just dropped (compute suspend, E57P01) are retried once.
+const runQuery = (operation, query, args) =>
+  RETRYABLE_READ_OPERATIONS.has(operation)
+    ? withReadRetry(() => query(args), {
+        onRetry: (err) => logger.warn('[DB RECONNECT] Retrying read after dropped connection', { operation, error: err.message }),
+      })
+    : query(args)
+
 // Enhanced Enterprise Prisma Client with Extensions ($extends)
 export const prisma = basePrisma.$extends({
   name: 'EnterpriseDatabaseExtensions',
@@ -115,7 +128,7 @@ export const prisma = basePrisma.$extends({
             if (where.deletedAt === undefined) {
               where.deletedAt = null
             }
-            const result = await query({ ...args, where })
+            const result = await runQuery(operation, query, { ...args, where })
             const duration = performance.now() - start
             if (duration >= SLOW_QUERY_THRESHOLD_MS) {
               logger.warn(
@@ -178,7 +191,7 @@ export const prisma = basePrisma.$extends({
         }
 
         // 3. Execute query
-        const result = await query(args)
+        const result = await runQuery(operation, query, args)
         const duration = performance.now() - start
 
         // 4. Telemetry & Slow Query Diagnostics
