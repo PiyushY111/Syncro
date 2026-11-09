@@ -26,11 +26,11 @@ export default function EventDetailModal({
 
     return (
         <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
-            <div className="bg-white dark:bg-zinc-900 rounded-2xl border border-zinc-200 dark:border-zinc-800 p-6 max-w-lg w-full shadow-2xl space-y-5 animate-in zoom-in-95">
+            <div className="bg-white dark:bg-[#14161f] rounded-2xl border border-slate-900/[0.07] dark:border-white/[0.07] p-6 max-w-lg w-full shadow-2xl space-y-5 animate-in zoom-in-95">
                 {/* Header */}
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
-                        <div className={`p-2.5 rounded-xl ${selectedEvent.type === 'meeting' ? 'bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400' : 'bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400'}`}>
+                        <div className={`p-2.5 rounded-xl ${selectedEvent.type === 'meeting' ? 'bg-brand/10 text-brand dark:bg-brand/15 dark:text-violet-300' : 'bg-brand/10 text-brand dark:bg-brand/15 dark:text-violet-300'}`}>
                             {selectedEvent.type === 'meeting' ? <Video className="size-5" /> : <Calendar className="size-5" />}
                         </div>
                         <div>
@@ -44,7 +44,7 @@ export default function EventDetailModal({
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                        className="p-1 rounded-lg text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                     >
                         <X className="size-5" />
                     </button>
@@ -85,7 +85,7 @@ export default function EventDetailModal({
                                         href={selectedEvent.originalItem.meetingLink}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1.5 mt-0.5"
+                                        className="text-xs text-brand dark:text-violet-300 hover:underline flex items-center gap-1.5 mt-0.5"
                                     >
                                         Join Meeting Link
                                         <ChevronRight className="size-3" />
@@ -97,7 +97,7 @@ export default function EventDetailModal({
 
                     {/* Agenda */}
                     {selectedEvent.originalItem?.agenda && (
-                        <div className="p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-100 dark:border-zinc-850 rounded-xl">
+                        <div className="p-3 bg-slate-500/[0.05] dark:bg-white/[0.02] border border-slate-900/[0.05] dark:border-white/[0.07] rounded-xl">
                             <h4 className="text-xs font-bold text-zinc-500 uppercase tracking-wider mb-1">
                                 Meeting Agenda
                             </h4>
@@ -121,7 +121,7 @@ export default function EventDetailModal({
 
                     {/* Guests List (for Meetings) */}
                     {selectedEvent.type === 'meeting' && (
-                        <div className="border-t border-zinc-150 dark:border-zinc-800/80 pt-4">
+                        <div className="border-t border-slate-900/[0.05] dark:border-white/[0.07] pt-4">
                             <div className="flex items-center gap-1 text-xs font-bold text-zinc-500 uppercase tracking-wider mb-3">
                                 <Users className="size-3.5" />
                                 Guests RSVP list ({selectedEvent.originalItem.invites?.length || 0})
@@ -130,7 +130,7 @@ export default function EventDetailModal({
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-36 overflow-y-auto pr-1">
                                 {selectedEvent.originalItem.invites?.map((inv) => {
                                     const invitee = inv.user;
-                                    let statusColor = "text-zinc-500 bg-zinc-100 dark:bg-zinc-800";
+                                    let statusColor = "text-zinc-500 bg-slate-500/[0.08] dark:bg-white/[0.06]";
 
                                     if (inv.status === 'ACCEPTED') {
                                         statusColor = "text-emerald-700 bg-emerald-50 dark:text-emerald-400 dark:bg-emerald-950/20";
@@ -141,12 +141,12 @@ export default function EventDetailModal({
                                     }
 
                                     return (
-                                        <div key={inv.id} className="flex items-center justify-between p-1.5 border border-zinc-100 dark:border-zinc-850 rounded-lg">
+                                        <div key={inv.id} className="flex items-center justify-between p-1.5 border border-slate-900/[0.05] dark:border-white/[0.07] rounded-lg">
                                             <div className="flex items-center gap-2 min-w-0">
                                                 <img
                                                     src={invitee?.image || `https://api.dicebear.com/7.x/initials/svg?seed=${invitee?.name || 'User'}`}
                                                     alt={invitee?.name}
-                                                    className="size-6 rounded-full border border-zinc-200"
+                                                    className="size-6 rounded-full border border-slate-900/[0.07]"
                                                 />
                                                 <span className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 truncate">
                                                     {invitee?.name}
@@ -161,13 +161,13 @@ export default function EventDetailModal({
                             </div>
 
                             {/* Action - RSVP Options for current user */}
-                            <div className="mt-5 p-3 bg-zinc-50 dark:bg-zinc-950 border border-zinc-150 dark:border-zinc-850 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="mt-5 p-3 bg-slate-500/[0.05] dark:bg-white/[0.02] border border-slate-900/[0.05] dark:border-white/[0.07] rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                                 <div>
                                     <p className="text-xs font-bold text-zinc-500 uppercase tracking-wider">
                                         Your RSVP Status
                                     </p>
                                     <p className="text-xs font-semibold text-zinc-800 dark:text-zinc-200 mt-0.5">
-                                        Currently: <span className="font-bold text-blue-600 dark:text-blue-400">{currentUserRsvp}</span>
+                                        Currently: <span className="font-bold text-brand dark:text-violet-300">{currentUserRsvp}</span>
                                     </p>
                                 </div>
 
@@ -177,7 +177,7 @@ export default function EventDetailModal({
                                         className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
                                             currentUserRsvp === 'ACCEPTED'
                                                 ? 'bg-emerald-600 text-white shadow-2xs'
-                                                : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                                                : 'bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07] text-zinc-700 dark:text-zinc-300'
                                         }`}
                                     >
                                         Accept
@@ -187,7 +187,7 @@ export default function EventDetailModal({
                                         className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
                                             currentUserRsvp === 'TENTATIVE'
                                                 ? 'bg-amber-600 text-white shadow-2xs'
-                                                : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                                                : 'bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07] text-zinc-700 dark:text-zinc-300'
                                         }`}
                                     >
                                         Maybe
@@ -197,7 +197,7 @@ export default function EventDetailModal({
                                         className={`px-3 py-1.5 text-xs font-bold rounded-lg transition cursor-pointer ${
                                             currentUserRsvp === 'DECLINED'
                                                 ? 'bg-red-600 text-white shadow-2xs'
-                                                : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                                                : 'bg-white/70 dark:bg-white/[0.04] border border-slate-900/[0.07] dark:border-white/[0.07] hover:bg-slate-500/[0.06] dark:hover:bg-white/[0.07] text-zinc-700 dark:text-zinc-300'
                                         }`}
                                     >
                                         Decline
@@ -209,7 +209,7 @@ export default function EventDetailModal({
                 </div>
 
                 {/* Footer / Cancel buttons */}
-                <div className="flex items-center justify-between border-t border-zinc-150 dark:border-zinc-850/80 pt-4 mt-6">
+                <div className="flex items-center justify-between border-t border-slate-900/[0.05] dark:border-white/[0.07] pt-4 mt-6">
                     {selectedEvent.type === 'meeting' && selectedEvent.originalItem?.creatorId === currentUser?.id ? (
                         <button
                             onClick={() => onDeleteMeeting(selectedEvent.id)}
@@ -224,7 +224,7 @@ export default function EventDetailModal({
 
                     <button
                         onClick={onClose}
-                        className="px-4 py-2 text-xs font-bold rounded-lg border border-zinc-250 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
+                        className="px-4 py-2 text-xs font-bold rounded-lg border border-slate-900/10 dark:border-white/[0.07] hover:bg-slate-500/[0.06] dark:hover:bg-zinc-850 text-zinc-700 dark:text-zinc-300 transition cursor-pointer"
                     >
                         Close
                     </button>

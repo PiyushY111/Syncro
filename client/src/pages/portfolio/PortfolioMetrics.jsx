@@ -9,14 +9,14 @@ export default function PortfolioMetrics({ portfolio }) {
             value: projectCount || 0,
             sub: 'Active initiatives',
             icon: Layers,
-            color: 'text-indigo-500 bg-indigo-500/10'
+            color: 'text-brand dark:text-violet-300 bg-brand/10'
         },
         {
             title: 'Task Progress',
             value: `${taskProgress || 0}%`,
             sub: `${completedTasks || 0} of ${totalTasks || 0} tasks done`,
             icon: Activity,
-            color: 'text-blue-500 bg-blue-500/10'
+            color: 'text-brand dark:text-violet-300 bg-brand/10'
         },
         {
             title: 'Milestone Health',
@@ -30,7 +30,7 @@ export default function PortfolioMetrics({ portfolio }) {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {cards.map((c, i) => (
-                <div key={i} className="p-4 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 flex items-center gap-4">
+                <div key={i} className="sx-glass p-4 rounded-2xl flex items-center gap-4">
                     <div className={`p-3 rounded-xl ${c.color}`}>
                         <c.icon className="size-5" />
                     </div>

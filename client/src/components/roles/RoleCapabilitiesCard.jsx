@@ -2,8 +2,8 @@ import { ShieldCheck, Layers, FileCheck } from 'lucide-react';
 
 export default function RoleCapabilitiesCard({ roleMatrix }) {
     const roles = [
-        { name: 'ADMIN', color: 'border-purple-500/20 bg-purple-500/5 text-purple-600 dark:text-purple-400' },
-        { name: 'MANAGER', color: 'border-blue-500/20 bg-blue-500/5 text-blue-600 dark:text-blue-400' },
+        { name: 'ADMIN', color: 'border-purple-500/20 bg-purple-500/5 text-brand dark:text-violet-300' },
+        { name: 'MANAGER', color: 'border-blue-500/20 bg-blue-500/5 text-brand dark:text-violet-300' },
         { name: 'MEMBER', color: 'border-emerald-500/20 bg-emerald-500/5 text-emerald-600 dark:text-emerald-400' },
         { name: 'VIEWER', color: 'border-zinc-500/20 bg-zinc-500/5 text-zinc-600 dark:text-zinc-400' }
     ];

@@ -16,7 +16,7 @@ const priorityBorders = {
 };
 
 const priorityBadges = {
-    LOW: "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+    LOW: "bg-slate-500/[0.08] text-zinc-700 dark:bg-white/[0.06] dark:text-zinc-300",
     MEDIUM: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300",
     HIGH: "bg-red-100 text-red-800 dark:bg-red-950/60 dark:text-red-300",
 };
@@ -58,10 +58,10 @@ function EventPill({ event, onClick }) {
     let TypeIcon = Square;
 
     if (event.type === 'task') {
-        pillStyle += "bg-blue-50/80 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300 border-l-blue-500 dark:border-l-blue-600 hover:bg-blue-100 dark:hover:bg-blue-950/60";
+        pillStyle += "bg-blue-50/80 dark:bg-brand/15 text-brand dark:text-violet-300 border-l-blue-500 dark:border-l-blue-600 hover:bg-blue-100 dark:hover:bg-blue-950/60";
         TypeIcon = typeIcons[event.originalItem?.type] || Square;
     } else if (event.type === 'meeting') {
-        pillStyle += "bg-purple-50/80 dark:bg-purple-950/30 text-purple-700 dark:text-purple-300 border-l-purple-500 dark:border-l-purple-600 hover:bg-purple-100 dark:hover:bg-purple-950/60";
+        pillStyle += "bg-purple-50/80 dark:bg-brand/15 text-brand dark:text-violet-300 border-l-purple-500 dark:border-l-purple-600 hover:bg-purple-100 dark:hover:bg-purple-950/60";
         TypeIcon = Video;
     } else {
         pillStyle += "bg-amber-50/80 dark:bg-amber-950/20 text-amber-700 dark:text-amber-400 border-l-amber-500 dark:border-l-amber-600 hover:bg-amber-100 dark:hover:bg-amber-900/30";
@@ -105,7 +105,7 @@ export function MonthView({
     const calendarDays = eachDayOfInterval({ start: startDate, end: endDate });
 
     return (
-        <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 shadow-sm text-left">
+        <div className="sx-glass rounded-2xl p-4 text-left">
             <div className="grid grid-cols-7 text-xs font-bold text-zinc-500 dark:text-zinc-400 mb-3 text-center uppercase tracking-wider">
                 {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => <div key={day}>{day}</div>)}
             </div>
@@ -126,10 +126,10 @@ export function MonthView({
                             onClick={() => setSelectedDate(day)}
                             className={`group relative min-h-[100px] sm:min-h-[120px] p-2 rounded-lg border transition-all flex flex-col justify-between cursor-pointer ${
                                 isSelected
-                                    ? "bg-blue-50/70 dark:bg-blue-950/20 border-blue-500 dark:border-blue-500 shadow-2xs"
+                                    ? "bg-blue-50/70 dark:bg-brand/15 border-brand dark:border-lime shadow-2xs"
                                     : isCurrentMonth
-                                    ? "bg-white dark:bg-zinc-900/60 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
-                                    : "bg-zinc-50/50 dark:bg-zinc-950/40 border-zinc-100 dark:border-zinc-900 opacity-40 hover:opacity-75"
+                                    ? "bg-white/60 dark:bg-white/[0.03] border-slate-900/[0.07] dark:border-white/[0.07] hover:border-zinc-300 dark:hover:border-zinc-700"
+                                    : "bg-slate-500/[0.05] dark:bg-white/[0.02] border-slate-900/[0.05] dark:border-white/[0.07] opacity-40 hover:opacity-75"
                             }`}
                         >
                             {/* Header */}
@@ -137,9 +137,9 @@ export function MonthView({
                                 <span
                                     className={`inline-flex items-center justify-center size-6 text-xs font-bold rounded-full ${
                                         isToday
-                                            ? "bg-blue-600 text-white shadow-2xs"
+                                            ? "bg-brand text-white shadow-2xs"
                                             : isSelected
-                                            ? "text-blue-600 dark:text-blue-400 font-extrabold"
+                                            ? "text-brand dark:text-violet-300 font-extrabold"
                                             : isCurrentMonth
                                             ? "text-zinc-800 dark:text-zinc-200"
                                             : "text-zinc-400 dark:text-zinc-600"
@@ -155,7 +155,7 @@ export function MonthView({
                                         onAddTaskForDate(formattedDateStr);
                                     }}
                                     title="Add task on this date"
-                                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-zinc-400 hover:text-brand dark:hover:text-violet-200 hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                                 >
                                     <Plus className="size-3.5" />
                                 </button>
@@ -170,7 +170,7 @@ export function MonthView({
 
                             {/* Extra count */}
                             {extraCount > 0 && (
-                                <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-800/80 rounded px-1 py-0.5 text-center">
+                                <div className="text-[9px] font-bold text-zinc-600 dark:text-zinc-400 bg-slate-500/[0.08] dark:bg-white/[0.06] rounded px-1 py-0.5 text-center">
                                     +{extraCount} more
                                 </div>
                             )}
@@ -211,15 +211,15 @@ export function WeekView({
                         onClick={() => setSelectedDate(day)}
                         className={`flex flex-col min-h-[380px] rounded-xl border p-3 transition-all ${
                             isSelected
-                                ? "border-blue-500 bg-blue-50/30 dark:bg-blue-950/15"
-                                : "border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60"
+                                ? "border-brand dark:border-lime bg-blue-50/30 dark:bg-brand/15"
+                                : "border-slate-900/[0.07] dark:border-white/[0.07] bg-white/60 dark:bg-white/[0.03]"
                         }`}
                     >
-                        <div className="flex items-center justify-between border-b border-zinc-200 dark:border-zinc-800/80 pb-2 mb-3">
+                        <div className="flex items-center justify-between border-b border-slate-900/[0.07] dark:border-white/[0.07] pb-2 mb-3">
                             <div>
                                 <p className="text-xs font-semibold text-zinc-500 uppercase">{safeFormat(day, "EEE")}</p>
                                 <span className={`inline-flex items-center justify-center size-7 text-sm font-bold rounded-full mt-0.5 ${
-                                    isToday ? "bg-blue-600 text-white" : "text-zinc-900 dark:text-zinc-100"
+                                    isToday ? "bg-brand text-white" : "text-zinc-900 dark:text-zinc-100"
                                 }`}>{safeFormat(day, "d")}</span>
                             </div>
                             <button
@@ -229,7 +229,7 @@ export function WeekView({
                                     onAddTaskForDate(dateStr);
                                 }}
                                 title="Add task"
-                                className="p-1 rounded text-zinc-500 hover:text-blue-600 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition cursor-pointer"
+                                className="p-1 rounded text-zinc-500 hover:text-brand hover:bg-slate-500/10 dark:hover:bg-white/[0.07] transition cursor-pointer"
                             >
                                 <Plus className="size-4" />
                             </button>
@@ -248,11 +248,11 @@ export function WeekView({
                                     if (evt.type === 'task') {
                                         borderStyle = priorityBorders[evt.originalItem?.priority] || "border-l-4 border-l-blue-400";
                                         typeLabel = evt.originalItem?.priority || 'TASK';
-                                        badgeColor = priorityBadges[evt.originalItem?.priority] || "bg-blue-100 text-blue-800";
+                                        badgeColor = priorityBadges[evt.originalItem?.priority] || "bg-brand/10 text-brand dark:text-violet-300";
                                     } else if (evt.type === 'meeting') {
-                                        borderStyle = "border-l-4 border-l-purple-500 bg-purple-50/30 dark:bg-purple-950/10";
+                                        borderStyle = "border-l-4 border-l-purple-500 bg-purple-50/30 dark:bg-brand/15";
                                         typeLabel = "Meeting";
-                                        badgeColor = "bg-purple-100 text-purple-800 dark:bg-purple-950/40 dark:text-purple-300";
+                                        badgeColor = "bg-brand/10 text-brand dark:bg-brand/15 dark:text-violet-300";
                                     } else {
                                         borderStyle = "border-l-4 border-l-amber-500 bg-amber-50/20 dark:bg-amber-950/5";
                                         typeLabel = "GCal Sync";
@@ -268,7 +268,7 @@ export function WeekView({
                                                 e.stopPropagation();
                                                 onEventClick(evt);
                                             }}
-                                            className={`p-2.5 rounded-lg border border-zinc-100 dark:border-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-850 hover:shadow-2xs transition cursor-pointer ${borderStyle}`}
+                                            className={`p-2.5 rounded-lg border border-slate-900/[0.05] dark:border-white/[0.07] hover:bg-slate-500/10 dark:hover:bg-zinc-850 hover:shadow-2xs transition cursor-pointer ${borderStyle}`}
                                         >
                                             <div className="flex items-start justify-between gap-1.5 mb-1.5">
                                                 <span className={`text-xs font-semibold text-zinc-900 dark:text-zinc-100 line-clamp-2 ${isDone ? "line-through opacity-60" : ""}`}>
@@ -294,7 +294,7 @@ export function WeekView({
                                                         <img
                                                             src={evt.originalItem.creator.image || `https://api.dicebear.com/7.x/initials/svg?seed=${evt.originalItem.creator.name}`}
                                                             alt=""
-                                                            className="size-3.5 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+                                                            className="size-3.5 rounded-full object-cover border border-slate-900/[0.07] dark:border-white/10"
                                                         />
                                                     </div>
                                                 )}
@@ -303,7 +303,7 @@ export function WeekView({
                                                         <img
                                                             src={evt.originalItem.assignee.image || `https://api.dicebear.com/7.x/initials/svg?seed=${evt.originalItem.assignee.name}`}
                                                             alt=""
-                                                            className="size-3.5 rounded-full object-cover border border-zinc-200 dark:border-zinc-700"
+                                                            className="size-3.5 rounded-full object-cover border border-slate-900/[0.07] dark:border-white/10"
                                                         />
                                                     </div>
                                                 )}
@@ -353,9 +353,9 @@ export function DayView({
     };
 
     return (
-        <div className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl shadow-sm text-left overflow-hidden">
+        <div className="bg-white/60 dark:bg-white/[0.03] border border-slate-900/[0.07] dark:border-white/[0.07] rounded-xl shadow-sm text-left overflow-hidden">
             {/* Day Header */}
-            <div className="bg-zinc-50 dark:bg-zinc-800/50 p-4 border-b border-zinc-200 dark:border-zinc-800 flex items-center justify-between">
+            <div className="bg-slate-500/[0.05] dark:bg-white/[0.06] p-4 border-b border-slate-900/[0.07] dark:border-white/[0.07] flex items-center justify-between">
                 <div>
                     <h3 className="text-md font-bold text-zinc-900 dark:text-white">
                         {safeFormat(selectedDate, "EEEE, MMMM d, yyyy")}
@@ -366,7 +366,7 @@ export function DayView({
                 </div>
                 <button
                     onClick={() => onAddTaskForDate(dateStr)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition cursor-pointer"
+                    className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-brand hover:bg-brand-strong rounded-lg transition cursor-pointer"
                 >
                     <Plus className="size-3.5" />
                     Quick Add Task
@@ -374,14 +374,14 @@ export function DayView({
             </div>
 
             {/* Hours Grid */}
-            <div className="divide-y divide-zinc-100 dark:divide-zinc-800/60 max-h-[600px] overflow-y-auto no-scrollbar">
+            <div className="divide-y divide-slate-900/[0.06] dark:divide-white/[0.06] max-h-[600px] overflow-y-auto no-scrollbar">
                 {hours.map((hour) => {
                     const hourEvents = getEventsInHour(hour);
 
                     return (
-                        <div key={hour} className="flex min-h-[70px] relative hover:bg-zinc-50/40 dark:hover:bg-zinc-850/20 transition">
+                        <div key={hour} className="flex min-h-[70px] relative hover:bg-slate-500/[0.06] dark:hover:bg-zinc-850/20 transition">
                             {/* Time axis */}
-                            <div className="w-24 border-r border-zinc-100 dark:border-zinc-800/80 p-3 text-xs font-semibold text-zinc-400 dark:text-zinc-500 select-none shrink-0 text-right">
+                            <div className="w-24 border-r border-slate-900/[0.05] dark:border-white/[0.07] p-3 text-xs font-semibold text-zinc-400 dark:text-zinc-500 select-none shrink-0 text-right">
                                 {formatHour(hour)}
                             </div>
 
@@ -392,10 +392,10 @@ export function DayView({
                                     let labelBadge = "";
 
                                     if (evt.type === 'task') {
-                                        cardStyle += "bg-blue-50/40 dark:bg-blue-950/15 border-blue-200 dark:border-blue-900/60 text-blue-900 dark:text-blue-300";
+                                        cardStyle += "bg-blue-50/40 dark:bg-brand/15 border-brand/25 dark:border-brand/30 text-blue-900 dark:text-violet-300";
                                         labelBadge = evt.originalItem?.priority || 'TASK';
                                     } else if (evt.type === 'meeting') {
-                                        cardStyle += "bg-purple-50/40 dark:bg-purple-950/15 border-purple-200 dark:border-purple-900/60 text-purple-900 dark:text-purple-300";
+                                        cardStyle += "bg-purple-50/40 dark:bg-brand/15 border-brand/25 dark:border-brand/30 text-purple-900 dark:text-violet-300";
                                         labelBadge = "MEETING";
                                     } else {
                                         cardStyle += "bg-amber-50/30 dark:bg-amber-950/10 border-amber-200 dark:border-amber-900/40 text-amber-900 dark:text-amber-400";
@@ -413,7 +413,7 @@ export function DayView({
                                             <div className="flex-1 min-w-0">
                                                 <div className="flex items-center gap-1.5 mb-1">
                                                     <span className="font-bold truncate">{evt.title}</span>
-                                                    <span className="text-[8px] px-1 py-0.25 rounded-md font-bold uppercase border bg-white dark:bg-zinc-900 shrink-0">
+                                                    <span className="text-[8px] px-1 py-0.25 rounded-md font-bold uppercase border bg-white/60 dark:bg-white/[0.03] shrink-0">
                                                         {labelBadge}
                                                     </span>
                                                 </div>
@@ -479,7 +479,7 @@ export function AgendaView({
     return (
         <div className="space-y-4 text-left">
             {dateKeys.length === 0 ? (
-                <div className="bg-white dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 rounded-xl p-8 text-center shadow-xs">
+                <div className="sx-glass rounded-2xl p-8 text-center">
                     <CalendarDays className="size-10 mx-auto text-zinc-300 dark:text-zinc-700 mb-3" />
                     <h3 className="text-sm font-bold text-zinc-700 dark:text-zinc-300">No Upcoming Events</h3>
                     <p className="text-xs text-zinc-400 dark:text-zinc-500 mt-1">Schedule a meeting or add tasks to see them in your agenda.</p>
@@ -491,9 +491,9 @@ export function AgendaView({
                     const isToday = safeIsSameDay(parsedDate, today);
 
                     return (
-                        <div key={dateKey} className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-xl p-4 sm:p-5 shadow-xs flex flex-col md:flex-row gap-4 items-stretch">
+                        <div key={dateKey} className="sx-glass rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row gap-4 items-stretch">
                             {/* Date Column */}
-                            <div className="md:w-36 shrink-0 flex flex-row md:flex-col justify-between md:justify-start items-center md:items-start border-b md:border-b-0 md:border-r border-zinc-100 dark:border-zinc-800/80 pb-3 md:pb-0 md:pr-4">
+                            <div className="md:w-36 shrink-0 flex flex-row md:flex-col justify-between md:justify-start items-center md:items-start border-b md:border-b-0 md:border-r border-slate-900/[0.05] dark:border-white/[0.07] pb-3 md:pb-0 md:pr-4">
                                 <div className="text-left">
                                     <p className="text-xs font-bold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
                                         {safeFormat(parsedDate, "EEEE", "Scheduled")}
@@ -503,7 +503,7 @@ export function AgendaView({
                                     </p>
                                 </div>
                                 {isToday && (
-                                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-900/50 rounded-lg px-2 py-0.5 md:mt-2">
+                                    <span className="text-[10px] font-bold text-brand dark:text-violet-300 bg-brand-tint dark:bg-brand/15 border border-brand/25 dark:border-brand/30 rounded-lg px-2 py-0.5 md:mt-2">
                                         TODAY
                                     </span>
                                 )}
@@ -518,11 +518,11 @@ export function AgendaView({
                                     let TypeIcon = Square;
 
                                     if (evt.type === 'task') {
-                                        borderStyle = "border border-zinc-150 dark:border-zinc-800 hover:bg-zinc-50 dark:hover:bg-zinc-850/60";
+                                        borderStyle = "border border-slate-900/[0.05] dark:border-white/[0.07] hover:bg-slate-500/[0.06] dark:hover:bg-zinc-850/60";
                                         typeBadge = evt.originalItem?.priority || 'TASK';
                                         TypeIcon = typeIcons[evt.originalItem?.type] || Square;
                                     } else if (evt.type === 'meeting') {
-                                        borderStyle = "border border-purple-200 dark:border-purple-900/40 bg-purple-50/10 dark:bg-purple-950/5 hover:bg-purple-50/20";
+                                        borderStyle = "border border-brand/25 dark:border-brand/30 bg-purple-50/10 dark:bg-brand/15 hover:bg-purple-50/20";
                                         typeBadge = "MEETING";
                                         TypeIcon = Video;
                                     } else {
@@ -542,8 +542,8 @@ export function AgendaView({
                                         >
                                             <div className="flex items-center gap-3 min-w-0">
                                                 <div className={`p-2 rounded-lg ${
-                                                    evt.type === 'task' ? 'bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400' :
-                                                    evt.type === 'meeting' ? 'bg-purple-50 dark:bg-purple-950 text-purple-600 dark:text-purple-400' :
+                                                    evt.type === 'task' ? 'bg-brand-tint dark:bg-brand/15 text-brand dark:text-violet-300' :
+                                                    evt.type === 'meeting' ? 'bg-brand/10 dark:bg-brand/15 text-brand dark:text-violet-300' :
                                                     'bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400'
                                                 }`}>
                                                     <TypeIcon className="size-4 shrink-0" />
@@ -582,8 +582,8 @@ export function AgendaView({
 
                                             <div className="flex items-center gap-2 shrink-0">
                                                 <span className={`text-[9px] font-bold tracking-wider px-2 py-0.5 rounded-md ${
-                                                    evt.type === 'task' ? priorityBadges[evt.originalItem?.priority] || 'bg-blue-100 text-blue-800' :
-                                                    evt.type === 'meeting' ? 'bg-purple-100 text-purple-800 dark:bg-purple-950 dark:text-purple-300' :
+                                                    evt.type === 'task' ? priorityBadges[evt.originalItem?.priority] || 'bg-brand/10 text-brand dark:text-violet-300' :
+                                                    evt.type === 'meeting' ? 'bg-brand/10 text-brand dark:bg-brand/15 dark:text-violet-300' :
                                                     'bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300'
                                                 }`}>
                                                     {typeBadge}
@@ -595,7 +595,7 @@ export function AgendaView({
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         onClick={(e) => e.stopPropagation()}
-                                                        className="p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded text-purple-600 dark:text-purple-400 transition"
+                                                        className="p-1 hover:bg-zinc-200 dark:hover:bg-white/[0.07] rounded text-brand dark:text-violet-300 transition"
                                                         title="Join Video Link"
                                                     >
                                                         <ExternalLink className="size-3.5" />

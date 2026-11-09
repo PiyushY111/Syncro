@@ -5,11 +5,11 @@ export default function InboxItemCard({ item, onMarkRead, onArchive, onAction })
     const { title, content, type, priority, isRead, createdAt } = item;
 
     const typeIcons = {
-        TASK_ASSIGNED: { icon: CheckSquare, color: 'text-blue-500 bg-blue-500/10' },
+        TASK_ASSIGNED: { icon: CheckSquare, color: 'text-brand dark:text-violet-300 bg-brand/10' },
         TASK_DUE: { icon: AlertCircle, color: 'text-amber-500 bg-amber-500/10' },
-        COMMENT_MENTION: { icon: MessageSquare, color: 'text-indigo-500 bg-indigo-500/10' },
+        COMMENT_MENTION: { icon: MessageSquare, color: 'text-brand dark:text-violet-300 bg-brand/10' },
         CHAT_MESSAGE: { icon: MessageSquare, color: 'text-emerald-500 bg-emerald-500/10' },
-        MEETING_INVITE: { icon: Calendar, color: 'text-purple-500 bg-purple-500/10' },
+        MEETING_INVITE: { icon: Calendar, color: 'text-brand dark:text-violet-300 bg-brand/10' },
         MILESTONE_ALERT: { icon: Bell, color: 'text-rose-500 bg-rose-500/10' },
         SYSTEM: { icon: Bell, color: 'text-zinc-500 bg-zinc-500/10' }
     };
@@ -28,7 +28,7 @@ export default function InboxItemCard({ item, onMarkRead, onArchive, onAction })
         : 'Just now';
 
     return (
-        <div className={`p-4 rounded-xl border transition-all space-y-3 ${isRead ? 'bg-white/40 dark:bg-zinc-900/30 border-zinc-200 dark:border-zinc-800/60 opacity-85' : 'bg-white dark:bg-zinc-900 border-zinc-300 dark:border-zinc-700 shadow-xs'}`}>
+        <div className={`p-4 rounded-xl border transition-all space-y-3 ${isRead ? 'bg-white/40 dark:bg-white/[0.03] border-slate-900/[0.07] dark:border-white/[0.07] opacity-85' : 'bg-white dark:bg-white/[0.03] border-slate-900/10 dark:border-white/10 shadow-xs'}`}>
             <div className="flex items-start justify-between gap-3">
                 <div className="flex items-start gap-3">
                     <div className={`p-2.5 rounded-xl shrink-0 ${iconConfig.color}`}>
@@ -37,7 +37,7 @@ export default function InboxItemCard({ item, onMarkRead, onArchive, onAction })
                     <div>
                         <div className="flex items-center gap-2">
                             <h4 className="font-semibold text-zinc-900 dark:text-zinc-100 text-sm">{title}</h4>
-                            {!isRead && <span className="size-2 rounded-full bg-blue-600 shrink-0" />}
+                            {!isRead && <span className="size-2 rounded-full bg-brand shrink-0" />}
                         </div>
                         {content && <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 line-clamp-2">{content}</p>}
                     </div>

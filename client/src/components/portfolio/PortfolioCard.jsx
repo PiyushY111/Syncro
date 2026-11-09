@@ -13,7 +13,7 @@ export default function PortfolioCard({ portfolio, onDelete }) {
     };
 
     return (
-        <div className="p-5 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 shadow-xs hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between space-y-4">
+        <div className="sx-glass p-5 rounded-2xl hover:border-zinc-300 dark:hover:border-zinc-700 transition-all flex flex-col justify-between space-y-4">
             <div>
                 <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
@@ -35,17 +35,17 @@ export default function PortfolioCard({ portfolio, onDelete }) {
                 {description && <p className="mt-3 text-xs text-zinc-500 dark:text-zinc-400 line-clamp-2">{description}</p>}
             </div>
 
-            <div className="space-y-3 pt-3 border-t border-zinc-100 dark:border-zinc-800/80">
+            <div className="space-y-3 pt-3 border-t border-slate-900/[0.05] dark:border-white/[0.07]">
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 flex items-center gap-2">
-                        <Layers className="size-3.5 text-indigo-500" />
+                    <div className="p-2 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.06] flex items-center gap-2">
+                        <Layers className="size-3.5 text-brand dark:text-violet-300" />
                         <div>
                             <p className="text-[10px] text-zinc-400">Projects</p>
                             <p className="font-semibold text-zinc-800 dark:text-zinc-200">{projectCount || 0}</p>
                         </div>
                     </div>
-                    <div className="p-2 rounded-lg bg-zinc-50 dark:bg-zinc-800/50 flex items-center gap-2">
-                        <Activity className="size-3.5 text-blue-500" />
+                    <div className="p-2 rounded-lg bg-slate-500/[0.05] dark:bg-white/[0.06] flex items-center gap-2">
+                        <Activity className="size-3.5 text-brand dark:text-violet-300" />
                         <div>
                             <p className="text-[10px] text-zinc-400">Progress</p>
                             <p className="font-semibold text-zinc-800 dark:text-zinc-200">{avgProgress || 0}%</p>
@@ -53,13 +53,13 @@ export default function PortfolioCard({ portfolio, onDelete }) {
                     </div>
                 </div>
 
-                <div className="w-full bg-zinc-100 dark:bg-zinc-800 h-1.5 rounded-full overflow-hidden">
+                <div className="w-full bg-slate-500/[0.08] dark:bg-white/[0.06] h-1.5 rounded-full overflow-hidden">
                     <div className="h-full rounded-full transition-all duration-500" style={{ width: `${avgProgress || 0}%`, backgroundColor: color }} />
                 </div>
 
                 <button
                     onClick={() => navigate(`/portfoliosDetail?id=${id}`)}
-                    className="w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-800 dark:text-zinc-200 transition cursor-pointer"
+                    className="w-full py-2 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 bg-slate-500/[0.08] hover:bg-zinc-200 dark:bg-white/[0.06] dark:hover:bg-white/[0.07] text-zinc-800 dark:text-zinc-200 transition cursor-pointer"
                 >
                     View Portfolio Details
                     <ArrowRight className="size-3.5" />
