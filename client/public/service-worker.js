@@ -1,10 +1,9 @@
-const CACHE_NAME = 'syncro-cache-v1';
-const STATIC_ASSETS = [
-  '/',
-  '/index.html',
-  '/src/main.jsx',
-  '/src/index.css',
-];
+const CACHE_NAME = 'syncro-cache-v2';
+// Only paths that exist in the production build; a missing one makes cache.addAll reject and the install fail.
+const STATIC_ASSETS = ['/', '/index.html'];
+
+// respondWith() must always resolve to a Response; caches.match() resolves undefined on a miss.
+const offlineFallback = () => Response.error();
 
 // Install Event: cache static shell assets
 self.addEventListener('install', (event) => {
@@ -53,9 +52,7 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => {
-          return caches.match(request);
-        })
+        .catch(() => caches.match(request).then((cached) => cached || offlineFallback()))
     );
     return;
   }
@@ -67,8 +64,9 @@ self.addEventListener('fetch', (event) => {
         return caches.match(request).then((cachedResponse) => {
           if (cachedResponse) return cachedResponse;
           if (request.mode === 'navigate') {
-            return caches.match('/');
+            return caches.match('/').then((shell) => shell || offlineFallback());
           }
+          return offlineFallback();
         });
       })
   );

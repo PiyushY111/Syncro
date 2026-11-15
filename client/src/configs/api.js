@@ -166,6 +166,13 @@ api.interceptors.response.use(
             } catch { /* leave error payload as-is if it wasn't actually a shield envelope */ }
         }
 
+        // The server's error envelope is { success: false, error: { code, message } }; surface its
+        // message at data.message so UI toasts show the real reason instead of axios's generic text.
+        const errorData = error.response?.data;
+        if (errorData && typeof errorData === 'object' && !errorData.message && errorData.error?.message) {
+            error.response.data = { ...errorData, message: errorData.error.message };
+        }
+
         // Automatic session renegotiation if shield session expired or was rejected with 401
         if (error.response?.status === 401 && error.response?.data?.message?.includes('re-handshake')) {
             shieldSession.reset();
