@@ -8,6 +8,7 @@ import { asyncHandler } from '../../utils/asyncHandler.js';
 import { hashVerificationCode, timingSafeCompare } from '../../utils/crypto.js';
 import { issueCsrfCookie, CSRF_COOKIE_NAME, csrfCookieOptions } from '../../middlewares/csrf.js';
 import logger from '../../utils/logger/logger.js';
+import { sendVerificationCodeEmail } from '../../services/authEmails.js';
 
 export const sanitizeUser = (user) => {
   const superAdminEmails = (process.env.SUPER_ADMIN_EMAILS || '')
@@ -187,6 +188,8 @@ export const resendCode = asyncHandler(async (req, res) => {
       twoFactorExpires: expiresAt,
     },
   });
+
+  await sendVerificationCodeEmail({ email: user.email, verificationCode, purpose: 'login' });
 
   return ApiResponse.success(res, {
     message: 'Verification code resent successfully',

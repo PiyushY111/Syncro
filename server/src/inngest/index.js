@@ -1,6 +1,6 @@
 import { inngest } from './client.js';
 
-import { auditLogJob, authRegisteredJob, authLoginCodeJob } from './core/authJobs.js';
+import { auditLogJob } from './core/authJobs.js';
 import { workspaceMemberInvitedJob, workspaceMemberRoleChangedJob } from './core/workspaceMemberJobs.js';
 import { subTeamCreatedJob, subTeamUpdatedJob, subTeamDeletedJob, subTeamMemberAddedJob, subTeamMemberRemovedJob } from './core/subTeamJobs.js';
 import { projectCreatedJob, projectUpdatedJob, projectDeletedJob } from './projects/projectJobs.js';
@@ -21,8 +21,6 @@ export { inngest };
 
 export const functions = [
     auditLogJob,
-    authRegisteredJob,
-    authLoginCodeJob,
     workspaceMemberInvitedJob,
     workspaceMemberRoleChangedJob,
     projectCreatedJob,

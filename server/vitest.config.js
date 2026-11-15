@@ -6,6 +6,7 @@ export default defineConfig({
     environment: 'node',
     include: [
       'tests/auth.test.js',
+      'tests/authEmails.test.js',
       'tests/chat.test.js',
       'tests/comment.test.js',
       'tests/dbResilience.test.js',

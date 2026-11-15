@@ -17,8 +17,8 @@ vi.mock('../src/config/prisma.js', () => ({
     }
 }));
 
-vi.mock('../src/services/eventBus.js', () => ({
-    eventBus: { publish: vi.fn().mockResolvedValue() }
+vi.mock('../src/services/authEmails.js', () => ({
+    sendVerificationCodeEmail: vi.fn().mockResolvedValue({ messageId: 'test' })
 }));
 
 describe('Auth Controllers', () => {

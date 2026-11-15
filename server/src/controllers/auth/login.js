@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../config/prisma.js';
-import { eventBus } from '../../services/eventBus.js';
+import { sendVerificationCodeEmail } from '../../services/authEmails.js';
 import { UnauthorizedError, BadRequestError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
@@ -42,12 +42,7 @@ export const login = asyncHandler(async (req, res) => {
     },
   });
 
-  eventBus
-    .publish('app/auth.login_code_requested', {
-      email: user.email,
-      verificationCode,
-    })
-    .catch((err) => logger.error('[login] Failed to publish login code event:', { error: err.message }));
+  await sendVerificationCodeEmail({ email: user.email, verificationCode, purpose: 'login' });
 
   return ApiResponse.success(res, {
     data: {

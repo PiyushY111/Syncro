@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../../config/prisma.js';
-import { eventBus } from '../../services/eventBus.js';
+import { sendVerificationCodeEmail } from '../../services/authEmails.js';
 import { ConflictError, BadRequestError } from '../../utils/errors/appError.js';
 import { ApiResponse } from '../../utils/response/apiResponse.js';
 import { asyncHandler } from '../../utils/asyncHandler.js';
@@ -67,12 +67,7 @@ export const register = asyncHandler(async (req, res) => {
     }).catch(() => {});
   }
 
-  eventBus
-    .publish('app/auth.registered', {
-      email: user.email,
-      verificationCode,
-    })
-    .catch((err) => logger.error('[register] Event publishing error:', { error: err.message }));
+  await sendVerificationCodeEmail({ email: user.email, verificationCode, purpose: 'register' });
 
   return ApiResponse.created(res, {
     data: {
